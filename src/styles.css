@@ -1,0 +1,224 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-display: "Sora", "Inter", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-navy-deep: var(--brand-navy-deep);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-deep: var(--brand-green-deep);
+  --color-brand-cloud: var(--brand-cloud);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Brand */
+  --brand-navy-deep: oklch(0.18 0.04 250); /* #041B33 */
+  --brand-navy: oklch(0.24 0.05 252);
+  --brand-green: oklch(0.72 0.18 156); /* #00C57A */
+  --brand-green-deep: oklch(0.62 0.16 154); /* #019852 */
+  --brand-cloud: oklch(0.975 0.005 240); /* #F5F7FA */
+
+  /* Semantic — light theme uses navy on cloud */
+  --background: oklch(1 0 0);
+  --foreground: var(--brand-navy-deep);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--brand-navy-deep);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--brand-navy-deep);
+  --primary: var(--brand-green);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: var(--brand-navy-deep);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: var(--brand-cloud);
+  --muted-foreground: oklch(0.45 0.02 252);
+  --accent: var(--brand-cloud);
+  --accent-foreground: var(--brand-navy-deep);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.92 0.01 252);
+  --input: oklch(0.92 0.01 252);
+  --ring: var(--brand-green);
+
+  /* Effects */
+  --gradient-hero:
+    radial-gradient(ellipse at 70% 30%, oklch(0.35 0.1 156 / 0.4), transparent 60%),
+    radial-gradient(ellipse at 20% 80%, oklch(0.32 0.08 250 / 0.6), transparent 55%),
+    linear-gradient(135deg, var(--brand-navy-deep) 0%, oklch(0.14 0.03 250) 100%);
+  --gradient-brand: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-deep) 100%);
+  --gradient-text: linear-gradient(135deg, oklch(1 0 0) 0%, oklch(0.85 0.08 156) 100%);
+  --shadow-glow: 0 0 60px -10px oklch(0.72 0.18 156 / 0.5);
+  --shadow-card: 0 10px 40px -10px oklch(0.18 0.04 250 / 0.15);
+  --shadow-premium: 0 25px 80px -20px oklch(0.18 0.04 250 / 0.4);
+
+  --sidebar: var(--brand-cloud);
+  --sidebar-foreground: var(--brand-navy-deep);
+  --sidebar-primary: var(--brand-green);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.95 0.01 252);
+  --sidebar-accent-foreground: var(--brand-navy-deep);
+  --sidebar-border: oklch(0.92 0.01 252);
+  --sidebar-ring: var(--brand-green);
+}
+
+.high-contrast {
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.1 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.1 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(0.95 0.2 100);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(1 0 0);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.15 0 0);
+  --muted-foreground: oklch(0.95 0 0);
+  --accent: oklch(0.2 0 0);
+  --accent-foreground: oklch(1 0 0);
+  --border: oklch(1 0 0);
+  --input: oklch(1 0 0);
+  --ring: oklch(0.95 0.2 100);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    font-size: var(--user-font-size, 16px);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--brand-green);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  .bg-hero-gradient {
+    background: var(--gradient-hero);
+  }
+  .bg-brand-gradient {
+    background: var(--gradient-brand);
+  }
+  .text-gradient {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-brand {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-premium {
+    box-shadow: var(--shadow-premium);
+  }
+
+  .grid-pattern {
+    background-image:
+      linear-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(1 0 0 / 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-up {
+    animation: fade-up 0.7s ease-out both;
+  }
+}
