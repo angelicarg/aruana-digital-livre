@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
@@ -7,8 +7,23 @@ declare global {
 }
 
 export function VLibras() {
+  const ref = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Injetar HTML do VLibras diretamente
+    if (ref.current) {
+      ref.current.innerHTML = `
+        <div vw="true" class="enabled">
+          <div vw-access-button="true" class="active"></div>
+          <div vw-plugin-wrapper="true">
+            <div class="vw-plugin-top-wrapper"></div>
+          </div>
+        </div>
+      `;
+    }
+
     if (document.getElementById("vlibras-script")) return;
 
     const script = document.createElement("script");
@@ -25,22 +40,5 @@ export function VLibras() {
     document.body.appendChild(script);
   }, []);
 
-  return (
-    <div
-      className="enabled"
-      ref={(el) => {
-        if (!el) return;
-        el.setAttribute("vw", "true");
-        const btn = el.querySelector("[data-vw-access]");
-        btn?.setAttribute("vw-access-button", "true");
-        const wrap = el.querySelector("[data-vw-wrapper]");
-        wrap?.setAttribute("vw-plugin-wrapper", "true");
-      }}
-    >
-      <div data-vw-access className="active"></div>
-      <div data-vw-wrapper>
-        <div className="vw-plugin-top-wrapper"></div>
-      </div>
-    </div>
-  );
+  return <div ref={ref} />;
 }

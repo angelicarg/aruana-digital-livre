@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 import { AccessibilityBar } from "./AccessibilityBar";
+import { ChatBot } from "./ChatBot";
 
 export function PageLayout({ children }: { children: ReactNode }) {
   return (
@@ -18,6 +19,7 @@ export function PageLayout({ children }: { children: ReactNode }) {
       </main>
       <SiteFooter />
       <AccessibilityBar />
+      <ChatBot />
     </div>
   );
 }
