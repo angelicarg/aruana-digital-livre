@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import mascotAru from "#/assets/mascot-face.png";
+import { sendChatMessage } from "#/lib/api/chat.functions";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -9,51 +10,37 @@ interface Message {
   content: string;
 }
 
-// ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
+const FALLBACK_MESSAGES = {
+  rate_limited:
+    "Estou com muitas conversas ao mesmo tempo agora! Me chama direto no WhatsApp: **(34) 99236-9831** que te atendo na hora 😊",
+  unavailable:
+    "Ops, tive um problema aqui! Me chama no WhatsApp: **(34) 99236-9831** 😊",
+} as const;
 
-const SYSTEM_PROMPT = `Você é a Ara, assistente virtual da Aruanã Digital — uma agência especializada em presença digital e soluções com inteligência artificial para pequenos negócios.
+// ─── WHATSAPP HANDOFF ─────────────────────────────────────────────────────────
+// Builds a wa.me link with the conversation so far pre-filled, so whoever
+// picks it up on WhatsApp already has context instead of a blank chat.
 
-SOBRE A ARUANÃ DIGITAL:
-- Agência focada em transformar pequenos negócios com tecnologia acessível
-- Especialidade: sites profissionais, landing pages, chatbots com IA e automações
-- Diferenciais: entrega rápida, preço justo, suporte próximo e personalizado
-- Cada projeto é único — não usamos templates genéricos
-- Atendemos negócios de todos os segmentos: clínicas, restaurantes, prestadores de serviço, comércios, profissionais liberais e muito mais
+const WHATSAPP_NUMBER = "5534992369831";
+const HANDOFF_MAX_MESSAGES = 6;
+const HANDOFF_MAX_LENGTH = 1500;
 
-SERVIÇOS OFERECIDOS:
-1. **Sites e Landing Pages** — Sites modernos, responsivos e otimizados para conversão. Do design à publicação.
-2. **Chatbots com IA** — Atendimento automático inteligente 24h. O bot aprende sobre o negócio e responde como um atendente humano.
-3. **Chatbots de Fluxo Guiado** — Atendimento estruturado com menus e opções, ideal para triagem e agendamentos. Inclui transferência para WhatsApp.
-4. **Agendamento Online** — Sistema de agenda integrado ao site, com seleção de profissional, data e horário.
-5. **Automações** — Integrações com WhatsApp, e-mail e sistemas para automatizar processos do negócio.
-6. **Consultoria Digital** — Diagnóstico da presença digital e plano de ação personalizado.
+function buildWhatsAppHandoffUrl(messages: Message[]) {
+  const transcript = messages
+    .filter((m) => m.id !== "welcome")
+    .slice(-HANDOFF_MAX_MESSAGES)
+    .map((m) => `${m.role === "user" ? "Cliente" : "Aru"}: ${m.content.replace(/\*\*/g, "*")}`)
+    .join("\n");
 
-PORTFÓLIO DE DEMONSTRAÇÃO:
-- **Clínica Dente Vivo** — Site completo com agendamento por dentista e chatbot de atendimento
-- **Carlos Pinto Pintor** — Landing page com sistema de orçamento online automático
-- **Forno 81 Pizzaria** — Site com cardápio interativo, carrinho e chatbot com IA
+  const body = transcript
+    ? `Olá! Vim do chat do site e conversei com a Aru:\n\n${transcript}\n\nGostaria de continuar por aqui.`
+    : "Olá! Vim do chat do site da Aruanã Digital.";
 
-PROCESSO DE TRABALHO:
-1. Conversa inicial para entender o negócio e objetivos
-2. Proposta personalizada com escopo e valor
-3. Desenvolvimento e aprovações em etapas
-4. Publicação e treinamento do cliente
-5. Suporte contínuo após entrega
+  const trimmed =
+    body.length > HANDOFF_MAX_LENGTH ? `${body.slice(0, HANDOFF_MAX_LENGTH)}…` : body;
 
-FORMAS DE CONTATO:
-- WhatsApp: (62) 99999-0000
-- E-mail: contato@aruanadigital.com.br
-- Site: aruanadigital.com.br
-
-INSTRUÇÕES DE COMPORTAMENTO:
-- Responda SEMPRE em português brasileiro
-- Seja consultiva, inteligente e direta — fale como especialista em negócios digitais, não como robô
-- Respostas objetivas — máximo 3 parágrafos curtos
-- Use markdown simples (negrito com **) para destacar pontos importantes
-- Se o cliente demonstrar interesse em algum serviço, incentive-o a entrar em contato pelo WhatsApp para uma conversa sem compromisso
-- Se não souber algo específico sobre a empresa, seja honesta e passe o contato do WhatsApp
-- Nunca invente preços específicos — diga que os valores são personalizados e oriente a entrar em contato
-- Quando mencionar o WhatsApp, use sempre: (62) 99999-0000`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(trimmed)}`;
+}
 
 // ─── QUICK REPLIES ────────────────────────────────────────────────────────────
 
@@ -73,7 +60,7 @@ export function ChatBot() {
       id: "welcome",
       role: "assistant",
       content:
-        "Olá! Sou a **Ara**, assistente da Aruanã Digital 👋\n\nPosso te ajudar a entender como transformamos pequenos negócios com sites profissionais, chatbots e automações. O que você gostaria de saber?",
+        "Olá! Sou a **Aru**, assistente da Aruanã Digital 👋\n\nPosso te ajudar a entender como transformamos pequenos negócios com sites profissionais, chatbots e automações. O que você gostaria de saber?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -117,24 +104,13 @@ export function ChatBot() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: newMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
+      const result = await sendChatMessage({
+        data: {
+          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+        },
       });
 
-      const data = await response.json();
-      const reply =
-        data.content?.[0]?.text ??
-        "Ops, tive um problema aqui! Me chama no WhatsApp: (62) 99999-0000 😊";
+      const reply = result.reply ?? FALLBACK_MESSAGES[result.error ?? "unavailable"];
 
       setMessages((prev) => [
         ...prev,
@@ -147,7 +123,7 @@ export function ChatBot() {
           id: `err-${Date.now()}`,
           role: "assistant",
           content:
-            "Algo deu errado na conexão. Me chama no WhatsApp: **(62) 99999-0000** e te atendo na hora! 😊",
+            "Algo deu errado na conexão. Me chama no WhatsApp: **(34) 99236-9831** e te atendo na hora! 😊",
         },
       ]);
     } finally {
@@ -170,7 +146,7 @@ export function ChatBot() {
       {/* ── BUBBLE ── */}
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "Fechar chat" : "Abrir chat com Ara"}
+        aria-label={open ? "Fechar chat" : "Abrir chat com Aru"}
         className="fixed bottom-20 right-6 z-50 w-16 h-16 rounded-full border-0 cursor-pointer flex items-center justify-center shadow-glow transition-transform duration-200 hover:scale-105 active:scale-95 overflow-hidden"
         style={{ background: "var(--gradient-brand)" }}
       >
@@ -179,7 +155,7 @@ export function ChatBot() {
         ) : (
           <img
             src={mascotAru}
-            alt="Ara"
+            alt="Aru"
             className="w-16 h-16 object-cover"
           />
         )}
@@ -218,13 +194,13 @@ export function ChatBot() {
             >
               <img
                 src={mascotAru}
-                alt="Ara"
+                alt="Aru"
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-sm text-white font-display">
-                Ara
+                Aru
               </div>
               <div className="text-xs" style={{ color: "oklch(0.85 0.08 156)" }}>
                 Assistente · Aruanã Digital
@@ -260,7 +236,7 @@ export function ChatBot() {
                     >
                       <img
                         src={mascotAru}
-                        alt="Ara"
+                        alt="Aru"
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -295,7 +271,7 @@ export function ChatBot() {
                   className="w-7 h-7 rounded-full flex-shrink-0 overflow-hidden"
                   style={{ background: "white" }}
                 >
-                  <img src={mascotAru} alt="Ara" className="w-full h-full object-cover" />
+                  <img src={mascotAru} alt="Aru" className="w-full h-full object-cover" />
                 </div>
                 <div
                   className="px-4 py-3 flex gap-1 items-center"
@@ -401,13 +377,13 @@ export function ChatBot() {
               Aruanã Digital · IA assistente
             </span>
             <a
-              href="https://wa.me/5562999990000"
+              href={buildWhatsAppHandoffUrl(messages)}
               target="_blank"
               rel="noreferrer"
               className="text-xs font-semibold px-2 py-1 rounded-md transition-opacity hover:opacity-80"
               style={{ background: "#25D366", color: "white" }}
             >
-              📱 WhatsApp
+              📱 Falar com atendente
             </a>
           </div>
         </div>
