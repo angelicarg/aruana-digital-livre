@@ -1,117 +1,113 @@
-Welcome to your new TanStack Start app! 
+# Aruanã Digital — site institucional
 
-# Getting Started
+Site institucional da Aruanã Digital. Construído com [TanStack Start](https://tanstack.com/start) (React 19) + Tailwind CSS, com deploy automático na Vercel a partir do branch `main`.
 
-To run this application:
+## Rodando localmente
 
 ```bash
-bun install
-bun --bun run dev
+npm install
+npm run dev
 ```
 
-# Building For Production
+Abre em `http://localhost:3000`.
 
-To build this application for production:
+### Variáveis de ambiente
+
+Copie `.env.example` para `.env` e preencha os valores:
+
+| Variável | Para quê serve |
+|---|---|
+| `ANTHROPIC_API_KEY` | Chave da API da Anthropic, usada pelo chatbot Aru. Sem ela, o chat continua funcionando mas sempre cai no fallback de WhatsApp. |
+| `SUPABASE_*` / `VITE_SUPABASE_*` | Conexão com o Supabase. |
+
+**Nunca** commite o `.env` real (já está no `.gitignore`) nem cole chaves de API em chats, prints ou issues — trate como senha.
+
+## Chatbot Aru
+
+- Componente de UI: [`src/components/ChatBot.tsx`](src/components/ChatBot.tsx)
+- Lógica do servidor (chamada à Anthropic, prompt do sistema, limites de uso): [`src/lib/api/chat.functions.ts`](src/lib/api/chat.functions.ts)
+- Modelo: Claude Haiku 4.5 — baixo custo, adequado para um chat de suporte
+- Limites embutidos para controlar gasto: 6 mensagens/minuto por IP e 300/dia no total. Esse contador vive na memória do processo do servidor — é uma proteção contra picos de abuso, não uma garantia matemática (reseta se a instância do servidor reiniciar). Se o tráfego crescer muito, vale migrar para um limitador com armazenamento externo (ex: Upstash/Redis).
+- Sem a chave configurada (local ou na Vercel), o chat responde sempre com a mensagem de fallback pedindo para chamar no WhatsApp — o site não quebra.
+- O botão "Falar com atendente" no rodapé do chat gera um link de WhatsApp (`wa.me`) com o resumo da conversa já preenchido, para o atendimento humano continuar com contexto.
+
+### Como conseguir uma chave da Anthropic
+
+1. Crie conta em [console.anthropic.com](https://console.anthropic.com)
+2. Configure a cobrança em *Settings → Billing* (é pré-pago) e, se possível, um limite de gasto mensal com alerta por e-mail
+3. Crie a chave em *API Keys → Create Key* (ela só aparece uma vez — copie na hora)
+4. Cole em `.env` (para rodar local) e nas Environment Variables do projeto na Vercel (para produção)
+
+## Botões flutuantes (Aru + Acessibilidade + VLibras)
+
+O botão do chat Aru e o botão de Acessibilidade compartilham tamanho, espaçamento e z-index via variáveis CSS definidas em [`src/styles.css`](src/styles.css) (`--fab-size`, `--fab-edge-gap`, `--fab-stack-gap`, `--fab-tier-1/2/3`), o que os mantém empilhados no canto inferior direito sem se sobrepor. O VLibras é injetado por script externo em [`src/routes/__root.tsx`](src/routes/__root.tsx) e mantém a posição padrão da própria biblioteca.
+
+## Deploy
+
+- O repositório está conectado à Vercel: todo push no `main` (via GitHub) dispara build e deploy automático.
+- Fluxo do dia a dia: editar no VS Code → commit → push → Vercel builda sozinha.
+- Variáveis de ambiente de produção são configuradas direto no painel da Vercel (*Settings → Environment Variables*) — elas **não** vêm do `.env` local nem passam pelo Git.
+
+## Stack
+
+- [TanStack Start](https://tanstack.com/start) (React 19) com roteamento baseado em arquivos (`src/routes`)
+- [Tailwind CSS 4](https://tailwindcss.com/)
+- [Supabase](https://supabase.com/) (dados/auth)
+- Deploy: Vercel (via Nitro)
+
+---
+
+# Referência do TanStack Start
+
+Conteúdo abaixo é a documentação padrão do template TanStack Start — útil como referência ao mexer em rotas, layouts e server functions.
+
+## Building For Production
 
 ```bash
-bun --bun run build
+npm run build
 ```
 
 ## Testing
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+Este projeto usa [Vitest](https://vitest.dev/):
 
 ```bash
-bun --bun run test
+npm run test
 ```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `bun install @tailwindcss/vite tailwindcss -D`
-
-
 
 ## Routing
 
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+Este projeto usa [TanStack Router](https://tanstack.com/router) com roteamento baseado em arquivos. As rotas ficam em `src/routes`.
 
-### Adding A Route
+### Adicionando uma rota
 
-To add a new route to your application just add a new file in the `./src/routes` directory.
+Basta adicionar um novo arquivo em `./src/routes`. O TanStack gera o conteúdo do arquivo de rota automaticamente.
 
-TanStack will automatically generate the content of the route file for you.
+### Adicionando links
 
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+Para navegação SPA, importe o componente `Link`:
 
 ```tsx
 import { Link } from "@tanstack/react-router";
 ```
 
-Then anywhere in your JSX you can use it like so:
+E use no JSX:
 
 ```tsx
 <Link to="/about">About</Link>
 ```
 
-This will create a link that will navigate to the `/about` route.
+Mais detalhes na [documentação do Link](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
 
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+### Usando um layout
 
-### Using A Layout
+O layout fica em `src/routes/__root.tsx`. Tudo que for adicionado na rota raiz aparece em todas as rotas. O conteúdo da rota aparece onde `{children}` é renderizado no `shellComponent`.
 
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+Mais detalhes na [documentação de Layouts](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
 
 ## Server Functions
 
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
+TanStack Start permite escrever código server-side que se integra com os componentes client:
 
 ```tsx
 import { createServerFn } from '@tanstack/react-start'
@@ -121,73 +117,15 @@ const getServerTime = createServerFn({
 }).handler(async () => {
   return new Date().toISOString()
 })
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
 ```
 
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
+Veja um exemplo real em [`src/lib/api/chat.functions.ts`](src/lib/api/chat.functions.ts).
 
 ## Data Fetching
 
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+Existem várias formas de buscar dados: TanStack Query, ou o `loader` embutido no TanStack Router. Mais detalhes na [documentação de Loaders](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
 
-For example:
+## Saiba mais
 
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+- [Documentação do TanStack](https://tanstack.com)
+- [Documentação do TanStack Start](https://tanstack.com/start)
