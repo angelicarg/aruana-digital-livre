@@ -83,6 +83,16 @@
   --shadow-card: 0 10px 40px -10px oklch(0.18 0.04 250 / 0.15);
   --shadow-premium: 0 25px 80px -20px oklch(0.18 0.04 250 / 0.4);
 
+  /* Floating action buttons (accessibility, chat) — shared so they stack
+     without overlapping instead of each picking its own offset. */
+  --fab-size: 56px;
+  --fab-edge-gap: 16px;
+  --fab-stack-gap: 12px;
+  --fab-z: 50;
+  --fab-tier-1: var(--fab-edge-gap);
+  --fab-tier-2: calc(var(--fab-edge-gap) + var(--fab-size) + var(--fab-stack-gap));
+  --fab-tier-3: calc(var(--fab-edge-gap) + (var(--fab-size) * 2) + (var(--fab-stack-gap) * 2));
+
   --sidebar: var(--brand-cloud);
   --sidebar-foreground: var(--brand-navy-deep);
   --sidebar-primary: var(--brand-green);

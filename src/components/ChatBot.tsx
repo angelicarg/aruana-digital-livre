@@ -147,8 +147,7 @@ export function ChatBot() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Fechar chat" : "Abrir chat com Aru"}
-        className="fixed bottom-20 right-6 z-50 w-16 h-16 rounded-full border-0 cursor-pointer flex items-center justify-center shadow-glow transition-transform duration-200 hover:scale-105 active:scale-95 overflow-hidden"
-        style={{ background: "var(--gradient-brand)" }}
+        className="fixed bottom-[var(--fab-tier-2)] right-[var(--fab-edge-gap)] z-[var(--fab-z)] w-[var(--fab-size)] h-[var(--fab-size)] rounded-full border-0 cursor-pointer flex items-center justify-center bg-brand-gradient shadow-glow transition-transform duration-200 hover:scale-105 active:scale-95 overflow-hidden"
       >
         {open ? (
           <span className="text-2xl select-none text-white font-bold">✕</span>
@@ -156,7 +155,7 @@ export function ChatBot() {
           <img
             src={mascotAru}
             alt="Aru"
-            className="w-16 h-16 object-cover"
+            className="w-full h-full object-cover"
           />
         )}
         {!open && unread > 0 && (
@@ -175,7 +174,7 @@ export function ChatBot() {
       {/* ── PANEL ── */}
       {open && (
         <div
-          className="fixed bottom-40 right-6 z-40 flex flex-col rounded-2xl overflow-hidden shadow-premium border border-border"
+          className="fixed bottom-[var(--fab-tier-3)] right-[var(--fab-edge-gap)] z-[var(--fab-z)] flex flex-col rounded-2xl overflow-hidden shadow-premium border border-border"
           style={{
             width: "min(380px, calc(100vw - 24px))",
             maxHeight: "70vh",

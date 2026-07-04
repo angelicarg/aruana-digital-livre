@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Type, Contrast, RotateCcw, Accessibility, Plus, Minus } from "lucide-react";
+import { Contrast, RotateCcw, Accessibility, Plus, Minus } from "lucide-react";
 
 const SIZES = [14, 16, 18, 20, 22];
 
@@ -22,7 +22,7 @@ export function AccessibilityBar() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
+    <div className="fixed bottom-[var(--fab-tier-1)] right-[var(--fab-edge-gap)] z-[var(--fab-z)] flex flex-col items-end gap-2">
       {open && (
         <div
           role="region"
@@ -69,7 +69,7 @@ export function AccessibilityBar() {
         onClick={() => setOpen((o) => !o)}
         aria-label="Abrir opções de acessibilidade"
         aria-expanded={open}
-        className="grid h-14 w-14 place-items-center rounded-full bg-brand-gradient text-white shadow-glow transition hover:scale-105"
+        className="grid h-[var(--fab-size)] w-[var(--fab-size)] place-items-center rounded-full bg-brand-gradient text-white shadow-glow transition-transform duration-200 hover:scale-105 active:scale-95"
       >
         <Accessibility className="h-6 w-6" />
       </button>
