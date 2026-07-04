@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
 import {
   Code2,
@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   ArrowRight,
 } from "lucide-react";
+import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/servicos")({
   head: () => ({
@@ -18,12 +19,12 @@ export const Route = createFileRoute("/servicos")({
       {
         name: "description",
         content:
-          "Criação de sites institucionais para empresas, ecossistemas digitais, automação, IA e acessibilidade. Conheça os serviços da Aruanã Digital.",
+          "Criação de sites institucionais para empresas, ecossistemas digitais, automação, IA e acessibilidade. Atendemos Iturama, Minas Gerais e todo o Brasil.",
       },
       {
         name: "keywords",
         content:
-          "criação de site institucional, site para empresa, desenvolvimento de sites, sites corporativos, agência digital, SEO, automação, inteligência artificial, acessibilidade",
+          "criação de site institucional, site para empresa, desenvolvimento de sites, sites corporativos, agência digital, SEO, automação, inteligência artificial, acessibilidade, agência digital Iturama, agência digital Minas Gerais",
       },
       { property: "og:title", content: "Criação de Sites Institucionais e Serviços Digitais | Aruanã Digital" },
       {
@@ -32,8 +33,35 @@ export const Route = createFileRoute("/servicos")({
           "Sites institucionais sob medida, automação, IA e acessibilidade para empresas que querem crescer.",
       },
       { property: "og:url", content: "https://aruanadigital.com/servicos" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: `https://aruanadigital.com${heroFish}` },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: `https://aruanadigital.com${heroFish}` },
     ],
     links: [{ rel: "canonical", href: "https://aruanadigital.com/servicos" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          serviceType: "Serviços Digitais para Empresas",
+          provider: {
+            "@type": "Organization",
+            name: "Aruanã Digital",
+            url: "https://aruanadigital.com/",
+            address: { "@type": "PostalAddress", addressLocality: "Iturama", addressRegion: "MG", addressCountry: "BR" },
+          },
+          areaServed: [
+            { "@type": "City", name: "Iturama" },
+            { "@type": "State", name: "Minas Gerais" },
+            { "@type": "Country", name: "Brasil" },
+          ],
+          description:
+            "Criação de sites institucionais, ecossistemas digitais, automação, inteligência artificial e acessibilidade para empresas.",
+        }),
+      },
+    ],
   }),
   component: ServicosPage,
 });
@@ -123,7 +151,7 @@ function ServicosPage() {
       <PageHero
         eyebrow="Serviços"
         title="Soluções digitais que unem estratégia, tecnologia e impacto."
-        subtitle="Cada serviço é desenhado para gerar resultado mensurável, com acessibilidade e simplicidade no centro."
+        subtitle="Cada serviço é desenhado para gerar resultado mensurável, com acessibilidade e simplicidade no centro. Atendemos empresas de Iturama, do Triângulo Mineiro e de todo o Brasil."
       />
 
       <section className="py-20 lg:py-24">
@@ -173,6 +201,27 @@ function ServicosPage() {
               </div>
             </article>
           ))}
+        </div>
+
+        <div className="mx-auto mt-16 flex max-w-7xl flex-wrap justify-center gap-4 px-4 sm:px-6 lg:px-8">
+          <Link
+            to="/cases"
+            className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 font-semibold text-foreground transition hover:border-brand-green hover:text-brand-green"
+          >
+            Ver resultados de clientes <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            to="/sobre"
+            className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 font-semibold text-foreground transition hover:border-brand-green hover:text-brand-green"
+          >
+            Conhecer a Aruanã Digital <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            to="/contato"
+            className="inline-flex items-center gap-2 rounded-full bg-brand-gradient px-6 py-3 font-semibold text-white shadow-glow transition hover:scale-105"
+          >
+            Solicitar orçamento <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
     </PageLayout>

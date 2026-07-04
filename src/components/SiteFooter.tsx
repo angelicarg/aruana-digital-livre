@@ -91,11 +91,6 @@ export function SiteFooter() {
                 Política de Privacidade
               </Link>
             </li>
-            <li>
-              <Link to="/privacidade" className="transition hover:text-brand-green">
-                Termos de Uso
-              </Link>
-            </li>
             <li className="flex items-start gap-2 pt-1 text-white/60">
               <Shield className="h-4 w-4 shrink-0 text-brand-green mt-0.5" />
               <span>Em conformidade com a Lei nº 13.709/2018 (LGPD)</span>

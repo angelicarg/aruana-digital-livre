@@ -27,27 +27,31 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Criação de sites institucionais profissionais para empresas: design premium, SEO, performance e acessibilidade. Solicite um orçamento com a Aruanã Digital.",
+          "Criação de sites institucionais profissionais para empresas: design premium, SEO, performance e acessibilidade. Atendemos Iturama, o Triângulo Mineiro e todo o Brasil. Solicite um orçamento.",
       },
       {
         name: "keywords",
         content:
-          "criação de site institucional, site institucional para empresas, desenvolvimento de sites, agência de sites, site profissional, site corporativo, criação de sites SEO, sites acessíveis, Aruanã Digital",
+          "criação de site institucional, site institucional para empresas, desenvolvimento de sites, agência de sites, site profissional, site corporativo, criação de sites SEO, sites acessíveis, agência digital Iturama, agência digital Minas Gerais, Aruanã Digital",
       },
       { property: "og:title", content: "Criação de Site Institucional para Empresas | Aruanã Digital" },
       {
         property: "og:description",
         content:
-          "Sites institucionais sob medida para empresas: design, SEO, performance e acessibilidade. Conecte sua marca a resultados reais.",
+          "Sites institucionais sob medida para empresas: design, SEO, performance e acessibilidade. De Iturama/MG para todo o Brasil.",
       },
       { property: "og:url", content: "https://aruanadigital.com/" },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: `https://aruanadigital.com${heroFish}` },
+      { property: "og:locale", content: "pt_BR" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Criação de Site Institucional para Empresas | Aruanã Digital" },
       {
         name: "twitter:description",
         content:
           "Sites institucionais sob medida para empresas: design, SEO, performance e acessibilidade.",
       },
+      { name: "twitter:image", content: `https://aruanadigital.com${heroFish}` },
     ],
     links: [{ rel: "canonical", href: "https://aruanadigital.com/" }],
     scripts: [
@@ -58,9 +62,21 @@ export const Route = createFileRoute("/")({
           "@type": "ProfessionalService",
           name: "Aruanã Digital",
           url: "https://aruanadigital.com/",
+          image: `https://aruanadigital.com${heroFish}`,
+          email: "aruanadigital@aruanadigital.com",
           description:
-            "Agência de criação de sites institucionais para empresas, com foco em SEO, performance, acessibilidade e resultados.",
-          areaServed: "BR",
+            "Agência de criação de sites institucionais para empresas, com foco em SEO, performance, acessibilidade e resultados. Sediada em Iturama/MG, atende empresas de todo o Brasil.",
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: "Iturama",
+            addressRegion: "MG",
+            addressCountry: "BR",
+          },
+          areaServed: [
+            { "@type": "City", name: "Iturama" },
+            { "@type": "State", name: "Minas Gerais" },
+            { "@type": "Country", name: "Brasil" },
+          ],
           serviceType: [
             "Criação de Site Institucional",
             "Desenvolvimento Web",
@@ -68,7 +84,7 @@ export const Route = createFileRoute("/")({
             "Automação e Inteligência Artificial",
             "Acessibilidade Digital",
           ],
-          sameAs: ["https://wa.me/5534992369831"],
+          sameAs: ["https://wa.me/5534992369831", "https://instagram.com/aruanadigital"],
           contactPoint: {
             "@type": "ContactPoint",
             telephone: "+55-34-99236-9831",
@@ -467,7 +483,8 @@ function HomePage() {
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/85">
             Converse com um especialista e descubra como criar um ecossistema digital acessível,
-            eficiente e preparado para o futuro.
+            eficiente e preparado para o futuro. Atendemos empresas de Iturama, do Triângulo
+            Mineiro e de todo o Brasil.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
             <a

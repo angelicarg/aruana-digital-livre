@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar } from "lucide-react";
+import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/blog")({
   head: () => ({
@@ -11,12 +12,21 @@ export const Route = createFileRoute("/blog")({
         content:
           "Conteúdos sobre criação de sites institucionais, SEO, IA, educação e acessibilidade digital para empresas.",
       },
+      {
+        name: "keywords",
+        content:
+          "blog Aruanã Digital, SEO para sites institucionais, IA para empresas, acessibilidade digital, VLibras, WCAG",
+      },
       { property: "og:title", content: "Blog — Sites Institucionais, IA e Acessibilidade | Aruanã Digital" },
       {
         property: "og:description",
         content: "Insights sobre sites institucionais, SEO, IA, educação e acessibilidade.",
       },
       { property: "og:url", content: "https://aruanadigital.com/blog" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: `https://aruanadigital.com${heroFish}` },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: `https://aruanadigital.com${heroFish}` },
     ],
     links: [{ rel: "canonical", href: "https://aruanadigital.com/blog" }],
   }),
@@ -78,7 +88,7 @@ function BlogPage() {
             {POSTS.map((p) => (
               <article
                 key={p.title}
-                className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card transition hover:-translate-y-1 hover:shadow-premium"
+                className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card transition hover:-translate-y-1 hover:shadow-premium"
               >
                 <div className="aspect-video bg-hero-gradient relative overflow-hidden">
                   <div className="absolute inset-0 grid-pattern opacity-30" />
@@ -94,9 +104,6 @@ function BlogPage() {
                   </p>
                   <h2 className="mt-3 font-display text-lg font-bold leading-snug">{p.title}</h2>
                   <p className="mt-2 flex-1 text-sm text-muted-foreground">{p.excerpt}</p>
-                  <button className="mt-5 inline-flex items-center gap-2 self-start text-sm font-semibold text-brand-green-deep transition group-hover:gap-3">
-                    Ler artigo <ArrowRight className="h-4 w-4" />
-                  </button>
                 </div>
               </article>
             ))}

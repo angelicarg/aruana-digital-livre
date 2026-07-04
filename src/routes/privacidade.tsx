@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
 import { Shield, Lock, Eye, FileText, UserCheck, Cookie } from "lucide-react";
+import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/privacidade")({
   component: PrivacidadePage,
@@ -12,7 +13,15 @@ export const Route = createFileRoute("/privacidade")({
         content:
           "Política de Privacidade da Aruanã Digital: como protegemos seus dados pessoais em conformidade com a LGPD.",
       },
+      { property: "og:title", content: "Política de Privacidade — Aruanã Digital" },
+      {
+        property: "og:description",
+        content:
+          "Como a Aruanã Digital coleta, usa e protege seus dados pessoais, em conformidade com a LGPD.",
+      },
       { property: "og:url", content: "https://aruanadigital.com/privacidade" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: `https://aruanadigital.com${heroFish}` },
     ],
     links: [{ rel: "canonical", href: "https://aruanadigital.com/privacidade" }],
   }),

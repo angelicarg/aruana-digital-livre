@@ -4,6 +4,7 @@ import emailjs from "@emailjs/browser";
 import { PageLayout, PageHero } from "@/components/PageLayout";
 import { MessageCircle, Mail, MapPin, Clock, Instagram, Send, CheckCircle } from "lucide-react";
 import { z } from "zod";
+import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/contato")({
   head: () => ({
@@ -12,11 +13,20 @@ export const Route = createFileRoute("/contato")({
       {
         name: "description",
         content:
-          "Solicite um orçamento de site institucional para sua empresa. Fale com a Aruanã Digital por WhatsApp, e-mail ou formulário.",
+          "Solicite um orçamento de site institucional para sua empresa. Fale com a Aruanã Digital, de Iturama/MG, por WhatsApp, e-mail ou formulário.",
+      },
+      {
+        name: "keywords",
+        content:
+          "orçamento site institucional, contato agência digital, criação de site Iturama, agência digital Minas Gerais",
       },
       { property: "og:title", content: "Contato — Orçamento de Site Institucional | Aruanã Digital" },
       { property: "og:description", content: "Vamos conversar sobre o site institucional da sua empresa." },
       { property: "og:url", content: "https://aruanadigital.com/contato" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: `https://aruanadigital.com${heroFish}` },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: `https://aruanadigital.com${heroFish}` },
     ],
     links: [{ rel: "canonical", href: "https://aruanadigital.com/contato" }],
   }),

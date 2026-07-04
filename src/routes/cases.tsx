@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
 import { TrendingUp, Users, Zap } from "lucide-react";
+import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/cases")({
   head: () => ({
@@ -11,9 +12,18 @@ export const Route = createFileRoute("/cases")({
         content:
           "Veja cases reais de sites institucionais, automação e transformação digital entregues pela Aruanã Digital para empresas e instituições.",
       },
+      {
+        name: "keywords",
+        content:
+          "cases Aruanã Digital, resultados sites institucionais, cases de automação, transformação digital empresas, agência digital Iturama",
+      },
       { property: "og:title", content: "Cases de Sites Institucionais e Projetos Digitais | Aruanã Digital" },
       { property: "og:description", content: "Projetos, resultados e indicadores reais." },
       { property: "og:url", content: "https://aruanadigital.com/cases" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: `https://aruanadigital.com${heroFish}` },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: `https://aruanadigital.com${heroFish}` },
     ],
     links: [{ rel: "canonical", href: "https://aruanadigital.com/cases" }],
   }),

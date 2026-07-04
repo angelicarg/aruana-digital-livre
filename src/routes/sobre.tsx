@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
 import { Heart, Target, Eye, Sparkles, GraduationCap, Accessibility } from "lucide-react";
 import mascot from "@/assets/mascot-aru.png";
+import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/sobre")({
   head: () => ({
@@ -10,7 +11,12 @@ export const Route = createFileRoute("/sobre")({
       {
         name: "description",
         content:
-          "Conheça a Aruanã Digital, agência especializada em criação de sites institucionais para empresas, com foco em tecnologia, acessibilidade e resultados.",
+          "Conheça a Aruanã Digital, agência de Iturama/MG especializada em criação de sites institucionais, com foco em tecnologia, acessibilidade e resultados para empresas de todo o Brasil.",
+      },
+      {
+        name: "keywords",
+        content:
+          "sobre a Aruanã Digital, agência digital Iturama, agência digital Minas Gerais, hub de tecnologia e educação, acessibilidade digital",
       },
       { property: "og:title", content: "Sobre a Aruanã Digital — Agência de Sites Institucionais" },
       {
@@ -18,6 +24,10 @@ export const Route = createFileRoute("/sobre")({
         content: "Tecnologia deve ser funcional para todos. Conheça nosso propósito.",
       },
       { property: "og:url", content: "https://aruanadigital.com/sobre" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: `https://aruanadigital.com${heroFish}` },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: `https://aruanadigital.com${heroFish}` },
     ],
     links: [{ rel: "canonical", href: "https://aruanadigital.com/sobre" }],
   }),
