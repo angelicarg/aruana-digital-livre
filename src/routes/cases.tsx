@@ -61,9 +61,10 @@ const CASES = [
   },
   {
     tag: "Saúde",
-    title: "Clínica Visão",
-    desc: "Novo projeto no mesmo espírito do Dente Vivo, agora para o segmento de oftalmologia — agendamento online e painel da equipe em construção.",
-    status: "soon" as const,
+    title: "Clínica Visão Plena",
+    desc: "Mesmo espírito do Dente Vivo, agora para oftalmologia: agendamento online por especialidade e médico, com painel para a equipe confirmar consultas e bloquear horários.",
+    highlights: ["Agendamento por especialidade", "Painel da equipe", "Bloqueio de agenda"],
+    url: "https://site-clinica-visao.vercel.app/",
   },
   {
     tag: "Educação Inclusiva",
@@ -138,7 +139,7 @@ function CasesPage() {
 
           <div className="mt-16 grid gap-6 sm:grid-cols-3">
             {[
-              { icon: Layers, n: "4", l: "projetos completos, no ar" },
+              { icon: Layers, n: "5", l: "projetos completos, no ar" },
               { icon: Bot, n: "2", l: "chatbots com IA real (Claude)" },
               { icon: Sparkles, n: "6", l: "segmentos de mercado no portfólio" },
             ].map((s) => (
