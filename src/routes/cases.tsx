@@ -15,7 +15,7 @@ export const Route = createFileRoute("/cases")({
       {
         name: "keywords",
         content:
-          "cases Aruanã Digital, portfólio de projetos digitais, sites com chatbot IA, sistema de agendamento online, e-commerce com WhatsApp, agência digital Iturama",
+          "cases Aruanã Digital, portfólio de projetos digitais, sites com chatbot IA, sistema de agendamento online, e-commerce com WhatsApp, agência digital Uberlândia",
       },
       { property: "og:title", content: "Cases de Sites Institucionais e Projetos Digitais | Aruanã Digital" },
       { property: "og:description", content: "Projetos completos e no ar, prontos para você testar." },

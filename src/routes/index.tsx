@@ -27,18 +27,18 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Criação de sites institucionais profissionais para empresas: design premium, SEO, performance e acessibilidade. Atendemos Iturama, o Triângulo Mineiro e todo o Brasil. Solicite um orçamento.",
+          "Criação de sites institucionais profissionais para empresas: design premium, SEO, performance e acessibilidade. Atendemos Uberlândia, o Triângulo Mineiro e todo o Brasil. Solicite um orçamento.",
       },
       {
         name: "keywords",
         content:
-          "criação de site institucional, site institucional para empresas, desenvolvimento de sites, agência de sites, site profissional, site corporativo, criação de sites SEO, sites acessíveis, agência digital Iturama, agência digital Minas Gerais, Aruanã Digital",
+          "criação de site institucional, site institucional para empresas, desenvolvimento de sites, agência de sites, site profissional, site corporativo, criação de sites SEO, sites acessíveis, agência digital Uberlândia, agência digital Minas Gerais, Aruanã Digital",
       },
       { property: "og:title", content: "Criação de Site Institucional para Empresas | Aruanã Digital" },
       {
         property: "og:description",
         content:
-          "Sites institucionais sob medida para empresas: design, SEO, performance e acessibilidade. De Iturama/MG para todo o Brasil.",
+          "Sites institucionais sob medida para empresas: design, SEO, performance e acessibilidade. De Uberlândia/MG para todo o Brasil.",
       },
       { property: "og:url", content: "https://aruanadigital.com/" },
       { property: "og:type", content: "website" },
@@ -65,15 +65,15 @@ export const Route = createFileRoute("/")({
           image: `https://aruanadigital.com${heroFish}`,
           email: "aruanadigital@aruanadigital.com",
           description:
-            "Agência de criação de sites institucionais para empresas, com foco em SEO, performance, acessibilidade e resultados. Sediada em Iturama/MG, atende empresas de todo o Brasil.",
+            "Agência de criação de sites institucionais para empresas, com foco em SEO, performance, acessibilidade e resultados. Sediada em Uberlândia/MG, atende empresas de todo o Brasil.",
           address: {
             "@type": "PostalAddress",
-            addressLocality: "Iturama",
+            addressLocality: "Uberlândia",
             addressRegion: "MG",
             addressCountry: "BR",
           },
           areaServed: [
-            { "@type": "City", name: "Iturama" },
+            { "@type": "City", name: "Uberlândia" },
             { "@type": "State", name: "Minas Gerais" },
             { "@type": "Country", name: "Brasil" },
           ],
@@ -483,7 +483,7 @@ function HomePage() {
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/85">
             Converse com um especialista e descubra como criar um ecossistema digital acessível,
-            eficiente e preparado para o futuro. Atendemos empresas de Iturama, do Triângulo
+            eficiente e preparado para o futuro. Atendemos empresas de Uberlândia, do Triângulo
             Mineiro e de todo o Brasil.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">

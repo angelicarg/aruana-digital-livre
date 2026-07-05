@@ -52,7 +52,7 @@ function PrivacidadePage() {
     {
       icon: UserCheck,
       title: "Seus Direitos como Titular",
-      text: "De acordo com a LGPD, você tem direito a: confirmar a existência de tratamento, acessar seus dados, corrigir informações incompletas ou desatualizadas, anonimizar ou eliminar dados desnecessários, portar dados para outro serviço, revogar consentimento e ser informado sobre compartilhamentos. Para exercer seus direitos, envie um e-mail para aruanadigital@gmail.com.",
+      text: "De acordo com a LGPD, você tem direito a: confirmar a existência de tratamento, acessar seus dados, corrigir informações incompletas ou desatualizadas, anonimizar ou eliminar dados desnecessários, portar dados para outro serviço, revogar consentimento e ser informado sobre compartilhamentos. Para exercer seus direitos, envie um e-mail para aruanadigital@aruanadigital.com.",
     },
     {
       icon: Cookie,
@@ -93,7 +93,7 @@ function PrivacidadePage() {
           </p>
           <div className="flex flex-wrap gap-4">
             <a
-              href="mailto:aruanadigital@gmail.com"
+              href="mailto:aruanadigital@aruanadigital.com"
               className="inline-flex items-center gap-2 rounded-lg bg-brand-green px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-green/90"
             >
               <Lock className="h-4 w-4" />

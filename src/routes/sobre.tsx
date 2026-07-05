@@ -11,12 +11,12 @@ export const Route = createFileRoute("/sobre")({
       {
         name: "description",
         content:
-          "Conheça a Aruanã Digital, agência de Iturama/MG especializada em criação de sites institucionais, com foco em tecnologia, acessibilidade e resultados para empresas de todo o Brasil.",
+          "Conheça a Aruanã Digital, agência de Uberlândia/MG especializada em criação de sites institucionais, com foco em tecnologia, acessibilidade e resultados para empresas de todo o Brasil.",
       },
       {
         name: "keywords",
         content:
-          "sobre a Aruanã Digital, agência digital Iturama, agência digital Minas Gerais, hub de tecnologia e educação, acessibilidade digital",
+          "sobre a Aruanã Digital, agência digital Uberlândia, agência digital Minas Gerais, hub de tecnologia e educação, acessibilidade digital",
       },
       { property: "og:title", content: "Sobre a Aruanã Digital — Agência de Sites Institucionais" },
       {

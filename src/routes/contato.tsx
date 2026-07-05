@@ -13,12 +13,12 @@ export const Route = createFileRoute("/contato")({
       {
         name: "description",
         content:
-          "Solicite um orçamento de site institucional para sua empresa. Fale com a Aruanã Digital, de Iturama/MG, por WhatsApp, e-mail ou formulário.",
+          "Solicite um orçamento de site institucional para sua empresa. Fale com a Aruanã Digital, de Uberlândia/MG, por WhatsApp, e-mail ou formulário.",
       },
       {
         name: "keywords",
         content:
-          "orçamento site institucional, contato agência digital, criação de site Iturama, agência digital Minas Gerais",
+          "orçamento site institucional, contato agência digital, criação de site Uberlândia, agência digital Minas Gerais",
       },
       { property: "og:title", content: "Contato — Orçamento de Site Institucional | Aruanã Digital" },
       { property: "og:description", content: "Vamos conversar sobre o site institucional da sua empresa." },
@@ -191,18 +191,12 @@ function ContatoPage() {
                 href: "mailto:aruanadigital@aruanadigital.com",
               },
               {
-                icon: Mail,
-                t: "E-mail alternativo",
-                v: "aruanadigital@gmail.com",
-                href: "mailto:aruanadigital@gmail.com",
-              },
-              {
                 icon: Instagram,
                 t: "Instagram",
                 v: "@aruanadigital",
                 href: "https://instagram.com/aruanadigital",
               },
-              { icon: MapPin, t: "Localização", v: "Iturama / MG" },
+              { icon: MapPin, t: "Localização", v: "Uberlândia / MG" },
               { icon: Clock, t: "Horário", v: "Segunda a Sexta — 08h às 17h" },
             ].map((c) => {
               const Inner = (

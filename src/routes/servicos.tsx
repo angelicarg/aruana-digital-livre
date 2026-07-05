@@ -19,12 +19,12 @@ export const Route = createFileRoute("/servicos")({
       {
         name: "description",
         content:
-          "Criação de sites institucionais para empresas, ecossistemas digitais, automação, IA e acessibilidade. Atendemos Iturama, Minas Gerais e todo o Brasil.",
+          "Criação de sites institucionais para empresas, ecossistemas digitais, automação, IA e acessibilidade. Atendemos Uberlândia, Minas Gerais e todo o Brasil.",
       },
       {
         name: "keywords",
         content:
-          "criação de site institucional, site para empresa, desenvolvimento de sites, sites corporativos, agência digital, SEO, automação, inteligência artificial, acessibilidade, agência digital Iturama, agência digital Minas Gerais",
+          "criação de site institucional, site para empresa, desenvolvimento de sites, sites corporativos, agência digital, SEO, automação, inteligência artificial, acessibilidade, agência digital Uberlândia, agência digital Minas Gerais",
       },
       { property: "og:title", content: "Criação de Sites Institucionais e Serviços Digitais | Aruanã Digital" },
       {
@@ -50,10 +50,10 @@ export const Route = createFileRoute("/servicos")({
             "@type": "Organization",
             name: "Aruanã Digital",
             url: "https://aruanadigital.com/",
-            address: { "@type": "PostalAddress", addressLocality: "Iturama", addressRegion: "MG", addressCountry: "BR" },
+            address: { "@type": "PostalAddress", addressLocality: "Uberlândia", addressRegion: "MG", addressCountry: "BR" },
           },
           areaServed: [
-            { "@type": "City", name: "Iturama" },
+            { "@type": "City", name: "Uberlândia" },
             { "@type": "State", name: "Minas Gerais" },
             { "@type": "Country", name: "Brasil" },
           ],
@@ -151,7 +151,7 @@ function ServicosPage() {
       <PageHero
         eyebrow="Serviços"
         title="Soluções digitais que unem estratégia, tecnologia e impacto."
-        subtitle="Cada serviço é desenhado para gerar resultado mensurável, com acessibilidade e simplicidade no centro. Atendemos empresas de Iturama, do Triângulo Mineiro e de todo o Brasil."
+        subtitle="Cada serviço é desenhado para gerar resultado mensurável, com acessibilidade e simplicidade no centro. Atendemos empresas de Uberlândia, do Triângulo Mineiro e de todo o Brasil."
       />
 
       <section className="py-20 lg:py-24">

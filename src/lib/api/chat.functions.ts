@@ -58,7 +58,7 @@ SOBRE A ARUANÃ DIGITAL:
 - Diferenciais: entrega rápida, preço justo, suporte próximo e personalizado
 - Cada projeto é único — não usamos templates genéricos
 - Atendemos negócios de todos os segmentos: clínicas, restaurantes, prestadores de serviço, comércios, profissionais liberais e muito mais
-- Sediada em Iturama/MG, atendemos empresas de toda a região e também de qualquer lugar do Brasil (atendimento 100% remoto)
+- Sediada em Uberlândia/MG, atendemos empresas de toda a região e também de qualquer lugar do Brasil (atendimento 100% remoto)
 
 SERVIÇOS OFERECIDOS:
 1. **Sites e Landing Pages** — Sites modernos, responsivos e otimizados para conversão. Do design à publicação.

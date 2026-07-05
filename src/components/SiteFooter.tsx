@@ -72,10 +72,7 @@ export function SiteFooter() {
               <Mail className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> aruanadigital@aruanadigital.com
             </li>
             <li className="flex items-start gap-2">
-              <Mail className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> aruanadigital@gmail.com
-            </li>
-            <li className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> Iturama / MG
+              <MapPin className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> Uberlândia / MG
             </li>
             <li className="flex items-start gap-2">
               <Clock className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> Seg–Sex · 08h às 17h
