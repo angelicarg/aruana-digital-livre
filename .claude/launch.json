@@ -1,0 +1,35 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "carlos-pintor",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\Users\\Lenovo\\Documents\\carlos-pintor", "run", "dev", "--", "--port", "5174"],
+      "port": 5174
+    },
+    {
+      "name": "dente-vivo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\Users\\Lenovo\\Documents\\dente-vivo", "run", "dev", "--", "--port", "5175"],
+      "port": 5175
+    },
+    {
+      "name": "forno81",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\Users\\Lenovo\\Documents\\forno81", "run", "dev", "--", "--port", "5176"],
+      "port": 5176
+    },
+    {
+      "name": "pagina-magica",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\Users\\Lenovo\\Documents\\pagina-magica", "run", "dev", "--", "--port", "5177"],
+      "port": 5177
+    }
+  ]
+}

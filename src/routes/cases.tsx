@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
-import { TrendingUp, Users, Zap } from "lucide-react";
+import { Bot, ExternalLink, Layers, Sparkles } from "lucide-react";
 import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/cases")({
@@ -10,15 +10,15 @@ export const Route = createFileRoute("/cases")({
       {
         name: "description",
         content:
-          "Veja cases reais de sites institucionais, automação e transformação digital entregues pela Aruanã Digital para empresas e instituições.",
+          "Veja projetos completos e no ar construídos pela Aruanã Digital: sites, agendamento online, e-commerce e chatbots com IA real que você pode testar agora.",
       },
       {
         name: "keywords",
         content:
-          "cases Aruanã Digital, resultados sites institucionais, cases de automação, transformação digital empresas, agência digital Iturama",
+          "cases Aruanã Digital, portfólio de projetos digitais, sites com chatbot IA, sistema de agendamento online, e-commerce com WhatsApp, agência digital Iturama",
       },
       { property: "og:title", content: "Cases de Sites Institucionais e Projetos Digitais | Aruanã Digital" },
-      { property: "og:description", content: "Projetos, resultados e indicadores reais." },
+      { property: "og:description", content: "Projetos completos e no ar, prontos para você testar." },
       { property: "og:url", content: "https://aruanadigital.com/cases" },
       { property: "og:type", content: "website" },
       { property: "og:image", content: `https://aruanadigital.com${heroFish}` },
@@ -32,44 +32,44 @@ export const Route = createFileRoute("/cases")({
 
 const CASES = [
   {
-    tag: "Educação",
-    title: "Instituto Educar+ — Acessibilidade total",
-    desc: "Plataforma inclusiva com VLibras, audiodescrição e gestão simplificada para 4.000 alunos.",
-    metrics: [
-      ["+212%", "matrículas"],
-      ["100%", "WCAG 2.1"],
-      ["6 meses", "ROI"],
-    ],
-  },
-  {
-    tag: "Indústria",
-    title: "Logística MG — Automação operacional",
-    desc: "Automação de cotações, integrações com ERP e dashboard executivo em tempo real.",
-    metrics: [
-      ["−68%", "tempo operacional"],
-      ["+3x", "cotações/dia"],
-      ["24/7", "operação"],
-    ],
+    tag: "Serviços",
+    title: "Carlos Pinto Pintor",
+    desc: "Landing page com calculadora de orçamento em 3 passos, do cômodo até o valor final, direto para o fechamento via WhatsApp.",
+    highlights: ["Orçamento em 3 passos", "Cálculo automático", "Fechamento via WhatsApp"],
+    url: "https://carlos-pintor.vercel.app/",
   },
   {
     tag: "Saúde",
-    title: "Clínica Vida — Ecossistema digital",
-    desc: "Site, agendamento online, IA de atendimento e prontuário integrado.",
-    metrics: [
-      ["+147%", "leads"],
-      ["−40%", "no-show"],
-      ["+5★", "satisfação"],
-    ],
+    title: "Clínica Dente Vivo",
+    desc: "Agendamento online em tempo real, chatbot de atendimento e painel para a equipe confirmar ou recusar consultas.",
+    highlights: ["Agendamento em tempo real", "Painel da equipe", "Chatbot de atendimento"],
+    url: "https://dente-vivo.vercel.app/",
   },
   {
-    tag: "Governo",
-    title: "Município Conecta — Portal acessível",
-    desc: "Portal de serviços públicos com acessibilidade total e simplificação de jornadas.",
-    metrics: [
-      ["+8x", "serviços online"],
-      ["AAA", "acessibilidade"],
-      ["+92%", "satisfação"],
-    ],
+    tag: "Alimentação",
+    title: "Forno 81",
+    desc: "E-commerce com carrinho de compras, checkout via WhatsApp e o Toninho, um atendente com IA real que conhece todo o cardápio.",
+    highlights: ["IA real (Claude)", "Carrinho + WhatsApp", "Atendimento a qualquer hora"],
+    url: "https://forno81.vercel.app/",
+  },
+  {
+    tag: "Varejo",
+    title: "Página Mágica",
+    desc: "Livraria online com painel administrativo completo — produtos, promoções e pedidos — e a Nina, uma IA que responde com o catálogo em tempo real.",
+    highlights: ["Painel admin completo", "Pedidos salvos no banco", "IA lê o catálogo ao vivo"],
+    url: "https://pagina-magica.vercel.app/",
+  },
+  {
+    tag: "Saúde",
+    title: "Clínica Visão",
+    desc: "Novo projeto no mesmo espírito do Dente Vivo, agora para o segmento de oftalmologia — agendamento online e painel da equipe em construção.",
+    status: "soon" as const,
+  },
+  {
+    tag: "Educação Inclusiva",
+    title: "PortLibras",
+    desc: "Plataforma bilíngue Português-Libras para o ensino de surdos, nascida de pesquisa de doutorado em Estudos Linguísticos.",
+    status: "soon" as const,
   },
 ];
 
@@ -77,9 +77,9 @@ function CasesPage() {
   return (
     <PageLayout>
       <PageHero
-        eyebrow="Cases de sucesso"
-        title="Resultados reais. Impacto que se mede."
-        subtitle="Selecionamos projetos que mostram como tecnologia, educação e acessibilidade geram crescimento concreto."
+        eyebrow="Portfólio de projetos"
+        title="Projetos completos. No ar. Para você testar."
+        subtitle="Construímos cada um desses projetos do zero para mostrar como unimos design, automação e inteligência artificial. Clique e explore ao vivo."
       />
 
       <section className="py-20 lg:py-24">
@@ -88,34 +88,59 @@ function CasesPage() {
             {CASES.map((c) => (
               <article
                 key={c.title}
-                className="group overflow-hidden rounded-3xl border border-border bg-card shadow-card transition hover:-translate-y-1 hover:shadow-premium"
+                className={`group overflow-hidden rounded-3xl border bg-card shadow-card transition ${
+                  c.status === "soon"
+                    ? "border-dashed border-border/70 opacity-90"
+                    : "border-border hover:-translate-y-1 hover:shadow-premium"
+                }`}
               >
                 <div className="bg-hero-gradient p-8 text-white">
-                  <span className="rounded-full bg-brand-green/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green">
-                    {c.tag}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-brand-green/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green">
+                      {c.tag}
+                    </span>
+                    {c.status === "soon" && (
+                      <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white/80">
+                        Em breve
+                      </span>
+                    )}
+                  </div>
                   <h2 className="mt-4 text-2xl font-black">{c.title}</h2>
                   <p className="mt-3 text-white/80">{c.desc}</p>
                 </div>
-                <div className="grid grid-cols-3 divide-x divide-border">
-                  {c.metrics.map(([v, l]) => (
-                    <div key={l} className="p-6 text-center">
-                      <p className="text-2xl font-black text-brand-green-deep">{v}</p>
-                      <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-                        {l}
-                      </p>
+
+                {c.status === "soon" ? (
+                  <div className="p-6 text-center text-sm text-muted-foreground">
+                    Projeto em desenvolvimento — em breve com link ao vivo aqui.
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-3 divide-x divide-border">
+                      {c.highlights.map((h) => (
+                        <div key={h} className="flex items-center p-5 text-center">
+                          <p className="text-xs font-bold leading-snug text-brand-green-deep">{h}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                    <a
+                      href={c.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 border-t border-border py-4 text-sm font-bold text-brand-navy-deep transition hover:gap-3"
+                    >
+                      Ver projeto ao vivo <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </>
+                )}
               </article>
             ))}
           </div>
 
           <div className="mt-16 grid gap-6 sm:grid-cols-3">
             {[
-              { icon: TrendingUp, n: "+150%", l: "crescimento médio em conversão" },
-              { icon: Users, n: "+30k", l: "pessoas alcançadas com acessibilidade" },
-              { icon: Zap, n: "−60%", l: "tempo operacional com automação" },
+              { icon: Layers, n: "4", l: "projetos completos, no ar" },
+              { icon: Bot, n: "2", l: "chatbots com IA real (Claude)" },
+              { icon: Sparkles, n: "6", l: "segmentos de mercado no portfólio" },
             ].map((s) => (
               <div key={s.l} className="rounded-3xl bg-muted p-8 text-center">
                 <s.icon className="mx-auto h-8 w-8 text-brand-green-deep" />
