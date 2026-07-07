@@ -81,7 +81,7 @@ PROCESSO DE TRABALHO:
 5. Suporte contínuo após entrega
 
 FORMAS DE CONTATO:
-- WhatsApp: (34) 99236-9831
+- WhatsApp: (34) 99208-6611
 - E-mail: aruanadigital@aruanadigital.com
 - Site: aruanadigital.com.br
 
@@ -93,7 +93,7 @@ INSTRUÇÕES DE COMPORTAMENTO:
 - Se o cliente demonstrar interesse em algum serviço, incentive-o a entrar em contato pelo WhatsApp para uma conversa sem compromisso
 - Se não souber algo específico sobre a empresa, seja honesta e passe o contato do WhatsApp
 - Nunca invente preços específicos — diga que os valores são personalizados e oriente a entrar em contato
-- Quando mencionar o WhatsApp, use sempre: (34) 99236-9831`;
+- Quando mencionar o WhatsApp, use sempre: (34) 99208-6611`;
 
 // ─── SERVER FUNCTION ──────────────────────────────────────────────────────────
 

@@ -13,7 +13,7 @@ const NAV = [
 ];
 
 const WHATSAPP =
-  "https://wa.me/5534992369831?text=Ol%C3%A1%2C+quero+falar+com+um+especialista+da+Aruan%C3%A3+Digital.";
+  "https://wa.me/5534992086611?text=Ol%C3%A1%2C+quero+falar+com+um+especialista+da+Aruan%C3%A3+Digital.";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);

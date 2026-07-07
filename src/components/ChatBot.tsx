@@ -12,16 +12,16 @@ interface Message {
 
 const FALLBACK_MESSAGES = {
   rate_limited:
-    "Estou com muitas conversas ao mesmo tempo agora! Me chama direto no WhatsApp: **(34) 99236-9831** que te atendo na hora 😊",
+    "Estou com muitas conversas ao mesmo tempo agora! Me chama direto no WhatsApp: **(34) 99208-6611** que te atendo na hora 😊",
   unavailable:
-    "Ops, tive um problema aqui! Me chama no WhatsApp: **(34) 99236-9831** 😊",
+    "Ops, tive um problema aqui! Me chama no WhatsApp: **(34) 99208-6611** 😊",
 } as const;
 
 // ─── WHATSAPP HANDOFF ─────────────────────────────────────────────────────────
 // Builds a wa.me link with the conversation so far pre-filled, so whoever
 // picks it up on WhatsApp already has context instead of a blank chat.
 
-const WHATSAPP_NUMBER = "5534992369831";
+const WHATSAPP_NUMBER = "5534992086611";
 const HANDOFF_MAX_MESSAGES = 6;
 const HANDOFF_MAX_LENGTH = 1500;
 
@@ -123,7 +123,7 @@ export function ChatBot() {
           id: `err-${Date.now()}`,
           role: "assistant",
           content:
-            "Algo deu errado na conexão. Me chama no WhatsApp: **(34) 99236-9831** e te atendo na hora! 😊",
+            "Algo deu errado na conexão. Me chama no WhatsApp: **(34) 99208-6611** e te atendo na hora! 😊",
         },
       ]);
     } finally {

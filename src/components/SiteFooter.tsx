@@ -24,7 +24,7 @@ export function SiteFooter() {
               <Instagram className="h-5 w-5" />
             </a>
             <a
-              href="https://wa.me/5534992369831"
+              href="https://wa.me/5534992086611"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp"
@@ -66,7 +66,7 @@ export function SiteFooter() {
           <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">Contato</h3>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
-              <MessageCircle className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> (34) 99236-9831
+              <MessageCircle className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> (34) 99208-6611
             </li>
             <li className="flex items-start gap-2">
               <Mail className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> aruanadigital@aruanadigital.com
@@ -99,6 +99,7 @@ export function SiteFooter() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-white/60 sm:flex-row sm:px-6 lg:px-8">
           <p>© {new Date().getFullYear()} Aruanã Digital. Todos os direitos reservados.</p>
+          <p>CNPJ 67.876.737/0001-43</p>
           <p>Tecnologia • Educação • Resultados</p>
         </div>
       </div>

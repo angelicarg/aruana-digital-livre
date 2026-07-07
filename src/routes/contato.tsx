@@ -181,8 +181,8 @@ function ContatoPage() {
               {
                 icon: MessageCircle,
                 t: "WhatsApp",
-                v: "(34) 99236-9831",
-                href: "https://wa.me/5534992369831",
+                v: "(34) 99208-6611",
+                href: "https://wa.me/5534992086611",
               },
               {
                 icon: Mail,

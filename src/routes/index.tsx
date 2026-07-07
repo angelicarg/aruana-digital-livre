@@ -84,10 +84,10 @@ export const Route = createFileRoute("/")({
             "Automação e Inteligência Artificial",
             "Acessibilidade Digital",
           ],
-          sameAs: ["https://wa.me/5534992369831", "https://instagram.com/aruanadigital"],
+          sameAs: ["https://wa.me/5534992086611", "https://instagram.com/aruanadigital"],
           contactPoint: {
             "@type": "ContactPoint",
-            telephone: "+55-34-99236-9831",
+            telephone: "+55-34-99208-6611",
             contactType: "sales",
             areaServed: "BR",
             availableLanguage: ["Portuguese"],
@@ -111,7 +111,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const WHATSAPP = "https://wa.me/5534992369831?text=Ol%C3%A1%2C+quero+falar+com+um+especialista.";
+const WHATSAPP = "https://wa.me/5534992086611?text=Ol%C3%A1%2C+quero+falar+com+um+especialista.";
 
 const SERVICES = [
   {

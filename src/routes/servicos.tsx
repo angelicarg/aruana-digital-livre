@@ -143,7 +143,7 @@ const SERVICES = [
   },
 ];
 
-const WHATSAPP = "https://wa.me/5534992369831";
+const WHATSAPP = "https://wa.me/5534992086611";
 
 function ServicosPage() {
   return (
