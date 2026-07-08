@@ -67,6 +67,13 @@ const CASES = [
     url: "https://site-clinica-visao.vercel.app/",
   },
   {
+    tag: "Pet",
+    title: "Patas Nobres",
+    desc: "Pet shop completo: agendamento de banho e tosa, loja com carrinho de compras e uma assistente de IA que recomenda produtos com base no perfil do pet — tudo com histórico do cliente unificado.",
+    highlights: ["Agendamento + loja juntos", "IA recomenda produtos", "Histórico unificado por cliente"],
+    url: "https://patas-nobres.vercel.app/",
+  },
+  {
     tag: "Educação Inclusiva",
     title: "PortLibras",
     desc: "Plataforma bilíngue Português-Libras para o ensino de surdos, nascida de pesquisa de doutorado em Estudos Linguísticos.",
@@ -139,9 +146,9 @@ function CasesPage() {
 
           <div className="mt-16 grid gap-6 sm:grid-cols-3">
             {[
-              { icon: Layers, n: "5", l: "projetos completos, no ar" },
-              { icon: Bot, n: "2", l: "chatbots com IA real (Claude)" },
-              { icon: Sparkles, n: "6", l: "segmentos de mercado no portfólio" },
+              { icon: Layers, n: "6", l: "projetos completos, no ar" },
+              { icon: Bot, n: "3", l: "chatbots com IA real (Claude)" },
+              { icon: Sparkles, n: "7", l: "segmentos de mercado no portfólio" },
             ].map((s) => (
               <div key={s.l} className="rounded-3xl bg-muted p-8 text-center">
                 <s.icon className="mx-auto h-8 w-8 text-brand-green-deep" />

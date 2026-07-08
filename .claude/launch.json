@@ -30,6 +30,24 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "C:\\Users\\Lenovo\\Documents\\pagina-magica", "run", "dev", "--", "--port", "5177"],
       "port": 5177
+    },
+    {
+      "name": "site-clinica-visao",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\Users\\Lenovo\\Documents\\site-clinica-visao", "run", "dev", "--", "--port", "5178"],
+      "port": 5178
+    },
+    {
+      "name": "portlibras",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\Users\\Lenovo\\Documents\\portlibras", "run", "dev", "--", "--port", "5179"],
+      "port": 5179
+    },
+    {
+      "name": "patas-nobres",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\Users\\Lenovo\\Documents\\patas-nobres", "run", "dev", "--", "--port", "5180"],
+      "port": 5180
     }
   ]
 }
