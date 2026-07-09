@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      leads: {
+        Row: {
+          id: string
+          created_at: string
+          nome: string
+          whatsapp: string
+          tipo_negocio: string
+          precisa_agendamento: boolean
+          interesse_avancado: "nenhum" | "loja" | "loja_ia" | "sob_medida"
+          tem_site: boolean | null
+          pacote_sugerido: "essencial" | "profissional" | "avancado" | "sob_medida"
+          origem: "banner" | "simulador"
+          status: "novo" | "contatado" | "convertido" | "descartado"
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          nome: string
+          whatsapp: string
+          tipo_negocio: string
+          precisa_agendamento: boolean
+          interesse_avancado: "nenhum" | "loja" | "loja_ia" | "sob_medida"
+          tem_site?: boolean | null
+          pacote_sugerido: "essencial" | "profissional" | "avancado" | "sob_medida"
+          origem?: "banner" | "simulador"
+          status?: "novo" | "contatado" | "convertido" | "descartado"
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          nome?: string
+          whatsapp?: string
+          tipo_negocio?: string
+          precisa_agendamento?: boolean
+          interesse_avancado?: "nenhum" | "loja" | "loja_ia" | "sob_medida"
+          tem_site?: boolean | null
+          pacote_sugerido?: "essencial" | "profissional" | "avancado" | "sob_medida"
+          origem?: "banner" | "simulador"
+          status?: "novo" | "contatado" | "convertido" | "descartado"
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

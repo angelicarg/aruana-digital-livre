@@ -18,7 +18,8 @@ Copie `.env.example` para `.env` e preencha os valores:
 | Variável | Para quê serve |
 |---|---|
 | `ANTHROPIC_API_KEY` | Chave da API da Anthropic, usada pelo chatbot Aru. Sem ela, o chat continua funcionando mas sempre cai no fallback de WhatsApp. |
-| `SUPABASE_*` / `VITE_SUPABASE_*` | Conexão com o Supabase. |
+| `SUPABASE_*` / `VITE_SUPABASE_*` | Conexão com o Supabase (mesmo projeto usado pelo Dente Vivo/PortLibras). |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave de serviço (bypassa RLS), usada só no servidor para salvar os leads do simulador de orçamento. Sem ela, o simulador continua funcionando normalmente — só não salva o lead no banco. |
 
 **Nunca** commite o `.env` real (já está no `.gitignore`) nem cole chaves de API em chats, prints ou issues — trate como senha.
 
@@ -37,6 +38,14 @@ Copie `.env.example` para `.env` e preencha os valores:
 2. Configure a cobrança em *Settings → Billing* (é pré-pago) e, se possível, um limite de gasto mensal com alerta por e-mail
 3. Crie a chave em *API Keys → Create Key* (ela só aparece uma vez — copie na hora)
 4. Cole em `.env` (para rodar local) e nas Environment Variables do projeto na Vercel (para produção)
+
+## Banner promocional + simulador de orçamento
+
+- Banner: [`src/components/PromoBanner.tsx`](src/components/PromoBanner.tsx) — aparece após 10s na página ou 30% de scroll (o que vier primeiro), some ao fechar (fica 3 dias sem reaparecer, guardado em `localStorage`) e nunca aparece de novo pra quem já completou o simulador. Some sozinho quando a promoção expira.
+- Simulador: [`src/components/BudgetSimulator.tsx`](src/components/BudgetSimulator.tsx) — modal de 4 perguntas + contato, calcula o pacote (Essencial/Profissional/Avançado/Sob Medida) e gera um link de WhatsApp já preenchido com o resultado.
+- Preço e condição da promoção (desconto, prazo de validade): [`src/lib/pricing.ts`](src/lib/pricing.ts) — é o único lugar que precisa mudar para ajustar valores ou a data de expiração.
+- Toda submissão do simulador vira uma linha na tabela `leads` do Supabase (via [`src/lib/api/leads.functions.ts`](src/lib/api/leads.functions.ts), que roda com a `SUPABASE_SERVICE_ROLE_KEY`). Rode [`supabase/migration_001_leads.sql`](supabase/migration_001_leads.sql) no SQL Editor do Supabase antes de usar em produção — a tabela não tem nenhuma policy de RLS, só o service role consegue ler/escrever nela.
+- Pra pegar a `SUPABASE_SERVICE_ROLE_KEY`: no painel do Supabase → *Settings → API → Project API keys → service_role* (chave secreta, nunca exponha no client nem commite).
 
 ## Botões flutuantes (Aru + Acessibilidade + VLibras)
 
