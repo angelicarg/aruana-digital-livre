@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X, ArrowRight, ArrowLeft, MessageCircle } from "lucide-react";
 import { submitLead } from "@/lib/api/leads.functions";
-import { PACOTES, faixaSetup, faixaMensal, isPromoActive, PROMO, type PacoteId } from "@/lib/pricing";
+import { PACOTES, precoSetup, precoMensal, isPromoActive, PROMO, type PacoteId, type FaixaPreco } from "@/lib/pricing";
 import { markSimulatorCompleted } from "@/lib/lead-storage";
 
 const WHATSAPP_NUMBER = "5534992086611";
@@ -115,6 +115,8 @@ export function BudgetSimulator({
 
   function whatsappUrl() {
     if (!pacote) return `https://wa.me/${WHATSAPP_NUMBER}`;
+    const setup = precoSetup(pacote);
+    const mensal = precoMensal(pacote);
     const linhas = [
       "Olá! Fiz o simulador de orçamento no site da Aruanã Digital.",
       "",
@@ -122,8 +124,8 @@ export function BudgetSimulator({
       ...(form.email.trim() ? [`E-mail: ${form.email.trim()}`] : []),
       `Negócio: ${form.tipoNegocio}`,
       `Pacote sugerido: ${pacote.nome}`,
-      `Implantação: ${faixaSetup(pacote)}`,
-      `Mensalidade: ${faixaMensal(pacote)}`,
+      `Implantação: ${setup.comDesconto ? `${setup.comDesconto} (de ${setup.original})` : setup.original}`,
+      `Mensalidade: ${mensal.comDesconto ? `${mensal.comDesconto} (de ${mensal.original})` : mensal.original}`,
       "",
       "Gostaria de saber mais!",
     ];
@@ -356,8 +358,8 @@ export function BudgetSimulator({
               <p className="mt-2 text-sm text-muted-foreground">{pacote.descricao}</p>
 
               <div className="mt-6 rounded-2xl border border-border bg-muted p-5 text-left">
-                <Row label="Implantação" value={faixaSetup(pacote)} highlight />
-                <Row label="Mensalidade" value={faixaMensal(pacote)} />
+                <Row label="Implantação" preco={precoSetup(pacote)} highlight />
+                <Row label="Mensalidade" preco={precoMensal(pacote)} />
                 {isPromoActive() && pacote.setupMax !== null && (
                   <p className="mt-3 text-xs font-medium text-brand-green-deep">
                     ✨ Condição de lançamento: {PROMO.setupDiscountPct}% off na implantação e{" "}
@@ -398,11 +400,18 @@ function BackButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function Row({ label, preco, highlight }: { label: string; preco: FaixaPreco; highlight?: boolean }) {
   return (
     <div className="flex items-center justify-between py-1.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={`text-sm font-bold ${highlight ? "text-brand-green-deep" : "text-foreground"}`}>{value}</span>
+      <span className="flex items-baseline gap-2">
+        {preco.comDesconto && (
+          <span className="text-xs text-muted-foreground line-through">{preco.original}</span>
+        )}
+        <span className={`text-sm font-bold ${highlight ? "text-brand-green-deep" : "text-foreground"}`}>
+          {preco.comDesconto ?? preco.original}
+        </span>
+      </span>
     </div>
   );
 }
