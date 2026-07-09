@@ -11,6 +11,7 @@ import { z } from "zod";
 const leadSchema = z.object({
   nome: z.string().trim().min(1).max(120),
   whatsapp: z.string().trim().min(8).max(30),
+  email: z.string().trim().max(160).nullable(),
   tipoNegocio: z.string().trim().min(1).max(120),
   precisaAgendamento: z.boolean(),
   interesseAvancado: z.enum(["nenhum", "loja", "loja_ia", "sob_medida"]),
@@ -28,6 +29,7 @@ export const submitLead = createServerFn({ method: "POST" })
       const { error } = await supabaseAdmin.from("leads").insert({
         nome: data.nome,
         whatsapp: data.whatsapp,
+        email: data.email,
         tipo_negocio: data.tipoNegocio,
         precisa_agendamento: data.precisaAgendamento,
         interesse_avancado: data.interesseAvancado,

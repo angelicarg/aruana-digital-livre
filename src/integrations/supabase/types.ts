@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           nome: string
           whatsapp: string
+          email: string | null
           tipo_negocio: string
           precisa_agendamento: boolean
           interesse_avancado: "nenhum" | "loja" | "loja_ia" | "sob_medida"
@@ -33,6 +34,7 @@ export type Database = {
           created_at?: string
           nome: string
           whatsapp: string
+          email?: string | null
           tipo_negocio: string
           precisa_agendamento: boolean
           interesse_avancado: "nenhum" | "loja" | "loja_ia" | "sob_medida"
@@ -46,6 +48,7 @@ export type Database = {
           created_at?: string
           nome?: string
           whatsapp?: string
+          email?: string | null
           tipo_negocio?: string
           precisa_agendamento?: boolean
           interesse_avancado?: "nenhum" | "loja" | "loja_ia" | "sob_medida"

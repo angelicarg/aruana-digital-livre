@@ -36,6 +36,7 @@ interface FormState {
   temSite: boolean | null;
   nome: string;
   whatsapp: string;
+  email: string;
 }
 
 const INITIAL_FORM: FormState = {
@@ -45,6 +46,7 @@ const INITIAL_FORM: FormState = {
   temSite: null,
   nome: "",
   whatsapp: "",
+  email: "",
 };
 
 const TOTAL_STEPS = 5;
@@ -94,6 +96,7 @@ export function BudgetSimulator({
         data: {
           nome: form.nome.trim(),
           whatsapp: form.whatsapp.trim(),
+          email: form.email.trim() || null,
           tipoNegocio: form.tipoNegocio,
           precisaAgendamento: form.precisaAgendamento!,
           interesseAvancado: form.interesseAvancado!,
@@ -116,8 +119,11 @@ export function BudgetSimulator({
       "Olá! Fiz o simulador de orçamento no site da Aruanã Digital.",
       "",
       `Nome: ${form.nome}`,
+      ...(form.email.trim() ? [`E-mail: ${form.email.trim()}`] : []),
       `Negócio: ${form.tipoNegocio}`,
       `Pacote sugerido: ${pacote.nome}`,
+      `Implantação: ${faixaSetup(pacote)}`,
+      `Mensalidade: ${faixaMensal(pacote)}`,
       "",
       "Gostaria de saber mais!",
     ];
@@ -315,6 +321,18 @@ export function BudgetSimulator({
                     value={form.whatsapp}
                     onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))}
                     placeholder="(34) 90000-0000"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand-green"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-muted-foreground">
+                    E-mail <span className="font-normal text-muted-foreground">(opcional)</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    placeholder="seu@email.com"
                     className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand-green"
                   />
                 </div>
