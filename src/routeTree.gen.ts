@@ -17,6 +17,15 @@ import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CasesRouteImport } from './routes/cases'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IntranetLoginRouteImport } from './routes/intranet/login'
+import { Route as IntranetAuthedRouteRouteImport } from './routes/intranet/_authed/route'
+import { Route as IntranetAuthedIndexRouteImport } from './routes/intranet/_authed/index'
+import { Route as IntranetAuthedReunioesRouteImport } from './routes/intranet/_authed/reunioes'
+import { Route as IntranetAuthedRelatoriosRouteImport } from './routes/intranet/_authed/relatorios'
+import { Route as IntranetAuthedProjetosRouteImport } from './routes/intranet/_authed/projetos'
+import { Route as IntranetAuthedFinanceiroRouteImport } from './routes/intranet/_authed/financeiro'
+import { Route as IntranetAuthedDocumentosRouteImport } from './routes/intranet/_authed/documentos'
+import { Route as IntranetAuthedClientesRouteImport } from './routes/intranet/_authed/clientes'
 
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
@@ -58,6 +67,54 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntranetLoginRoute = IntranetLoginRouteImport.update({
+  id: '/intranet/login',
+  path: '/intranet/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntranetAuthedRouteRoute = IntranetAuthedRouteRouteImport.update({
+  id: '/intranet/_authed',
+  path: '/intranet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntranetAuthedIndexRoute = IntranetAuthedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => IntranetAuthedRouteRoute,
+} as any)
+const IntranetAuthedReunioesRoute = IntranetAuthedReunioesRouteImport.update({
+  id: '/reunioes',
+  path: '/reunioes',
+  getParentRoute: () => IntranetAuthedRouteRoute,
+} as any)
+const IntranetAuthedRelatoriosRoute =
+  IntranetAuthedRelatoriosRouteImport.update({
+    id: '/relatorios',
+    path: '/relatorios',
+    getParentRoute: () => IntranetAuthedRouteRoute,
+  } as any)
+const IntranetAuthedProjetosRoute = IntranetAuthedProjetosRouteImport.update({
+  id: '/projetos',
+  path: '/projetos',
+  getParentRoute: () => IntranetAuthedRouteRoute,
+} as any)
+const IntranetAuthedFinanceiroRoute =
+  IntranetAuthedFinanceiroRouteImport.update({
+    id: '/financeiro',
+    path: '/financeiro',
+    getParentRoute: () => IntranetAuthedRouteRoute,
+  } as any)
+const IntranetAuthedDocumentosRoute =
+  IntranetAuthedDocumentosRouteImport.update({
+    id: '/documentos',
+    path: '/documentos',
+    getParentRoute: () => IntranetAuthedRouteRoute,
+  } as any)
+const IntranetAuthedClientesRoute = IntranetAuthedClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => IntranetAuthedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +125,15 @@ export interface FileRoutesByFullPath {
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/intranet': typeof IntranetAuthedRouteRouteWithChildren
+  '/intranet/login': typeof IntranetLoginRoute
+  '/intranet/clientes': typeof IntranetAuthedClientesRoute
+  '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
+  '/intranet/financeiro': typeof IntranetAuthedFinanceiroRoute
+  '/intranet/projetos': typeof IntranetAuthedProjetosRoute
+  '/intranet/relatorios': typeof IntranetAuthedRelatoriosRoute
+  '/intranet/reunioes': typeof IntranetAuthedReunioesRoute
+  '/intranet/': typeof IntranetAuthedIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +144,14 @@ export interface FileRoutesByTo {
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/intranet/login': typeof IntranetLoginRoute
+  '/intranet/clientes': typeof IntranetAuthedClientesRoute
+  '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
+  '/intranet/financeiro': typeof IntranetAuthedFinanceiroRoute
+  '/intranet/projetos': typeof IntranetAuthedProjetosRoute
+  '/intranet/relatorios': typeof IntranetAuthedRelatoriosRoute
+  '/intranet/reunioes': typeof IntranetAuthedReunioesRoute
+  '/intranet': typeof IntranetAuthedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +163,15 @@ export interface FileRoutesById {
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/intranet/_authed': typeof IntranetAuthedRouteRouteWithChildren
+  '/intranet/login': typeof IntranetLoginRoute
+  '/intranet/_authed/clientes': typeof IntranetAuthedClientesRoute
+  '/intranet/_authed/documentos': typeof IntranetAuthedDocumentosRoute
+  '/intranet/_authed/financeiro': typeof IntranetAuthedFinanceiroRoute
+  '/intranet/_authed/projetos': typeof IntranetAuthedProjetosRoute
+  '/intranet/_authed/relatorios': typeof IntranetAuthedRelatoriosRoute
+  '/intranet/_authed/reunioes': typeof IntranetAuthedReunioesRoute
+  '/intranet/_authed/': typeof IntranetAuthedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +184,15 @@ export interface FileRouteTypes {
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/intranet'
+    | '/intranet/login'
+    | '/intranet/clientes'
+    | '/intranet/documentos'
+    | '/intranet/financeiro'
+    | '/intranet/projetos'
+    | '/intranet/relatorios'
+    | '/intranet/reunioes'
+    | '/intranet/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +203,14 @@ export interface FileRouteTypes {
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/intranet/login'
+    | '/intranet/clientes'
+    | '/intranet/documentos'
+    | '/intranet/financeiro'
+    | '/intranet/projetos'
+    | '/intranet/relatorios'
+    | '/intranet/reunioes'
+    | '/intranet'
   id:
     | '__root__'
     | '/'
@@ -121,6 +221,15 @@ export interface FileRouteTypes {
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/intranet/_authed'
+    | '/intranet/login'
+    | '/intranet/_authed/clientes'
+    | '/intranet/_authed/documentos'
+    | '/intranet/_authed/financeiro'
+    | '/intranet/_authed/projetos'
+    | '/intranet/_authed/relatorios'
+    | '/intranet/_authed/reunioes'
+    | '/intranet/_authed/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +241,8 @@ export interface RootRouteChildren {
   ServicosRoute: typeof ServicosRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
+  IntranetAuthedRouteRoute: typeof IntranetAuthedRouteRouteWithChildren
+  IntranetLoginRoute: typeof IntranetLoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,8 +303,94 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/intranet/login': {
+      id: '/intranet/login'
+      path: '/intranet/login'
+      fullPath: '/intranet/login'
+      preLoaderRoute: typeof IntranetLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intranet/_authed': {
+      id: '/intranet/_authed'
+      path: '/intranet'
+      fullPath: '/intranet'
+      preLoaderRoute: typeof IntranetAuthedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intranet/_authed/': {
+      id: '/intranet/_authed/'
+      path: '/'
+      fullPath: '/intranet/'
+      preLoaderRoute: typeof IntranetAuthedIndexRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/reunioes': {
+      id: '/intranet/_authed/reunioes'
+      path: '/reunioes'
+      fullPath: '/intranet/reunioes'
+      preLoaderRoute: typeof IntranetAuthedReunioesRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/relatorios': {
+      id: '/intranet/_authed/relatorios'
+      path: '/relatorios'
+      fullPath: '/intranet/relatorios'
+      preLoaderRoute: typeof IntranetAuthedRelatoriosRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/projetos': {
+      id: '/intranet/_authed/projetos'
+      path: '/projetos'
+      fullPath: '/intranet/projetos'
+      preLoaderRoute: typeof IntranetAuthedProjetosRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/financeiro': {
+      id: '/intranet/_authed/financeiro'
+      path: '/financeiro'
+      fullPath: '/intranet/financeiro'
+      preLoaderRoute: typeof IntranetAuthedFinanceiroRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/documentos': {
+      id: '/intranet/_authed/documentos'
+      path: '/documentos'
+      fullPath: '/intranet/documentos'
+      preLoaderRoute: typeof IntranetAuthedDocumentosRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/clientes': {
+      id: '/intranet/_authed/clientes'
+      path: '/clientes'
+      fullPath: '/intranet/clientes'
+      preLoaderRoute: typeof IntranetAuthedClientesRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
   }
 }
+
+interface IntranetAuthedRouteRouteChildren {
+  IntranetAuthedClientesRoute: typeof IntranetAuthedClientesRoute
+  IntranetAuthedDocumentosRoute: typeof IntranetAuthedDocumentosRoute
+  IntranetAuthedFinanceiroRoute: typeof IntranetAuthedFinanceiroRoute
+  IntranetAuthedProjetosRoute: typeof IntranetAuthedProjetosRoute
+  IntranetAuthedRelatoriosRoute: typeof IntranetAuthedRelatoriosRoute
+  IntranetAuthedReunioesRoute: typeof IntranetAuthedReunioesRoute
+  IntranetAuthedIndexRoute: typeof IntranetAuthedIndexRoute
+}
+
+const IntranetAuthedRouteRouteChildren: IntranetAuthedRouteRouteChildren = {
+  IntranetAuthedClientesRoute: IntranetAuthedClientesRoute,
+  IntranetAuthedDocumentosRoute: IntranetAuthedDocumentosRoute,
+  IntranetAuthedFinanceiroRoute: IntranetAuthedFinanceiroRoute,
+  IntranetAuthedProjetosRoute: IntranetAuthedProjetosRoute,
+  IntranetAuthedRelatoriosRoute: IntranetAuthedRelatoriosRoute,
+  IntranetAuthedReunioesRoute: IntranetAuthedReunioesRoute,
+  IntranetAuthedIndexRoute: IntranetAuthedIndexRoute,
+}
+
+const IntranetAuthedRouteRouteWithChildren =
+  IntranetAuthedRouteRoute._addFileChildren(IntranetAuthedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -204,6 +401,8 @@ const rootRouteChildren: RootRouteChildren = {
   ServicosRoute: ServicosRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
+  IntranetAuthedRouteRoute: IntranetAuthedRouteRouteWithChildren,
+  IntranetLoginRoute: IntranetLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

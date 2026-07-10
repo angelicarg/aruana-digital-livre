@@ -14,6 +14,241 @@ export type Database = {
   }
   public: {
     Tables: {
+      intranet_clients: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          company: string | null
+          email: string | null
+          phone: string | null
+          status: "lead" | "prospect" | "active" | "paused" | "past"
+          source: string | null
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name: string
+          company?: string | null
+          email?: string | null
+          phone?: string | null
+          status?: "lead" | "prospect" | "active" | "paused" | "past"
+          source?: string | null
+          notes?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name?: string
+          company?: string | null
+          email?: string | null
+          phone?: string | null
+          status?: "lead" | "prospect" | "active" | "paused" | "past"
+          source?: string | null
+          notes?: string | null
+        }
+        Relationships: []
+      }
+      intranet_projects: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          client_id: string
+          name: string
+          package_tier: "essencial" | "profissional" | "avancado" | "sob_medida" | null
+          status: "proposta" | "em_andamento" | "pausado" | "concluido" | "cancelado"
+          setup_value: number | null
+          monthly_value: number | null
+          start_date: string | null
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          client_id: string
+          name: string
+          package_tier?: "essencial" | "profissional" | "avancado" | "sob_medida" | null
+          status?: "proposta" | "em_andamento" | "pausado" | "concluido" | "cancelado"
+          setup_value?: number | null
+          monthly_value?: number | null
+          start_date?: string | null
+          notes?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          client_id?: string
+          name?: string
+          package_tier?: "essencial" | "profissional" | "avancado" | "sob_medida" | null
+          status?: "proposta" | "em_andamento" | "pausado" | "concluido" | "cancelado"
+          setup_value?: number | null
+          monthly_value?: number | null
+          start_date?: string | null
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intranet_projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "intranet_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intranet_transactions: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          client_id: string | null
+          project_id: string | null
+          type: "receita" | "despesa"
+          description: string
+          amount: number
+          due_date: string | null
+          paid_date: string | null
+          status: "pendente" | "pago" | "atrasado" | "cancelado"
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          client_id?: string | null
+          project_id?: string | null
+          type: "receita" | "despesa"
+          description: string
+          amount: number
+          due_date?: string | null
+          paid_date?: string | null
+          status?: "pendente" | "pago" | "atrasado" | "cancelado"
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          client_id?: string | null
+          project_id?: string | null
+          type?: "receita" | "despesa"
+          description?: string
+          amount?: number
+          due_date?: string | null
+          paid_date?: string | null
+          status?: "pendente" | "pago" | "atrasado" | "cancelado"
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intranet_transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "intranet_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intranet_transactions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "intranet_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intranet_meetings: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          client_id: string | null
+          title: string
+          meeting_type: "prospeccao" | "andamento" | "outro"
+          scheduled_at: string
+          status: "agendado" | "realizado" | "cancelado"
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          client_id?: string | null
+          title: string
+          meeting_type?: "prospeccao" | "andamento" | "outro"
+          scheduled_at: string
+          status?: "agendado" | "realizado" | "cancelado"
+          notes?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          client_id?: string | null
+          title?: string
+          meeting_type?: "prospeccao" | "andamento" | "outro"
+          scheduled_at?: string
+          status?: "agendado" | "realizado" | "cancelado"
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intranet_meetings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "intranet_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intranet_documents: {
+        Row: {
+          id: string
+          created_at: string
+          client_id: string | null
+          project_id: string | null
+          name: string
+          category: "contrato" | "proposta" | "outro"
+          storage_path: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          client_id?: string | null
+          project_id?: string | null
+          name: string
+          category?: "contrato" | "proposta" | "outro"
+          storage_path: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          client_id?: string | null
+          project_id?: string | null
+          name?: string
+          category?: "contrato" | "proposta" | "outro"
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intranet_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "intranet_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intranet_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "intranet_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           id: string
