@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, Sparkles } from "lucide-react";
 import { PROMO, isPromoActive } from "@/lib/pricing";
 import { isPromoDismissed, dismissPromo, hasCompletedSimulator } from "@/lib/lead-storage";
@@ -14,6 +14,7 @@ const expiraEm = PROMO.expiresAt.toLocaleDateString("pt-BR", {
 
 export function PromoBanner({ onAbrirSimulador }: { onAbrirSimulador: () => void }) {
   const [visible, setVisible] = useState(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isPromoActive() || isPromoDismissed() || hasCompletedSimulator()) return;
@@ -35,6 +36,26 @@ export function PromoBanner({ onAbrirSimulador }: { onAbrirSimulador: () => void
     };
   }, []);
 
+  // Publica a altura real do banner numa CSS var pra SiteHeader poder
+  // "grudar" logo abaixo dele (ambos são sticky top-0 — sem isso, o
+  // header ficaria por baixo/sobreposto ao banner em vez de empilhado).
+  useEffect(() => {
+    const el = bannerRef.current;
+    if (!visible || !el) {
+      document.documentElement.style.setProperty("--promo-banner-height", "0px");
+      return;
+    }
+    const setHeight = () =>
+      document.documentElement.style.setProperty("--promo-banner-height", `${el.offsetHeight}px`);
+    setHeight();
+    const observer = new ResizeObserver(setHeight);
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.setProperty("--promo-banner-height", "0px");
+    };
+  }, [visible]);
+
   if (!visible) return null;
 
   function fechar() {
@@ -44,9 +65,10 @@ export function PromoBanner({ onAbrirSimulador }: { onAbrirSimulador: () => void
 
   return (
     <div
+      ref={bannerRef}
       role="region"
       aria-label="Oferta de lançamento"
-      className="animate-fade-up fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/98 shadow-premium backdrop-blur"
+      className="animate-fade-down sticky top-0 z-50 w-full border-b border-border bg-card/98 shadow-premium backdrop-blur"
     >
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 py-3 sm:flex-row sm:gap-4 sm:px-6 sm:py-3.5">
         <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-brand-gradient text-white">

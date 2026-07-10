@@ -19,7 +19,10 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-navy-deep/90 backdrop-blur-lg">
+    <header
+      className="sticky z-40 border-b border-white/10 bg-brand-navy-deep/90 backdrop-blur-lg"
+      style={{ top: "var(--promo-banner-height, 0px)" }}
+    >
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link to="/" aria-label="Aruanã Digital — Início" className="flex items-center">
           <AruanaLogo size="md" />

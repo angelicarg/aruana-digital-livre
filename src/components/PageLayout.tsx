@@ -14,6 +14,7 @@ export function PageLayout({ children }: { children: ReactNode }) {
       >
         Pular para o conteúdo
       </a>
+      <PromoWidgets />
       <SiteHeader />
       <main id="main" className="flex-1">
         {children}
@@ -21,7 +22,6 @@ export function PageLayout({ children }: { children: ReactNode }) {
       <SiteFooter />
       <AccessibilityBar />
       <ChatBot />
-      <PromoWidgets />
     </div>
   );
 }
