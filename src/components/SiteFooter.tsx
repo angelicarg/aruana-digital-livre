@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Mail, MessageCircle, MapPin, Instagram, Clock, Shield } from "lucide-react";
+import { Mail, MessageCircle, MapPin, Instagram, Clock, Shield, Lock } from "lucide-react";
 import { AruanaLogo } from "./AruanaLogo";
 
 export function SiteFooter() {
@@ -101,6 +101,10 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} Aruanã Digital. Todos os direitos reservados.</p>
           <p>CNPJ 67.876.737/0001-43</p>
           <p>Tecnologia • Educação • Resultados</p>
+          <Link to="/intranet" className="flex items-center gap-1.5 transition hover:text-brand-green">
+            <Lock className="h-3.5 w-3.5" />
+            Acesso da equipe
+          </Link>
         </div>
       </div>
     </footer>
