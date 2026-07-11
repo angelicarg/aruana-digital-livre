@@ -84,7 +84,11 @@ export const Route = createFileRoute("/")({
             "Automação e Inteligência Artificial",
             "Acessibilidade Digital",
           ],
-          sameAs: ["https://wa.me/5534992086611", "https://instagram.com/aruanadigital"],
+          sameAs: [
+            "https://wa.me/5534992086611",
+            "https://instagram.com/aruanadigital",
+            "https://www.linkedin.com/in/aruan%C3%A3-digital-956442421/",
+          ],
           contactPoint: {
             "@type": "ContactPoint",
             telephone: "+55-34-99208-6611",

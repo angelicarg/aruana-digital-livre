@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Mail, MessageCircle, MapPin, Instagram, Clock, Shield, Lock } from "lucide-react";
+import { Mail, MessageCircle, MapPin, Instagram, Linkedin, Clock, Shield, Lock } from "lucide-react";
 import { AruanaLogo } from "./AruanaLogo";
 
 export function SiteFooter() {
@@ -22,6 +22,15 @@ export function SiteFooter() {
               className="grid h-11 w-11 place-items-center rounded-full bg-white/5 transition hover:bg-brand-green hover:text-white"
             >
               <Instagram className="h-5 w-5" />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/aruan%C3%A3-digital-956442421/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+              className="grid h-11 w-11 place-items-center rounded-full bg-white/5 transition hover:bg-brand-green hover:text-white"
+            >
+              <Linkedin className="h-5 w-5" />
             </a>
             <a
               href="https://wa.me/5534992086611"

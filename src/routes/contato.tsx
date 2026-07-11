@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import emailjs from "@emailjs/browser";
 import { PageLayout, PageHero } from "@/components/PageLayout";
-import { MessageCircle, Mail, MapPin, Clock, Instagram, Send, CheckCircle } from "lucide-react";
+import { MessageCircle, Mail, MapPin, Clock, Instagram, Linkedin, Send, CheckCircle } from "lucide-react";
 import { z } from "zod";
 import heroFish from "@/assets/hero-fish.jpg";
 
@@ -195,6 +195,12 @@ function ContatoPage() {
                 t: "Instagram",
                 v: "@aruanadigital",
                 href: "https://instagram.com/aruanadigital",
+              },
+              {
+                icon: Linkedin,
+                t: "LinkedIn",
+                v: "Aruanã Digital",
+                href: "https://www.linkedin.com/in/aruan%C3%A3-digital-956442421/",
               },
               { icon: MapPin, t: "Localização", v: "Uberlândia / MG" },
               { icon: Clock, t: "Horário", v: "Segunda a Sexta — 08h às 17h" },
