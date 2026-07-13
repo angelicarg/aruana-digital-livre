@@ -17,7 +17,9 @@ import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CasesRouteImport } from './routes/cases'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as IntranetLoginRouteImport } from './routes/intranet/login'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as IntranetAuthedRouteRouteImport } from './routes/intranet/_authed/route'
 import { Route as IntranetAuthedIndexRouteImport } from './routes/intranet/_authed/index'
 import { Route as IntranetAuthedReunioesRouteImport } from './routes/intranet/_authed/reunioes'
@@ -67,10 +69,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
+} as any)
 const IntranetLoginRoute = IntranetLoginRouteImport.update({
   id: '/intranet/login',
   path: '/intranet/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
 } as any)
 const IntranetAuthedRouteRoute = IntranetAuthedRouteRouteImport.update({
   id: '/intranet/_authed',
@@ -118,7 +130,7 @@ const IntranetAuthedClientesRoute = IntranetAuthedClientesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/cases': typeof CasesRoute
   '/contato': typeof ContatoRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -126,7 +138,9 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/intranet': typeof IntranetAuthedRouteRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
   '/intranet/login': typeof IntranetLoginRoute
+  '/blog/': typeof BlogIndexRoute
   '/intranet/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
   '/intranet/financeiro': typeof IntranetAuthedFinanceiroRoute
@@ -137,14 +151,15 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/blog': typeof BlogRoute
   '/cases': typeof CasesRoute
   '/contato': typeof ContatoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/intranet/login': typeof IntranetLoginRoute
+  '/blog': typeof BlogIndexRoute
   '/intranet/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
   '/intranet/financeiro': typeof IntranetAuthedFinanceiroRoute
@@ -156,7 +171,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/cases': typeof CasesRoute
   '/contato': typeof ContatoRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -164,7 +179,9 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/intranet/_authed': typeof IntranetAuthedRouteRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
   '/intranet/login': typeof IntranetLoginRoute
+  '/blog/': typeof BlogIndexRoute
   '/intranet/_authed/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/_authed/documentos': typeof IntranetAuthedDocumentosRoute
   '/intranet/_authed/financeiro': typeof IntranetAuthedFinanceiroRoute
@@ -185,7 +202,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/intranet'
+    | '/blog/$slug'
     | '/intranet/login'
+    | '/blog/'
     | '/intranet/clientes'
     | '/intranet/documentos'
     | '/intranet/financeiro'
@@ -196,14 +215,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/blog'
     | '/cases'
     | '/contato'
     | '/privacidade'
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/blog/$slug'
     | '/intranet/login'
+    | '/blog'
     | '/intranet/clientes'
     | '/intranet/documentos'
     | '/intranet/financeiro'
@@ -222,7 +242,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/intranet/_authed'
+    | '/blog/$slug'
     | '/intranet/login'
+    | '/blog/'
     | '/intranet/_authed/clientes'
     | '/intranet/_authed/documentos'
     | '/intranet/_authed/financeiro'
@@ -234,7 +256,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BlogRoute: typeof BlogRoute
+  BlogRoute: typeof BlogRouteWithChildren
   CasesRoute: typeof CasesRoute
   ContatoRoute: typeof ContatoRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
@@ -303,12 +325,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
     '/intranet/login': {
       id: '/intranet/login'
       path: '/intranet/login'
       fullPath: '/intranet/login'
       preLoaderRoute: typeof IntranetLoginRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/intranet/_authed': {
       id: '/intranet/_authed'
@@ -369,6 +405,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
 interface IntranetAuthedRouteRouteChildren {
   IntranetAuthedClientesRoute: typeof IntranetAuthedClientesRoute
   IntranetAuthedDocumentosRoute: typeof IntranetAuthedDocumentosRoute
@@ -394,7 +442,7 @@ const IntranetAuthedRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BlogRoute: BlogRoute,
+  BlogRoute: BlogRouteWithChildren,
   CasesRoute: CasesRoute,
   ContatoRoute: ContatoRoute,
   PrivacidadeRoute: PrivacidadeRoute,

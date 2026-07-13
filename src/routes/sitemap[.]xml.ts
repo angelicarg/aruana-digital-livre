@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
+import { BLOG_POSTS } from "@/content/blog-posts";
 
 const BASE_URL = "https://aruanadigital.com";
 
@@ -19,6 +20,9 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/sobre", changefreq: "monthly", priority: "0.7" },
           { path: "/cases", changefreq: "monthly", priority: "0.8" },
           { path: "/blog", changefreq: "weekly", priority: "0.7" },
+          ...BLOG_POSTS.map(
+            (p): SitemapEntry => ({ path: `/blog/${p.slug}`, changefreq: "monthly", priority: "0.6" }),
+          ),
           { path: "/contato", changefreq: "yearly", priority: "0.8" },
           { path: "/privacidade", changefreq: "yearly", priority: "0.3" },
         ];
