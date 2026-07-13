@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
-import { Bot, ExternalLink, Layers, Sparkles } from "lucide-react";
+import { Bot, ExternalLink, Info, Layers, Sparkles } from "lucide-react";
 import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/cases")({
   head: () => ({
     meta: [
-      { title: "Cases de Sites Institucionais e Projetos Digitais | Aruanã Digital" },
+      { title: "Cases: Criação de Sites e Projetos Digitais | Aruanã" },
       {
         name: "description",
         content:
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/cases")({
         content:
           "cases Aruanã Digital, portfólio de projetos digitais, sites com chatbot IA, sistema de agendamento online, e-commerce com WhatsApp, agência digital Uberlândia",
       },
-      { property: "og:title", content: "Cases de Sites Institucionais e Projetos Digitais | Aruanã Digital" },
+      { property: "og:title", content: "Cases: Criação de Sites e Projetos Digitais | Aruanã" },
       { property: "og:description", content: "Projetos completos e no ar, prontos para você testar." },
       { property: "og:url", content: "https://aruanadigital.com/cases" },
       { property: "og:type", content: "website" },
@@ -92,6 +92,21 @@ function CasesPage() {
 
       <section className="py-20 lg:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 flex gap-4 rounded-2xl border border-brand-green/20 bg-brand-green/5 p-6">
+            <Info className="h-5 w-5 shrink-0 text-brand-green" />
+            <p className="text-sm leading-relaxed text-foreground/80">
+              <span className="font-semibold text-brand-navy">Sobre estes cases:</span> são projetos de
+              demonstração, criados para mostrar nossa metodologia, capacidade técnica e padrão de
+              qualidade — cada um funcionando de verdade, para você testar. Toda solução real é
+              personalizada conforme o desafio específico do cliente. Quer que sua empresa seja o
+              próximo case?{" "}
+              <a href="/contato" className="font-semibold text-brand-green underline hover:text-brand-green-deep">
+                Fale com nossa equipe
+              </a>
+              .
+            </p>
+          </div>
+
           <div className="grid gap-6 lg:grid-cols-2">
             {CASES.map((c) => (
               <article

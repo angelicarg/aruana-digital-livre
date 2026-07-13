@@ -110,6 +110,17 @@ export const Route = createFileRoute("/")({
             "Desenvolvimento de sites institucionais profissionais para empresas, com design sob medida, SEO técnico, acessibilidade WCAG 2.1 e foco em conversão.",
         }),
       },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Aruanã Digital",
+          url: "https://aruanadigital.com/",
+          description:
+            "Agência de criação de sites institucionais profissionais com SEO, performance e acessibilidade.",
+        }),
+      },
     ],
   }),
   component: HomePage,

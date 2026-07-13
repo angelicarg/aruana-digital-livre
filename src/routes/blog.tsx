@@ -6,21 +6,22 @@ import heroFish from "@/assets/hero-fish.jpg";
 export const Route = createFileRoute("/blog")({
   head: () => ({
     meta: [
-      { title: "Blog — Sites Institucionais, IA e Acessibilidade | Aruanã Digital" },
+      { title: "Blog: Criação de Sites, SEO, IA e Acessibilidade | Aruanã" },
       {
         name: "description",
         content:
-          "Conteúdos sobre criação de sites institucionais, SEO, IA, educação e acessibilidade digital para empresas.",
+          "Conteúdos sobre criação de sites, SEO, IA e acessibilidade digital. Estratégias práticas de marketing para empresas que querem crescer online. Leia os artigos.",
       },
       {
         name: "keywords",
         content:
           "blog Aruanã Digital, SEO para sites institucionais, IA para empresas, acessibilidade digital, VLibras, WCAG",
       },
-      { property: "og:title", content: "Blog — Sites Institucionais, IA e Acessibilidade | Aruanã Digital" },
+      { property: "og:title", content: "Blog: Criação de Sites, SEO, IA e Acessibilidade | Aruanã" },
       {
         property: "og:description",
-        content: "Insights sobre sites institucionais, SEO, IA, educação e acessibilidade.",
+        content:
+          "Conteúdos sobre criação de sites, SEO, IA e acessibilidade digital para empresas que querem crescer online.",
       },
       { property: "og:url", content: "https://aruanadigital.com/blog" },
       { property: "og:type", content: "website" },
@@ -29,6 +30,29 @@ export const Route = createFileRoute("/blog")({
       { name: "twitter:image", content: `https://aruanadigital.com${heroFish}` },
     ],
     links: [{ rel: "canonical", href: "https://aruanadigital.com/blog" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          name: "Blog Aruanã Digital",
+          description: "Conteúdos sobre criação de sites, SEO, IA e acessibilidade digital.",
+          url: "https://aruanadigital.com/blog",
+          publisher: {
+            "@type": "Organization",
+            name: "Aruanã Digital",
+            logo: "https://aruanadigital.com/logo512.png",
+          },
+          blogPost: POSTS.map((p) => ({
+            "@type": "BlogPosting",
+            headline: p.title,
+            description: p.excerpt,
+            datePublished: p.date,
+          })),
+        }),
+      },
+    ],
   }),
   component: BlogPage,
 });

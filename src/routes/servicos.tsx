@@ -15,7 +15,7 @@ import heroFish from "@/assets/hero-fish.jpg";
 export const Route = createFileRoute("/servicos")({
   head: () => ({
     meta: [
-      { title: "Criação de Sites Institucionais e Serviços Digitais | Aruanã Digital" },
+      { title: "Criação de Sites e Serviços Digitais | Aruanã Digital" },
       {
         name: "description",
         content:
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/servicos")({
         content:
           "criação de site institucional, site para empresa, desenvolvimento de sites, sites corporativos, agência digital, SEO, automação, inteligência artificial, acessibilidade, agência digital Uberlândia, agência digital Minas Gerais",
       },
-      { property: "og:title", content: "Criação de Sites Institucionais e Serviços Digitais | Aruanã Digital" },
+      { property: "og:title", content: "Criação de Sites e Serviços Digitais | Aruanã Digital" },
       {
         property: "og:description",
         content:
@@ -59,6 +59,57 @@ export const Route = createFileRoute("/servicos")({
           ],
           description:
             "Criação de sites institucionais, ecossistemas digitais, automação, inteligência artificial e acessibilidade para empresas.",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Desenvolvimento de Sites Estratégicos",
+              description: "Sites com foco em performance, SEO, conversão e acessibilidade.",
+              url: "https://aruanadigital.com/servicos",
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Ecossistemas Digitais",
+              description: "Integração de canais, sistemas e dados em uma operação fluida e mensurável.",
+              url: "https://aruanadigital.com/servicos",
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: "Consultoria em Inovação",
+              description: "Diagnóstico, estratégia e roadmap de transformação digital.",
+              url: "https://aruanadigital.com/servicos",
+            },
+            {
+              "@type": "ListItem",
+              position: 4,
+              name: "Automação & Inteligência Artificial",
+              description: "Automações inteligentes e agentes de IA aplicados ao negócio.",
+              url: "https://aruanadigital.com/servicos",
+            },
+            {
+              "@type": "ListItem",
+              position: 5,
+              name: "Educação Tecnológica",
+              description: "Capacitação prática para equipes, gestores e instituições de ensino.",
+              url: "https://aruanadigital.com/servicos",
+            },
+            {
+              "@type": "ListItem",
+              position: 6,
+              name: "Acessibilidade Digital",
+              description: "Projetos inclusivos com VLibras, WCAG e usabilidade universal.",
+              url: "https://aruanadigital.com/servicos",
+            },
+          ],
         }),
       },
     ],
