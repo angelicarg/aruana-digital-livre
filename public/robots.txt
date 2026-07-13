@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /intranet
 
 Sitemap: https://aruanadigital.com/sitemap.xml
