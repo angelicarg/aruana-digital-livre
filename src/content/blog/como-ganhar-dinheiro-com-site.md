@@ -18,7 +18,7 @@ A fórmula é simples: (ganho com o site menos o investimento no site) dividido 
 
 **Como funciona:** o visitante chega no site, deixa email ou telefone, você entra em contato e ele vira cliente.
 
-**Exemplo:** uma agência web cujo visitante busca "criação de sites", chega ao site e preenche o formulário — vira um lead.
+**Exemplo:** um escritório de contabilidade cujo visitante busca "abrir empresa" ou "contador para MEI", chega ao site e preenche o formulário — vira um lead.
 
 **Conta rápida:** com 10 leads por mês e 20% de conversão (5 leads = 1 cliente), você fecha 2 clientes por mês; se cada um vale R$10.000, isso são R$20.000/mês, sobre um investimento inicial de R$10.000 no site.
 
@@ -64,13 +64,13 @@ Na prática, leva de 3 a 6 meses para atingir esse volume de leads via SEO. Estr
 
 **Como funciona:** o site funciona como funil de vendas puro, convertendo visitante em cliente.
 
-**Exemplo:** uma agência web cujo site gera leads que se convertem em contratos de criação de site.
+**Exemplo:** um escritório de contabilidade cujo site gera leads que se convertem em contratos de assessoria mensal.
 
 **Conta rápida:** com 60 leads por mês e 5% de conversão, são 3 clientes por mês; a R$10.000 cada, isso é R$30.000/mês, sobre um investimento de R$10.000 no site mais cerca de R$1.000/mês em marketing. É o modelo mais usado por empresas B2B.
 
 ## A Realidade: Qual Estratégia Usar?
 
-A maioria das empresas não usa só uma — combina várias. Uma agência web como a Aruanã, por exemplo, pode ter 60% da receita vindo da venda direta de serviço, 30% de consultoria e 10% de parcerias/afiliados. Já um blogueiro pode ter 50% vindo de afiliados, 30% de publicidade e 20% de produtos próprios.
+A maioria das empresas não usa só uma — combina várias. Um escritório de contabilidade, por exemplo, pode ter 60% da receita vindo da venda direta de serviço, 30% de consultoria e 10% de parcerias/indicações. Já um blogueiro pode ter 50% vindo de afiliados, 30% de publicidade e 20% de produtos próprios.
 
 ## Quanto Ganho Com Meu Site em Cada Estágio?
 
