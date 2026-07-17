@@ -263,7 +263,12 @@ export const sendImplantacaoPaymentLink = createServerFn({ method: "POST" })
         const { Resend } = await import("resend");
         const resend = new Resend(resendApiKey);
 
-        await resend.emails.send({
+        // O SDK do Resend NÃO lança exceção em erros da API (ex: 403 do
+        // domínio de teste tentando mandar pra outro destinatário que não o
+        // dono da conta) — ele retorna { data, error } normalmente. Por
+        // isso o resultado precisa ser checado explicitamente aqui, não só
+        // o try/catch (que só pega falha de rede/exceção mesmo).
+        const { error: sendError } = await resend.emails.send({
           from: fromEmail,
           to: clientEmail,
           subject: "Aruanã Digital — Link de pagamento da implantação",
@@ -274,6 +279,11 @@ export const sendImplantacaoPaymentLink = createServerFn({ method: "POST" })
             <p>Qualquer dúvida, é só chamar a gente no WhatsApp.</p>
           `,
         });
+
+        if (sendError) {
+          console.error("[deals] resend send returned error", sendError);
+          return { updated: true as const, emailSent: false as const };
+        }
 
         return { updated: true as const, emailSent: true as const };
       } catch (emailErr) {

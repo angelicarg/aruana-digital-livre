@@ -19,11 +19,15 @@ export async function listDeals() {
   return data as DealWithClient[];
 }
 
+// Inclui "link_enviado" também (não só "preferencia_registrada") pra dar
+// pra reenviar quando o e-mail falha silenciosamente do lado do provedor
+// (ex: restrição do domínio de teste do Resend) — sem isso não existia
+// nenhuma forma de tentar de novo pela intranet.
 export async function listPendingCharges() {
   const { data, error } = await supabase
     .from("intranet_deals")
     .select("*, intranet_clients(name, email)")
-    .eq("implantacao_status", "preferencia_registrada")
+    .in("implantacao_status", ["preferencia_registrada", "link_enviado"])
     .order("created_at", { ascending: true });
 
   if (error) throw error;

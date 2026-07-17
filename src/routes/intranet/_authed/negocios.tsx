@@ -227,7 +227,8 @@ function PendingChargeRow({
   deal: DealWithClient;
   onSent: () => void;
 }) {
-  const [link, setLink] = useState("");
+  const [link, setLink] = useState(deal.implantacao_cobre_pj_link ?? "");
+  const alreadySent = deal.implantacao_status === "link_enviado";
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -270,6 +271,9 @@ function PendingChargeRow({
             {formatCurrency(deal.setup_value)}
           </p>
         </div>
+        {alreadySent && (
+          <StatusBadge label="Link já enviado — confira se chegou" color="amber" />
+        )}
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Input
@@ -284,7 +288,7 @@ function PendingChargeRow({
           className="gap-2"
         >
           <Send className="size-4" />
-          {mutation.isPending ? "Enviando…" : "Enviar"}
+          {mutation.isPending ? "Enviando…" : alreadySent ? "Reenviar" : "Enviar"}
         </Button>
       </div>
     </div>
