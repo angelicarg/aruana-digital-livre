@@ -19,12 +19,15 @@ import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as IntranetLoginRouteImport } from './routes/intranet/login'
+import { Route as FecharIdRouteImport } from './routes/fechar.$id'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as ApiMercadopagoWebhookRouteImport } from './routes/api.mercadopago-webhook'
 import { Route as IntranetAuthedRouteRouteImport } from './routes/intranet/_authed/route'
 import { Route as IntranetAuthedIndexRouteImport } from './routes/intranet/_authed/index'
 import { Route as IntranetAuthedReunioesRouteImport } from './routes/intranet/_authed/reunioes'
 import { Route as IntranetAuthedRelatoriosRouteImport } from './routes/intranet/_authed/relatorios'
 import { Route as IntranetAuthedProjetosRouteImport } from './routes/intranet/_authed/projetos'
+import { Route as IntranetAuthedNegociosRouteImport } from './routes/intranet/_authed/negocios'
 import { Route as IntranetAuthedFinanceiroRouteImport } from './routes/intranet/_authed/financeiro'
 import { Route as IntranetAuthedDocumentosRouteImport } from './routes/intranet/_authed/documentos'
 import { Route as IntranetAuthedClientesRouteImport } from './routes/intranet/_authed/clientes'
@@ -79,10 +82,20 @@ const IntranetLoginRoute = IntranetLoginRouteImport.update({
   path: '/intranet/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FecharIdRoute = FecharIdRouteImport.update({
+  id: '/fechar/$id',
+  path: '/fechar/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => BlogRoute,
+} as any)
+const ApiMercadopagoWebhookRoute = ApiMercadopagoWebhookRouteImport.update({
+  id: '/api/mercadopago-webhook',
+  path: '/api/mercadopago-webhook',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const IntranetAuthedRouteRoute = IntranetAuthedRouteRouteImport.update({
   id: '/intranet/_authed',
@@ -108,6 +121,11 @@ const IntranetAuthedRelatoriosRoute =
 const IntranetAuthedProjetosRoute = IntranetAuthedProjetosRouteImport.update({
   id: '/projetos',
   path: '/projetos',
+  getParentRoute: () => IntranetAuthedRouteRoute,
+} as any)
+const IntranetAuthedNegociosRoute = IntranetAuthedNegociosRouteImport.update({
+  id: '/negocios',
+  path: '/negocios',
   getParentRoute: () => IntranetAuthedRouteRoute,
 } as any)
 const IntranetAuthedFinanceiroRoute =
@@ -138,12 +156,15 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/intranet': typeof IntranetAuthedRouteRouteWithChildren
+  '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
   '/blog/': typeof BlogIndexRoute
   '/intranet/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
   '/intranet/financeiro': typeof IntranetAuthedFinanceiroRoute
+  '/intranet/negocios': typeof IntranetAuthedNegociosRoute
   '/intranet/projetos': typeof IntranetAuthedProjetosRoute
   '/intranet/relatorios': typeof IntranetAuthedRelatoriosRoute
   '/intranet/reunioes': typeof IntranetAuthedReunioesRoute
@@ -157,12 +178,15 @@ export interface FileRoutesByTo {
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
   '/blog': typeof BlogIndexRoute
   '/intranet/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
   '/intranet/financeiro': typeof IntranetAuthedFinanceiroRoute
+  '/intranet/negocios': typeof IntranetAuthedNegociosRoute
   '/intranet/projetos': typeof IntranetAuthedProjetosRoute
   '/intranet/relatorios': typeof IntranetAuthedRelatoriosRoute
   '/intranet/reunioes': typeof IntranetAuthedReunioesRoute
@@ -179,12 +203,15 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/intranet/_authed': typeof IntranetAuthedRouteRouteWithChildren
+  '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
   '/blog/': typeof BlogIndexRoute
   '/intranet/_authed/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/_authed/documentos': typeof IntranetAuthedDocumentosRoute
   '/intranet/_authed/financeiro': typeof IntranetAuthedFinanceiroRoute
+  '/intranet/_authed/negocios': typeof IntranetAuthedNegociosRoute
   '/intranet/_authed/projetos': typeof IntranetAuthedProjetosRoute
   '/intranet/_authed/relatorios': typeof IntranetAuthedRelatoriosRoute
   '/intranet/_authed/reunioes': typeof IntranetAuthedReunioesRoute
@@ -202,12 +229,15 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/intranet'
+    | '/api/mercadopago-webhook'
     | '/blog/$slug'
+    | '/fechar/$id'
     | '/intranet/login'
     | '/blog/'
     | '/intranet/clientes'
     | '/intranet/documentos'
     | '/intranet/financeiro'
+    | '/intranet/negocios'
     | '/intranet/projetos'
     | '/intranet/relatorios'
     | '/intranet/reunioes'
@@ -221,12 +251,15 @@ export interface FileRouteTypes {
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/api/mercadopago-webhook'
     | '/blog/$slug'
+    | '/fechar/$id'
     | '/intranet/login'
     | '/blog'
     | '/intranet/clientes'
     | '/intranet/documentos'
     | '/intranet/financeiro'
+    | '/intranet/negocios'
     | '/intranet/projetos'
     | '/intranet/relatorios'
     | '/intranet/reunioes'
@@ -242,12 +275,15 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/intranet/_authed'
+    | '/api/mercadopago-webhook'
     | '/blog/$slug'
+    | '/fechar/$id'
     | '/intranet/login'
     | '/blog/'
     | '/intranet/_authed/clientes'
     | '/intranet/_authed/documentos'
     | '/intranet/_authed/financeiro'
+    | '/intranet/_authed/negocios'
     | '/intranet/_authed/projetos'
     | '/intranet/_authed/relatorios'
     | '/intranet/_authed/reunioes'
@@ -264,6 +300,8 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
   IntranetAuthedRouteRoute: typeof IntranetAuthedRouteRouteWithChildren
+  ApiMercadopagoWebhookRoute: typeof ApiMercadopagoWebhookRoute
+  FecharIdRoute: typeof FecharIdRoute
   IntranetLoginRoute: typeof IntranetLoginRoute
 }
 
@@ -339,12 +377,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntranetLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fechar/$id': {
+      id: '/fechar/$id'
+      path: '/fechar/$id'
+      fullPath: '/fechar/$id'
+      preLoaderRoute: typeof FecharIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$slug': {
       id: '/blog/$slug'
       path: '/$slug'
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof BlogRoute
+    }
+    '/api/mercadopago-webhook': {
+      id: '/api/mercadopago-webhook'
+      path: '/api/mercadopago-webhook'
+      fullPath: '/api/mercadopago-webhook'
+      preLoaderRoute: typeof ApiMercadopagoWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/intranet/_authed': {
       id: '/intranet/_authed'
@@ -379,6 +431,13 @@ declare module '@tanstack/react-router' {
       path: '/projetos'
       fullPath: '/intranet/projetos'
       preLoaderRoute: typeof IntranetAuthedProjetosRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/negocios': {
+      id: '/intranet/_authed/negocios'
+      path: '/negocios'
+      fullPath: '/intranet/negocios'
+      preLoaderRoute: typeof IntranetAuthedNegociosRouteImport
       parentRoute: typeof IntranetAuthedRouteRoute
     }
     '/intranet/_authed/financeiro': {
@@ -421,6 +480,7 @@ interface IntranetAuthedRouteRouteChildren {
   IntranetAuthedClientesRoute: typeof IntranetAuthedClientesRoute
   IntranetAuthedDocumentosRoute: typeof IntranetAuthedDocumentosRoute
   IntranetAuthedFinanceiroRoute: typeof IntranetAuthedFinanceiroRoute
+  IntranetAuthedNegociosRoute: typeof IntranetAuthedNegociosRoute
   IntranetAuthedProjetosRoute: typeof IntranetAuthedProjetosRoute
   IntranetAuthedRelatoriosRoute: typeof IntranetAuthedRelatoriosRoute
   IntranetAuthedReunioesRoute: typeof IntranetAuthedReunioesRoute
@@ -431,6 +491,7 @@ const IntranetAuthedRouteRouteChildren: IntranetAuthedRouteRouteChildren = {
   IntranetAuthedClientesRoute: IntranetAuthedClientesRoute,
   IntranetAuthedDocumentosRoute: IntranetAuthedDocumentosRoute,
   IntranetAuthedFinanceiroRoute: IntranetAuthedFinanceiroRoute,
+  IntranetAuthedNegociosRoute: IntranetAuthedNegociosRoute,
   IntranetAuthedProjetosRoute: IntranetAuthedProjetosRoute,
   IntranetAuthedRelatoriosRoute: IntranetAuthedRelatoriosRoute,
   IntranetAuthedReunioesRoute: IntranetAuthedReunioesRoute,
@@ -450,6 +511,8 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
   IntranetAuthedRouteRoute: IntranetAuthedRouteRouteWithChildren,
+  ApiMercadopagoWebhookRoute: ApiMercadopagoWebhookRoute,
+  FecharIdRoute: FecharIdRoute,
   IntranetLoginRoute: IntranetLoginRoute,
 }
 export const routeTree = rootRouteImport

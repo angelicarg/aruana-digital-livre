@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      intranet_admins: {
+        Row: {
+          user_id: string
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       intranet_clients: {
         Row: {
           id: string
@@ -99,6 +114,81 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "intranet_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intranet_deals: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          client_id: string
+          project_id: string | null
+          package_tier: "essencial" | "profissional" | "avancado" | "sob_medida"
+          setup_value: number
+          monthly_value: number
+          implantacao_status: "pendente" | "preferencia_registrada" | "link_enviado"
+          implantacao_metodo: "pix" | "cartao" | null
+          implantacao_parcelas: number | null
+          implantacao_cobre_pj_link: string | null
+          implantacao_link_enviado_at: string | null
+          mensalidade_status: "pendente" | "assinatura_criada" | "ativa" | "cancelada" | "falhou"
+          mensalidade_mp_preapproval_id: string | null
+          mensalidade_mp_status: string | null
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          client_id: string
+          project_id?: string | null
+          package_tier: "essencial" | "profissional" | "avancado" | "sob_medida"
+          setup_value: number
+          monthly_value: number
+          implantacao_status?: "pendente" | "preferencia_registrada" | "link_enviado"
+          implantacao_metodo?: "pix" | "cartao" | null
+          implantacao_parcelas?: number | null
+          implantacao_cobre_pj_link?: string | null
+          implantacao_link_enviado_at?: string | null
+          mensalidade_status?: "pendente" | "assinatura_criada" | "ativa" | "cancelada" | "falhou"
+          mensalidade_mp_preapproval_id?: string | null
+          mensalidade_mp_status?: string | null
+          notes?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          client_id?: string
+          project_id?: string | null
+          package_tier?: "essencial" | "profissional" | "avancado" | "sob_medida"
+          setup_value?: number
+          monthly_value?: number
+          implantacao_status?: "pendente" | "preferencia_registrada" | "link_enviado"
+          implantacao_metodo?: "pix" | "cartao" | null
+          implantacao_parcelas?: number | null
+          implantacao_cobre_pj_link?: string | null
+          implantacao_link_enviado_at?: string | null
+          mensalidade_status?: "pendente" | "assinatura_criada" | "ativa" | "cancelada" | "falhou"
+          mensalidade_mp_preapproval_id?: string | null
+          mensalidade_mp_status?: string | null
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intranet_deals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "intranet_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intranet_deals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "intranet_projects"
             referencedColumns: ["id"]
           },
         ]

@@ -19,7 +19,9 @@ Copie `.env.example` para `.env` e preencha os valores:
 |---|---|
 | `ANTHROPIC_API_KEY` | Chave da API da Anthropic, usada pelo chatbot Aru. Sem ela, o chat continua funcionando mas sempre cai no fallback de WhatsApp. |
 | `SUPABASE_*` / `VITE_SUPABASE_*` | Conexão com o Supabase (mesmo projeto usado pelo Dente Vivo/PortLibras). |
-| `SUPABASE_SERVICE_ROLE_KEY` | Chave de serviço (bypassa RLS), usada só no servidor para salvar os leads do simulador de orçamento. Sem ela, o simulador continua funcionando normalmente — só não salva o lead no banco. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave de serviço (bypassa RLS), usada só no servidor para salvar os leads do simulador de orçamento e para tudo do fluxo "Fechar Negócio". Sem ela, o simulador continua funcionando normalmente — só não salva o lead no banco. |
+| `MERCADOPAGO_ACCESS_TOKEN` | Token de acesso do Mercado Pago, usado para criar a assinatura (mensalidade automática) da página `/fechar/$id` e para o webhook de confirmação. Comece com um token de teste (`TEST-...`) — trocar para produção (`APP_USR-...`) depois é só trocar o valor, sem mudar código. |
+| `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | Envio do e-mail com o link de pagamento da implantação (ver seção "Fechar Negócio" abaixo). Sem elas, o link continua sendo salvo e exibido na página `/fechar/$id`, só não é enviado por e-mail automaticamente — a intranet avisa quando isso acontece. |
 
 **Nunca** commite o `.env` real (já está no `.gitignore`) nem cole chaves de API em chats, prints ou issues — trate como senha.
 
@@ -46,6 +48,17 @@ Copie `.env.example` para `.env` e preencha os valores:
 - Preço e condição da promoção (desconto, prazo de validade): [`src/lib/pricing.ts`](src/lib/pricing.ts) — é o único lugar que precisa mudar para ajustar valores ou a data de expiração.
 - Toda submissão do simulador vira uma linha na tabela `leads` do Supabase (via [`src/lib/api/leads.functions.ts`](src/lib/api/leads.functions.ts), que roda com a `SUPABASE_SERVICE_ROLE_KEY`). Rode [`supabase/migration_001_leads.sql`](supabase/migration_001_leads.sql) no SQL Editor do Supabase antes de usar em produção — a tabela não tem nenhuma policy de RLS, só o service role consegue ler/escrever nela.
 - Pra pegar a `SUPABASE_SERVICE_ROLE_KEY`: no painel do Supabase → *Settings → API → Project API keys → service_role* (chave secreta, nunca exponha no client nem commite).
+
+## Fechar Negócio (`/fechar/$id`)
+
+Link único por cliente, gerado na intranet (`/intranet/negocios`) depois de uma negociação por WhatsApp, com dois sub-fluxos independentes:
+
+- **Implantação (pagamento único):** o cliente só escolhe a preferência (PIX ou cartão parcelado) na página — isso **não cobra nada automaticamente**. A Contabilizei (banco PJ usado pela Aruanã) não tem API pública para emitir cobranças pelo "Cobre PJ" (confirmado com o suporte deles), então a emissão do link de pagamento é manual: a preferência do cliente cai na aba "Cobranças Pendentes" da intranet, alguém gera o link no painel da Contabilizei e cola de volta lá — o sistema salva e manda por e-mail (via Resend) automaticamente.
+- **Mensalidade (cobrança recorrente):** totalmente automática via assinatura (preapproval) do Mercado Pago — o cliente cadastra o cartão no checkout hospedado deles (nunca no nosso site) e a cobrança mensal roda sozinha depois disso. Confirmação de que a assinatura ficou ativa chega via webhook em [`src/routes/api.mercadopago-webhook.ts`](src/routes/api.mercadopago-webhook.ts), não pelo simples retorno do checkout.
+
+Arquivos principais: [`src/routes/fechar.$id.tsx`](src/routes/fechar.$id.tsx) (página pública), [`src/lib/api/deals.functions.ts`](src/lib/api/deals.functions.ts) (server functions), [`src/routes/intranet/_authed/negocios.tsx`](src/routes/intranet/_authed/negocios.tsx) (gestão na intranet), [`supabase/migration_004_deals.sql`](supabase/migration_004_deals.sql) (schema).
+
+Credenciais de teste do Mercado Pago (sandbox, sem precisar de conta bancária real): painel deles → *Suas integrações → Criar aplicação* → credenciais de teste.
 
 ## Botões flutuantes (Aru + Acessibilidade + VLibras)
 

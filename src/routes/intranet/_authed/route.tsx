@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Users,
   Briefcase,
+  Handshake,
   Wallet,
   CalendarClock,
   FileText,
@@ -26,11 +27,13 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 
 const NAV_ITEMS = [
   { to: "/intranet", label: "Painel", icon: LayoutDashboard },
   { to: "/intranet/clientes", label: "Clientes", icon: Users },
   { to: "/intranet/projetos", label: "Projetos", icon: Briefcase },
+  { to: "/intranet/negocios", label: "Negócios", icon: Handshake },
   { to: "/intranet/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/intranet/reunioes", label: "Reuniões", icon: CalendarClock },
   { to: "/intranet/documentos", label: "Documentos", icon: FileText },
@@ -75,6 +78,7 @@ function IntranetAuthedLayout() {
 
   return (
     <SidebarProvider>
+      <Toaster position="top-right" />
       <Sidebar collapsible="icon">
         <SidebarHeader className="px-3 py-3">
           <span className="text-sm font-semibold tracking-tight">Aruanã Digital</span>
