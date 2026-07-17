@@ -154,6 +154,11 @@ export const createMensalidadeCheckout = createServerFn({ method: "POST" })
       const result = await preapproval.create({
         body: {
           reason: `Aruanã Digital — Mensalidade (${deal.package_tier})`,
+          // Obrigatório para assinaturas SEM preapproval_plan_id (nosso caso,
+          // já que o valor é dinâmico por cliente) — sem isso a assinatura
+          // fica criada de forma incompleta e o botão "Confirmar" no
+          // checkout hospedado nunca habilita, mesmo com cartão cadastrado.
+          external_reference: deal.id,
           payer_email: clientEmail,
           back_url: `https://aruanadigital.com/fechar/${deal.id}?mensalidade=sucesso`,
           auto_recurring: {
