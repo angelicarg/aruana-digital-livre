@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WebsitePmeRouteImport } from './routes/website-pme'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ServicosRouteImport } from './routes/servicos'
@@ -32,6 +33,11 @@ import { Route as IntranetAuthedFinanceiroRouteImport } from './routes/intranet/
 import { Route as IntranetAuthedDocumentosRouteImport } from './routes/intranet/_authed/documentos'
 import { Route as IntranetAuthedClientesRouteImport } from './routes/intranet/_authed/clientes'
 
+const WebsitePmeRoute = WebsitePmeRouteImport.update({
+  id: '/website-pme',
+  path: '/website-pme',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/website-pme': typeof WebsitePmeRoute
   '/intranet': typeof IntranetAuthedRouteRouteWithChildren
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/website-pme': typeof WebsitePmeRoute
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/fechar/$id': typeof FecharIdRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/website-pme': typeof WebsitePmeRoute
   '/intranet/_authed': typeof IntranetAuthedRouteRouteWithChildren
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -228,6 +237,7 @@ export interface FileRouteTypes {
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/website-pme'
     | '/intranet'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/website-pme'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
     | '/fechar/$id'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/website-pme'
     | '/intranet/_authed'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
@@ -299,6 +311,7 @@ export interface RootRouteChildren {
   ServicosRoute: typeof ServicosRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
+  WebsitePmeRoute: typeof WebsitePmeRoute
   IntranetAuthedRouteRoute: typeof IntranetAuthedRouteRouteWithChildren
   ApiMercadopagoWebhookRoute: typeof ApiMercadopagoWebhookRoute
   FecharIdRoute: typeof FecharIdRoute
@@ -307,6 +320,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/website-pme': {
+      id: '/website-pme'
+      path: '/website-pme'
+      fullPath: '/website-pme'
+      preLoaderRoute: typeof WebsitePmeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sobre': {
       id: '/sobre'
       path: '/sobre'
@@ -510,6 +530,7 @@ const rootRouteChildren: RootRouteChildren = {
   ServicosRoute: ServicosRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
+  WebsitePmeRoute: WebsitePmeRoute,
   IntranetAuthedRouteRoute: IntranetAuthedRouteRouteWithChildren,
   ApiMercadopagoWebhookRoute: ApiMercadopagoWebhookRoute,
   FecharIdRoute: FecharIdRoute,
