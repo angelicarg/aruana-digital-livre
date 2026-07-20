@@ -33,7 +33,7 @@ export const Route = createFileRoute("/website-pme")({
         content:
           "Website profissional, pronto para converter clientes. Fale com um especialista da Aruanã Digital agora pelo WhatsApp.",
       },
-      { name: "robots", content: "noindex, follow" },
+      { name: "robots", content: "index, follow" },
       { property: "og:title", content: "Website Profissional para o Seu Negócio — Aruanã Digital" },
       {
         property: "og:description",
@@ -191,17 +191,17 @@ function WebsitePmePage() {
               {
                 segmento: "Clínica de saúde · Uberlândia/MG",
                 texto:
-                  "Trocou a agenda por telefone e WhatsApp por um sistema de agendamento online, com lembretes automáticos para os pacientes.",
+                  "Sistema de agendamento online com lembretes automáticos reduziu faltas e ligações repetidas pra remarcar consulta.",
               },
               {
                 segmento: "Comércio de alimentos · Uberlândia/MG",
                 texto:
-                  "Ganhou loja virtual própria com atendimento automático por inteligência artificial, vendendo direto pelo site.",
+                  "Loja virtual própria com atendimento automático por inteligência artificial tirou o negócio da dependência só das redes sociais.",
               },
               {
                 segmento: "Varejo · Minas Gerais",
                 texto:
-                  "Saiu das redes sociais para uma plataforma própria, com painel de gestão de conteúdo e assistente virtual 24h.",
+                  "Painel próprio de gestão de conteúdo e assistente virtual 24h substituíram o atendimento manual saindo das redes sociais.",
               },
             ].map((c) => (
               <div key={c.segmento} className="rounded-3xl bg-card p-6 shadow-card">
@@ -262,23 +262,27 @@ function WebsitePmePage() {
       <section className="bg-brand-cloud py-16 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-2xl font-black sm:text-3xl">Perguntas Frequentes</h2>
-          <Accordion type="single" collapsible className="mt-8 rounded-3xl bg-card px-6 shadow-card">
+          <Accordion
+            type="multiple"
+            defaultValue={["Quanto custa?", "Quanto tempo leva?", "Vou conseguir gerenciar sozinho?"]}
+            className="mt-8 rounded-3xl bg-card px-6 shadow-card"
+          >
             {[
               {
                 q: "Quanto custa?",
                 a: "Depende do que você precisa — nossos projetos vão de um website simples a sistemas completos, com investimento a partir de R$ 1.500. Na conversa inicial (gratuita) a gente entende sua necessidade e te passa um valor certo, sem compromisso.",
               },
               {
-                q: "Meu negócio é muito pequeno pra website?",
-                a: "Website AUMENTA negócio pequeno. Seus concorrentes já estão online — você quer ficar pra trás?",
+                q: "Quanto tempo leva?",
+                a: "Em geral 15 a 30 dias, dependendo da complexidade — menos do que você imagina.",
               },
               {
                 q: "Vou conseguir gerenciar sozinho?",
                 a: "Sim. A gente treina. O website é feito pro proprietário gerenciar, não precisa ser técnico.",
               },
               {
-                q: "Quanto tempo leva?",
-                a: "Em geral 15 a 30 dias, dependendo da complexidade — menos do que você imagina.",
+                q: "Meu negócio é muito pequeno pra website?",
+                a: "Website AUMENTA negócio pequeno. Seus concorrentes já estão online — você quer ficar pra trás?",
               },
               {
                 q: "E se eu não gostar depois?",
