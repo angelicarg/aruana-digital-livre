@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as IntranetLoginRouteImport } from './routes/intranet/login'
 import { Route as FecharIdRouteImport } from './routes/fechar.$id'
+import { Route as ExperienciasSalaYogaRouteImport } from './routes/experiencias.sala-yoga'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiMercadopagoWebhookRouteImport } from './routes/api.mercadopago-webhook'
 import { Route as IntranetAuthedRouteRouteImport } from './routes/intranet/_authed/route'
@@ -91,6 +92,11 @@ const IntranetLoginRoute = IntranetLoginRouteImport.update({
 const FecharIdRoute = FecharIdRouteImport.update({
   id: '/fechar/$id',
   path: '/fechar/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperienciasSalaYogaRoute = ExperienciasSalaYogaRouteImport.update({
+  id: '/experiencias/sala-yoga',
+  path: '/experiencias/sala-yoga',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/intranet': typeof IntranetAuthedRouteRouteWithChildren
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
   '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
   '/blog/': typeof BlogIndexRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/website-pme': typeof WebsitePmeRoute
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
   '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
   '/blog': typeof BlogIndexRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/intranet/_authed': typeof IntranetAuthedRouteRouteWithChildren
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
   '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
   '/blog/': typeof BlogIndexRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/intranet'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
+    | '/experiencias/sala-yoga'
     | '/fechar/$id'
     | '/intranet/login'
     | '/blog/'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/website-pme'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
+    | '/experiencias/sala-yoga'
     | '/fechar/$id'
     | '/intranet/login'
     | '/blog'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/intranet/_authed'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
+    | '/experiencias/sala-yoga'
     | '/fechar/$id'
     | '/intranet/login'
     | '/blog/'
@@ -314,6 +326,7 @@ export interface RootRouteChildren {
   WebsitePmeRoute: typeof WebsitePmeRoute
   IntranetAuthedRouteRoute: typeof IntranetAuthedRouteRouteWithChildren
   ApiMercadopagoWebhookRoute: typeof ApiMercadopagoWebhookRoute
+  ExperienciasSalaYogaRoute: typeof ExperienciasSalaYogaRoute
   FecharIdRoute: typeof FecharIdRoute
   IntranetLoginRoute: typeof IntranetLoginRoute
 }
@@ -402,6 +415,13 @@ declare module '@tanstack/react-router' {
       path: '/fechar/$id'
       fullPath: '/fechar/$id'
       preLoaderRoute: typeof FecharIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiencias/sala-yoga': {
+      id: '/experiencias/sala-yoga'
+      path: '/experiencias/sala-yoga'
+      fullPath: '/experiencias/sala-yoga'
+      preLoaderRoute: typeof ExperienciasSalaYogaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/$slug': {
@@ -533,6 +553,7 @@ const rootRouteChildren: RootRouteChildren = {
   WebsitePmeRoute: WebsitePmeRoute,
   IntranetAuthedRouteRoute: IntranetAuthedRouteRouteWithChildren,
   ApiMercadopagoWebhookRoute: ApiMercadopagoWebhookRoute,
+  ExperienciasSalaYogaRoute: ExperienciasSalaYogaRoute,
   FecharIdRoute: FecharIdRoute,
   IntranetLoginRoute: IntranetLoginRoute,
 }
