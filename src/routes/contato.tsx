@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import emailjs from "@emailjs/browser";
 import { PageLayout, PageHero } from "@/components/PageLayout";
-import { MessageCircle, Mail, MapPin, Clock, Instagram, Linkedin, Send, CheckCircle } from "lucide-react";
+import { MessageCircle, Mail, MapPin, Clock, Instagram, Linkedin, Send, CheckCircle, Star } from "lucide-react";
 import { z } from "zod";
 import { trackEvent } from "@/lib/analytics";
 import heroFish from "@/assets/hero-fish.jpg";
@@ -203,6 +203,12 @@ function ContatoPage() {
                 t: "LinkedIn",
                 v: "Aruanã Digital",
                 href: "https://www.linkedin.com/in/aruan%C3%A3-digital-956442421/",
+              },
+              {
+                icon: Star,
+                t: "Avalie-nos no Google",
+                v: "Deixe sua avaliação",
+                href: "https://g.page/r/CSCJYkMW-N4YEAE/review",
               },
               { icon: MapPin, t: "Localização", v: "Uberlândia / MG" },
               { icon: Clock, t: "Horário", v: "Segunda a Sexta — 08h às 17h" },

@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Mail, MessageCircle, MapPin, Instagram, Linkedin, Clock, Shield, Lock } from "lucide-react";
+import { Mail, MessageCircle, MapPin, Instagram, Linkedin, Clock, Shield, Lock, Star } from "lucide-react";
 import { AruanaLogo } from "./AruanaLogo";
+
+const GOOGLE_REVIEW_URL = "https://g.page/r/CSCJYkMW-N4YEAE/review";
 
 export function SiteFooter() {
   return (
@@ -47,6 +49,15 @@ export function SiteFooter() {
               className="grid h-11 w-11 place-items-center rounded-full bg-white/5 transition hover:bg-brand-green hover:text-white"
             >
               <Mail className="h-5 w-5" />
+            </a>
+            <a
+              href={GOOGLE_REVIEW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Avaliar no Google"
+              className="grid h-11 w-11 place-items-center rounded-full bg-white/5 transition hover:bg-brand-green hover:text-white"
+            >
+              <Star className="h-5 w-5" />
             </a>
           </div>
         </div>
