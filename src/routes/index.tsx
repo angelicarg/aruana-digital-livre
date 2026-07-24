@@ -18,6 +18,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
+import { trackEvent } from "@/lib/analytics";
 import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/")({
@@ -247,6 +248,7 @@ function HomePage() {
                 href={WHATSAPP}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackEvent("click_whatsapp", { placement: "home_hero" })}
                 className="group inline-flex items-center gap-2 rounded-full bg-brand-gradient px-7 py-3.5 font-semibold text-white shadow-glow transition hover:scale-105"
               >
                 <MessageCircle className="h-5 w-5" /> Falar com Especialista

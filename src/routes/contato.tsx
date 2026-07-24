@@ -4,6 +4,7 @@ import emailjs from "@emailjs/browser";
 import { PageLayout, PageHero } from "@/components/PageLayout";
 import { MessageCircle, Mail, MapPin, Clock, Instagram, Linkedin, Send, CheckCircle } from "lucide-react";
 import { z } from "zod";
+import { trackEvent } from "@/lib/analytics";
 import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/contato")({
@@ -78,6 +79,7 @@ function ContatoPage() {
         { publicKey: EMAILJS_PUBLIC_KEY }
       );
       setSent(true);
+      trackEvent("generate_lead", { lead_source: "contact_form" });
       formRef.current?.reset();
     } catch (err) {
       setSendError("Erro ao enviar. Tente novamente ou entre em contato pelo WhatsApp.");
@@ -224,6 +226,10 @@ function ContatoPage() {
                   href={c.href}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() =>
+                    c.href.startsWith("https://wa.me/") &&
+                    trackEvent("click_whatsapp", { placement: "contato_page" })
+                  }
                   className="block"
                 >
                   {Inner}

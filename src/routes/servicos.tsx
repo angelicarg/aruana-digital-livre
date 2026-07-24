@@ -11,6 +11,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import heroFish from "@/assets/hero-fish.jpg";
+import { trackEvent } from "@/lib/analytics";
+import { FAQSection } from "@/components/FAQSection";
 
 export const Route = createFileRoute("/servicos")({
   head: () => ({
@@ -112,6 +114,18 @@ export const Route = createFileRoute("/servicos")({
           ],
         }),
       },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQ_ITEMS.map((item) => ({
+            "@type": "Question",
+            name: item.q,
+            acceptedAnswer: { "@type": "Answer", text: item.a },
+          })),
+        }),
+      },
     ],
   }),
   component: ServicosPage,
@@ -196,6 +210,29 @@ const SERVICES = [
 
 const WHATSAPP = "https://wa.me/5534992086611";
 
+const FAQ_ITEMS = [
+  {
+    q: "Quanto tempo leva para criar meu site institucional?",
+    a: "Em geral de 15 a 30 dias, dependendo da complexidade do projeto e da rapidez no envio de conteúdo e materiais pela sua empresa.",
+  },
+  {
+    q: "O site já vem com domínio e e-mail profissional?",
+    a: "Ajudamos na configuração de domínio próprio e deixamos o site pronto para uso com e-mail profissional, caso sua empresa ainda não tenha.",
+  },
+  {
+    q: "Como funciona o pagamento?",
+    a: "Trabalhamos com uma parte na contratação e o restante na entrega, ou parcelamento conforme o porte do projeto. Os detalhes são definidos na proposta comercial.",
+  },
+  {
+    q: "O site vai aparecer no Google?",
+    a: "Sim. Todo site que desenvolvemos já sai com SEO técnico base configurado (meta tags, dados estruturados, sitemap e performance otimizada) para facilitar a indexação e o posicionamento orgânico.",
+  },
+  {
+    q: "Preciso saber programar para gerenciar o site depois?",
+    a: "Não. Treinamos você e sua equipe para atualizar textos, imagens e conteúdos com autonomia, sem depender de conhecimento técnico.",
+  },
+];
+
 function ServicosPage() {
   return (
     <PageLayout>
@@ -245,6 +282,7 @@ function ServicosPage() {
                   href={WHATSAPP}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackEvent("click_whatsapp", { placement: "servicos_card", service: s.title })}
                   className="mt-6 inline-flex items-center gap-2 font-semibold text-brand-green-deep hover:gap-3 transition-all"
                 >
                   Quero esse serviço <ArrowRight className="h-4 w-4" />
@@ -275,6 +313,8 @@ function ServicosPage() {
           </Link>
         </div>
       </section>
+
+      <FAQSection items={FAQ_ITEMS} />
     </PageLayout>
   );
 }

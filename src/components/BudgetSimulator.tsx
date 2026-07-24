@@ -3,6 +3,7 @@ import { X, ArrowRight, ArrowLeft, MessageCircle } from "lucide-react";
 import { submitLead } from "@/lib/api/leads.functions";
 import { PACOTES, precoSetup, precoMensal, isPromoActive, PROMO, type PacoteId, type FaixaPreco } from "@/lib/pricing";
 import { markSimulatorCompleted } from "@/lib/lead-storage";
+import { trackEvent } from "@/lib/analytics";
 
 const WHATSAPP_NUMBER = "5534992086611";
 
@@ -91,6 +92,7 @@ export function BudgetSimulator({
     markSimulatorCompleted();
     if (saving || saved || !pacoteId) return;
     setSaving(true);
+    trackEvent("generate_lead", { lead_source: "budget_simulator", pacote: pacoteId });
     try {
       const result = await submitLead({
         data: {
@@ -376,6 +378,7 @@ export function BudgetSimulator({
                 href={whatsappUrl()}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => trackEvent("click_whatsapp", { placement: "budget_simulator" })}
                 className="mt-5 flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold text-white shadow-glow transition hover:scale-[1.02]"
                 style={{ background: "#25D366" }}
               >

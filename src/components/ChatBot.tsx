@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import mascotAru from "#/assets/mascot-face.png";
 import { sendChatMessage } from "#/lib/api/chat.functions";
+import { trackEvent } from "#/lib/analytics";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -379,6 +380,7 @@ export function ChatBot() {
               href={buildWhatsAppHandoffUrl(messages)}
               target="_blank"
               rel="noreferrer"
+              onClick={() => trackEvent("click_whatsapp", { placement: "chatbot" })}
               className="text-xs font-semibold px-2 py-1 rounded-md transition-opacity hover:opacity-80"
               style={{ background: "#25D366", color: "white" }}
             >
