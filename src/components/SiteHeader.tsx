@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X, MessageCircle } from "lucide-react";
 import { AruanaLogo } from "./AruanaLogo";
+import { trackEvent } from "@/lib/analytics";
 
 const NAV = [
   { to: "/", label: "Início" },
@@ -47,6 +48,7 @@ export function SiteHeader() {
             href={WHATSAPP}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackEvent("click_whatsapp", { placement: "header_desktop" })}
             className="inline-flex items-center gap-2 rounded-full bg-brand-gradient px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:scale-105"
           >
             <MessageCircle className="h-4 w-4" />
@@ -85,6 +87,7 @@ export function SiteHeader() {
               href={WHATSAPP}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackEvent("click_whatsapp", { placement: "header_mobile" })}
               className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-brand-gradient px-5 py-3 text-sm font-semibold text-white"
             >
               <MessageCircle className="h-4 w-4" />
