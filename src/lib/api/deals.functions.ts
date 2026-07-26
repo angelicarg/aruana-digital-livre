@@ -25,6 +25,7 @@ export type PublicDeal = {
   implantacaoParcelas: number | null;
   implantacaoCobrePjLink: string | null;
   mensalidadeStatus: "pendente" | "assinatura_criada" | "ativa" | "cancelada" | "falhou";
+  contratoStatus: "pendente" | "enviado" | "assinado" | "rejeitado";
 };
 
 export const getDealByToken = createServerFn({ method: "GET" })
@@ -51,6 +52,7 @@ export const getDealByToken = createServerFn({ method: "GET" })
         implantacaoParcelas: deal.implantacao_parcelas,
         implantacaoCobrePjLink: deal.implantacao_cobre_pj_link,
         mensalidadeStatus: deal.mensalidade_status,
+        contratoStatus: deal.contrato_status,
       };
     } catch (err) {
       console.error("[deals] getDealByToken failed", err);

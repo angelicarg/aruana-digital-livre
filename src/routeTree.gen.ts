@@ -24,6 +24,7 @@ import { Route as FecharIdRouteImport } from './routes/fechar.$id'
 import { Route as ExperienciasSalaYogaRouteImport } from './routes/experiencias.sala-yoga'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiMercadopagoWebhookRouteImport } from './routes/api.mercadopago-webhook'
+import { Route as ApiAutentiqueWebhookRouteImport } from './routes/api.autentique-webhook'
 import { Route as IntranetAuthedRouteRouteImport } from './routes/intranet/_authed/route'
 import { Route as IntranetAuthedIndexRouteImport } from './routes/intranet/_authed/index'
 import { Route as IntranetAuthedReunioesRouteImport } from './routes/intranet/_authed/reunioes'
@@ -109,6 +110,11 @@ const ApiMercadopagoWebhookRoute = ApiMercadopagoWebhookRouteImport.update({
   path: '/api/mercadopago-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAutentiqueWebhookRoute = ApiAutentiqueWebhookRouteImport.update({
+  id: '/api/autentique-webhook',
+  path: '/api/autentique-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IntranetAuthedRouteRoute = IntranetAuthedRouteRouteImport.update({
   id: '/intranet/_authed',
   path: '/intranet',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/sobre': typeof SobreRoute
   '/website-pme': typeof WebsitePmeRoute
   '/intranet': typeof IntranetAuthedRouteRouteWithChildren
+  '/api/autentique-webhook': typeof ApiAutentiqueWebhookRoute
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/website-pme': typeof WebsitePmeRoute
+  '/api/autentique-webhook': typeof ApiAutentiqueWebhookRoute
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/sobre': typeof SobreRoute
   '/website-pme': typeof WebsitePmeRoute
   '/intranet/_authed': typeof IntranetAuthedRouteRouteWithChildren
+  '/api/autentique-webhook': typeof ApiAutentiqueWebhookRoute
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
@@ -248,6 +257,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/website-pme'
     | '/intranet'
+    | '/api/autentique-webhook'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
     | '/experiencias/sala-yoga'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/website-pme'
+    | '/api/autentique-webhook'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
     | '/experiencias/sala-yoga'
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/website-pme'
     | '/intranet/_authed'
+    | '/api/autentique-webhook'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
     | '/experiencias/sala-yoga'
@@ -325,6 +337,7 @@ export interface RootRouteChildren {
   SobreRoute: typeof SobreRoute
   WebsitePmeRoute: typeof WebsitePmeRoute
   IntranetAuthedRouteRoute: typeof IntranetAuthedRouteRouteWithChildren
+  ApiAutentiqueWebhookRoute: typeof ApiAutentiqueWebhookRoute
   ApiMercadopagoWebhookRoute: typeof ApiMercadopagoWebhookRoute
   ExperienciasSalaYogaRoute: typeof ExperienciasSalaYogaRoute
   FecharIdRoute: typeof FecharIdRoute
@@ -436,6 +449,13 @@ declare module '@tanstack/react-router' {
       path: '/api/mercadopago-webhook'
       fullPath: '/api/mercadopago-webhook'
       preLoaderRoute: typeof ApiMercadopagoWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/autentique-webhook': {
+      id: '/api/autentique-webhook'
+      path: '/api/autentique-webhook'
+      fullPath: '/api/autentique-webhook'
+      preLoaderRoute: typeof ApiAutentiqueWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/intranet/_authed': {
@@ -552,6 +572,7 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   WebsitePmeRoute: WebsitePmeRoute,
   IntranetAuthedRouteRoute: IntranetAuthedRouteRouteWithChildren,
+  ApiAutentiqueWebhookRoute: ApiAutentiqueWebhookRoute,
   ApiMercadopagoWebhookRoute: ApiMercadopagoWebhookRoute,
   ExperienciasSalaYogaRoute: ExperienciasSalaYogaRoute,
   FecharIdRoute: FecharIdRoute,

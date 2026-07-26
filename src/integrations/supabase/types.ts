@@ -136,6 +136,12 @@ export type Database = {
           mensalidade_status: "pendente" | "assinatura_criada" | "ativa" | "cancelada" | "falhou"
           mensalidade_mp_preapproval_id: string | null
           mensalidade_mp_status: string | null
+          contrato_status: "pendente" | "enviado" | "assinado" | "rejeitado"
+          contrato_document_id: string | null
+          contrato_autentique_id: string | null
+          contrato_signer_email: string | null
+          contrato_enviado_at: string | null
+          contrato_signed_at: string | null
           notes: string | null
         }
         Insert: {
@@ -155,6 +161,12 @@ export type Database = {
           mensalidade_status?: "pendente" | "assinatura_criada" | "ativa" | "cancelada" | "falhou"
           mensalidade_mp_preapproval_id?: string | null
           mensalidade_mp_status?: string | null
+          contrato_status?: "pendente" | "enviado" | "assinado" | "rejeitado"
+          contrato_document_id?: string | null
+          contrato_autentique_id?: string | null
+          contrato_signer_email?: string | null
+          contrato_enviado_at?: string | null
+          contrato_signed_at?: string | null
           notes?: string | null
         }
         Update: {
@@ -174,6 +186,12 @@ export type Database = {
           mensalidade_status?: "pendente" | "assinatura_criada" | "ativa" | "cancelada" | "falhou"
           mensalidade_mp_preapproval_id?: string | null
           mensalidade_mp_status?: string | null
+          contrato_status?: "pendente" | "enviado" | "assinado" | "rejeitado"
+          contrato_document_id?: string | null
+          contrato_autentique_id?: string | null
+          contrato_signer_email?: string | null
+          contrato_enviado_at?: string | null
+          contrato_signed_at?: string | null
           notes?: string | null
         }
         Relationships: [
@@ -189,6 +207,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "intranet_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intranet_deals_contrato_document_id_fkey"
+            columns: ["contrato_document_id"]
+            isOneToOne: false
+            referencedRelation: "intranet_documents"
             referencedColumns: ["id"]
           },
         ]

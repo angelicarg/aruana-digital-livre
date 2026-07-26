@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Copy, Send } from "lucide-react";
+import { Plus, Copy, Send, FileSignature } from "lucide-react";
 import { toast } from "sonner";
 import {
   listDeals,
@@ -10,11 +10,13 @@ import {
   IMPLANTACAO_STATUS_LABELS,
   MENSALIDADE_STATUS_LABELS,
   IMPLANTACAO_METODO_LABELS,
+  CONTRATO_STATUS_LABELS,
   PACKAGE_TIER_LABELS,
   type DealWithClient,
 } from "@/lib/intranet/deals";
 import { listClients } from "@/lib/intranet/clients";
 import { listProjects } from "@/lib/intranet/projects";
+import { listDocuments } from "@/lib/intranet/documents";
 import { sendImplantacaoPaymentLink } from "@/lib/api/deals.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StatusBadge, type StatusColor } from "@/components/intranet/StatusBadge";
 import { DealFormDialog, type DealFormValues } from "@/components/intranet/DealFormDialog";
+import { SendContractDialog } from "@/components/intranet/SendContractDialog";
 
 export const Route = createFileRoute("/intranet/_authed/negocios")({
   component: NegociosPage,
@@ -49,6 +52,13 @@ const MENSALIDADE_COLORS: Record<DealWithClient["mensalidade_status"], StatusCol
   falhou: "red",
 };
 
+const CONTRATO_COLORS: Record<DealWithClient["contrato_status"], StatusColor> = {
+  pendente: "gray",
+  enviado: "amber",
+  assinado: "green",
+  rejeitado: "red",
+};
+
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -60,6 +70,7 @@ function dealLink(id: string) {
 function NegociosPage() {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [contractDeal, setContractDeal] = useState<DealWithClient | null>(null);
 
   const { data: deals, isLoading } = useQuery({
     queryKey: ["intranet", "deals"],
@@ -81,9 +92,18 @@ function NegociosPage() {
     queryFn: listProjects,
   });
 
+  const { data: documents } = useQuery({
+    queryKey: ["intranet", "documents"],
+    queryFn: listDocuments,
+  });
+
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["intranet", "deals"] });
   };
+
+  const contractDocuments = (documents ?? []).filter(
+    (doc) => doc.category === "contrato" && doc.client_id === contractDeal?.client_id,
+  );
 
   const createMutation = useMutation({
     mutationFn: createDeal,
@@ -143,20 +163,21 @@ function NegociosPage() {
                   <TableHead>Mensalidade</TableHead>
                   <TableHead>Status implantação</TableHead>
                   <TableHead>Status mensalidade</TableHead>
+                  <TableHead>Contrato</TableHead>
                   <TableHead className="w-12" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center text-muted-foreground">
                       Carregando…
                     </TableCell>
                   </TableRow>
                 )}
                 {!isLoading && (deals ?? []).length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center text-muted-foreground">
                       Nenhum negócio criado ainda.
                     </TableCell>
                   </TableRow>
@@ -180,6 +201,25 @@ function NegociosPage() {
                         label={MENSALIDADE_STATUS_LABELS[deal.mensalidade_status]}
                         color={MENSALIDADE_COLORS[deal.mensalidade_status]}
                       />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge
+                          label={CONTRATO_STATUS_LABELS[deal.contrato_status]}
+                          color={CONTRATO_COLORS[deal.contrato_status]}
+                        />
+                        {(deal.contrato_status === "pendente" ||
+                          deal.contrato_status === "rejeitado") && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Enviar contrato para assinatura"
+                            onClick={() => setContractDeal(deal)}
+                          >
+                            <FileSignature className="size-4" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" onClick={() => copyLink(deal.id)}>
@@ -215,6 +255,16 @@ function NegociosPage() {
         projects={projects ?? []}
         onSubmit={handleSubmit}
         submitting={createMutation.isPending}
+      />
+
+      <SendContractDialog
+        open={contractDeal !== null}
+        onOpenChange={(open) => {
+          if (!open) setContractDeal(null);
+        }}
+        deal={contractDeal}
+        contractDocuments={contractDocuments}
+        onSent={invalidate}
       />
     </div>
   );

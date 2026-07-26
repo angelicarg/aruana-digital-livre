@@ -71,6 +71,13 @@ export const IMPLANTACAO_METODO_LABELS: Record<NonNullable<Deal["implantacao_met
   cartao: "Cartão de crédito",
 };
 
+export const CONTRATO_STATUS_LABELS: Record<Deal["contrato_status"], string> = {
+  pendente: "Sem contrato enviado",
+  enviado: "Aguardando assinatura",
+  assinado: "Assinado",
+  rejeitado: "Rejeitado pelo cliente",
+};
+
 // Reexporta para quem só importa de deals.ts precisar de um único módulo
 // pra montar o formulário de novo negócio.
 export { PACKAGE_TIER_LABELS } from "./projects";

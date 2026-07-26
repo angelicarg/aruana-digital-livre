@@ -68,6 +68,7 @@ function FecharNegocioPage() {
       </div>
 
       <div className="mt-10 space-y-6">
+        <ContratoCard status={deal.contratoStatus} />
         <ImplantacaoCard
           dealId={id}
           status={deal.implantacaoStatus}
@@ -81,6 +82,48 @@ function FecharNegocioPage() {
         />
       </div>
     </div>
+  );
+}
+
+function ContratoCard({
+  status,
+}: {
+  status: "pendente" | "enviado" | "assinado" | "rejeitado";
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Contrato</CardTitle>
+        <CardDescription>
+          A assinatura é feita por e-mail, numa página segura da Autentique — nunca aqui no site.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {status === "pendente" && (
+          <p className="text-sm text-muted-foreground">
+            Ainda estamos preparando o contrato. Assim que estiver pronto, você recebe um e-mail
+            para assinar.
+          </p>
+        )}
+        {status === "enviado" && (
+          <p className="text-sm text-muted-foreground">
+            Contrato enviado — confira seu e-mail (inclusive spam) para assinar.
+          </p>
+        )}
+        {status === "assinado" && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <CheckCircle2 className="size-4 text-brand-green" />
+            Contrato assinado.
+          </p>
+        )}
+        {status === "rejeitado" && (
+          <p className="text-sm text-destructive">
+            A assinatura do contrato foi recusada. Fale com a gente pelo WhatsApp para
+            resolvermos.
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
