@@ -58,6 +58,40 @@ export const PACOTES: Record<PacoteId, Pacote> = {
   },
 };
 
+// ─── ADICIONAIS (fora dos pacotes-base, cobrados por cima) ─────────────────
+// Recursos que não fazem parte de nenhum pacote fixo — a integração em si
+// (ex: Mercado Pago) é gratuita até a primeira venda, mas o trabalho de
+// implementar/testar/manter é cobrado à parte. Ainda não estão plugados no
+// BudgetSimulator (isso é decisão pendente: se um adicional entra na
+// simulação automática ou fica só pra negociação manual do orçamento).
+
+export type AdicionalId = "pagamento_recorrente";
+
+export interface Adicional {
+  id: AdicionalId;
+  nome: string;
+  descricao: string;
+  setupMin: number;
+  setupMax: number | null; // null = "a partir de" (sem teto)
+}
+
+export const ADICIONAIS: Record<AdicionalId, Adicional> = {
+  pagamento_recorrente: {
+    id: "pagamento_recorrente",
+    nome: "Pagamento recorrente automático",
+    descricao:
+      "Cobrança de mensalidade automática via gateway de pagamento (Mercado Pago ou similar), com link de pagamento parcelado para taxas únicas.",
+    // Valor SUGERIDO, não confirmado — ajustar antes de usar em proposta real.
+    // Baseado em: integração comparável em esforço a um pacote Essencial
+    // (conta/API do gateway já é gratuita, o custo é o trabalho de
+    // integrar+testar+manter webhook), sem valor de teto porque a
+    // complexidade varia bastante por cliente (loja simples vs.
+    // multi-gateway, por exemplo).
+    setupMin: 1500,
+    setupMax: 3000,
+  },
+};
+
 // ─── PROMOÇÃO DE LANÇAMENTO ─────────────────────────────────────────────────
 
 export const PROMO = {
