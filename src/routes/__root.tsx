@@ -17,14 +17,14 @@ function NotFoundComponent() {
     <div className="flex min-h-dvh items-center justify-center bg-hero-gradient px-4 text-white">
       <div className="max-w-md text-center">
         <h1 className="text-8xl font-black text-gradient-brand">404</h1>
-        <h2 className="mt-4 text-2xl font-bold">Pagina nao encontrada</h2>
-        <p className="mt-2 text-white/70">A pagina que voce procura nao existe ou foi movida.</p>
+        <h2 className="mt-4 text-2xl font-bold">Página não encontrada</h2>
+        <p className="mt-2 text-white/70">A página que você procura não existe ou foi movida.</p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-full bg-brand-gradient px-6 py-3 font-semibold text-white shadow-glow transition hover:scale-105"
           >
-            Voltar ao inicio
+            Voltar ao início
           </Link>
         </div>
       </div>
@@ -44,7 +44,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Algo deu errado</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Tente recarregar a pagina ou voltar ao inicio.
+          Tente recarregar a página ou voltar ao início.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -60,7 +60,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             href="/"
             className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold"
           >
-            Inicio
+            Início
           </a>
         </div>
       </div>
@@ -73,20 +73,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Aruana Digital - Tecnologia, Educacao e Resultados" },
+      { title: "Aruanã Digital — Tecnologia, Educação e Resultados" },
       {
         name: "description",
-        content: "Ecossistemas digitais acessiveis para empresas e instituicoes.",
+        content: "Ecossistemas digitais acessíveis para empresas e instituições.",
       },
-      { name: "author", content: "Aruana Digital" },
+      { name: "author", content: "Aruanã Digital" },
       { name: "theme-color", content: "#041B33" },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "Aruana Digital" },
-      { property: "og:title", content: "Aruana Digital - Tecnologia, Educacao e Resultados" },
-      { property: "og:description", content: "Ecossistemas digitais acessiveis para empresas e instituicoes." },
+      { property: "og:site_name", content: "Aruanã Digital" },
+      { property: "og:title", content: "Aruanã Digital — Tecnologia, Educação e Resultados" },
+      { property: "og:description", content: "Ecossistemas digitais acessíveis para empresas e instituições." },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Aruana Digital - Tecnologia, Educacao e Resultados" },
-      { name: "twitter:description", content: "Ecossistemas digitais acessiveis para empresas e instituicoes." },
+      { name: "twitter:title", content: "Aruanã Digital — Tecnologia, Educação e Resultados" },
+      { name: "twitter:description", content: "Ecossistemas digitais acessíveis para empresas e instituições." },
     ],
     links: [
       { rel: "icon", type: "image/png", href: "/favicon.png" },
@@ -131,27 +131,29 @@ function RootShell({ children }: { children: ReactNode }) {
           />
         )}
         {children}
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `
-              <div vw="true" class="enabled">
-                <div vw-access-button="true" class="active"></div>
-                <div vw-plugin-wrapper="true">
-                  <div class="vw-plugin-top-wrapper"></div>
-                </div>
-              </div>
-            `,
-          }}
-        />
+        {/* O container do VLibras é criado fora da árvore do React de propósito:
+            o widget muta o próprio DOM, e qualquer nó gerenciado pelo React seria
+            restaurado ao template numa re-renderização/hydration, matando o botão
+            até a página ser recarregada. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              var script = document.createElement('script');
-              script.src = 'https://vlibras.gov.br/app/vlibras-plugin.js';
-              script.onload = function() {
-                new window.VLibras.Widget('https://vlibras.gov.br/app');
-              };
-              document.body.appendChild(script);
+              (function () {
+                if (document.querySelector('[vw]')) return;
+                var container = document.createElement('div');
+                container.setAttribute('vw', 'true');
+                container.className = 'enabled';
+                container.innerHTML =
+                  '<div vw-access-button="true" class="active"></div>' +
+                  '<div vw-plugin-wrapper="true"><div class="vw-plugin-top-wrapper"></div></div>';
+                document.body.appendChild(container);
+                var script = document.createElement('script');
+                script.src = 'https://vlibras.gov.br/app/vlibras-plugin.js';
+                script.onload = function () {
+                  new window.VLibras.Widget('https://vlibras.gov.br/app');
+                };
+                document.body.appendChild(script);
+              })();
             `,
           }}
         />
