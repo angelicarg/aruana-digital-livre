@@ -42,6 +42,15 @@ const documentSchema = z.object({
 
 export type DocumentFormValues = z.infer<typeof documentSchema>;
 
+// O nome sugerido é só rótulo de exibição — quem carrega a extensão de
+// verdade é o arquivo no storage (e a Autentique valida o tipo por ela, ver
+// signature.functions.ts). Tira a extensão final e as repetições coladas nela,
+// que é o caso de arquivos salvos como "relatorio.pdf.pdf".
+function nomeSemExtensao(fileName: string) {
+  const semExtensao = fileName.replace(/(\.[A-Za-z0-9]{1,8})\1*$/i, "");
+  return semExtensao.trim() || fileName;
+}
+
 export function DocumentUploadDialog({
   open,
   onOpenChange,
@@ -83,7 +92,7 @@ export function DocumentUploadDialog({
     setFile(selected);
     setFileError(null);
     if (selected && !form.getValues("name")) {
-      form.setValue("name", selected.name);
+      form.setValue("name", nomeSemExtensao(selected.name));
     }
   }
 
