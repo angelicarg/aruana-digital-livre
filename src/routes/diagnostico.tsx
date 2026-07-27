@@ -12,6 +12,7 @@ import {
   Search,
   ShieldCheck,
   Target,
+  ExternalLink,
 } from "lucide-react";
 import {
   Accordion,
@@ -55,6 +56,27 @@ const FRENTES = [
   ["Acessibilidade", "conformidade com a LBI e a norma ABNT NBR 17225"],
   ["Conversão", "o que faz o visitante desistir antes de falar com você"],
 ] as const;
+
+// Prova para tráfego frio: quem chega de anúncio nunca ouviu falar da
+// empresa, e a primeira objeção é "quem são vocês?". Mesma regra da home —
+// projeto de demonstração, nunca apresentado como cliente (ver BRAND.md).
+const PROVA = [
+  {
+    nome: "Clínica Dente Vivo",
+    desc: "Agendamento real: escolha a dentista, o dia e o horário e veja a confirmação chegar.",
+    url: "https://dente-vivo.vercel.app/",
+  },
+  {
+    nome: "Forno 81",
+    desc: "Cardápio, carrinho e um atendente com IA que conhece os produtos de verdade.",
+    url: "https://forno81.vercel.app/",
+  },
+  {
+    nome: "Patas Nobres",
+    desc: "Banho e tosa agendáveis, loja completa e assistente de IA que recomenda produtos.",
+    url: "https://patas-nobres.vercel.app/",
+  },
+];
 
 const ENTREGAS = [
   {
@@ -341,6 +363,41 @@ function DiagnosticoPage() {
                 enviar.
               </p>
             </form>
+          </div>
+        </div>
+      </section>
+
+      {/* PROVA VERIFICÁVEL */}
+      <section className="bg-brand-cloud py-16 sm:py-20 lg:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="font-display text-2xl font-black text-brand-navy-deep sm:text-3xl">
+              Antes de confiar o seu site a alguém, veja o que essa gente constrói.
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              Não vamos te mostrar depoimento. Construímos estes projetos para demonstrar o que é
+              possível — empresa fictícia, software real — e todos estão no ar. Abra, agende,
+              converse com o chatbot. É a mesma prova que você vai receber sobre o seu site.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            {PROVA.map((p) => (
+              <article key={p.nome} className="flex flex-col rounded-3xl bg-card p-6 shadow-card">
+                <span className="self-start rounded-full bg-brand-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+                  Projeto de demonstração
+                </span>
+                <h3 className="mt-4 font-display text-lg font-bold">{p.nome}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
+                <a
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand-green-deep transition hover:gap-3"
+                >
+                  Abrir e testar ao vivo <ExternalLink className="h-4 w-4" />
+                </a>
+              </article>
+            ))}
           </div>
         </div>
       </section>

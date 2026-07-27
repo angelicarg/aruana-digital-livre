@@ -118,13 +118,14 @@ function BlogPostPage() {
           <div className="mt-16 rounded-2xl border border-brand-green/20 bg-brand-green/5 p-8 text-center">
             <h2 className="font-display text-xl font-bold">Pronto para começar?</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Converse com nossa equipe e receba um diagnóstico gratuito para o seu projeto.
+              Analisamos velocidade, SEO, acessibilidade e conversão do seu site e devolvemos as
+              três prioridades em até 48 horas. Sem custo e sem proposta comercial junto.
             </p>
             <Link
-              to="/contato"
+              to="/diagnostico"
               className="mt-5 inline-flex items-center gap-2 rounded-full bg-brand-gradient px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:scale-105"
             >
-              Solicitar orçamento
+              Receber o diagnóstico gratuito
             </Link>
           </div>
         </div>
