@@ -70,7 +70,7 @@ SERVIÇOS OFERECIDOS:
 
 PORTFÓLIO DE DEMONSTRAÇÃO:
 - **Clínica Dente Vivo** — Site completo com agendamento por dentista e chatbot de atendimento
-- **Carlos Pinto Pintor** — Landing page com sistema de orçamento online automático
+- **Carlos Pintor** — Landing page com sistema de orçamento online automático
 - **Forno 81 Pizzaria** — Site com cardápio interativo, carrinho e chatbot com IA
 
 PROCESSO DE TRABALHO:
@@ -83,7 +83,7 @@ PROCESSO DE TRABALHO:
 FORMAS DE CONTATO:
 - WhatsApp: (34) 99208-6611
 - E-mail: aruanadigital@aruanadigital.com
-- Site: aruanadigital.com.br
+- Site: aruanadigital.com
 
 INSTRUÇÕES DE COMPORTAMENTO:
 - Responda SEMPRE em português brasileiro

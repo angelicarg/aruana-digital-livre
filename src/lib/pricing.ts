@@ -24,7 +24,7 @@ export const PACOTES: Record<PacoteId, Pacote> = {
     setupMax: 4000,
     mensalMin: 100,
     mensalMax: 150,
-    cases: ["Carlos Pinto Pintor"],
+    cases: ["Carlos Pintor"],
   },
   profissional: {
     id: "profissional",
