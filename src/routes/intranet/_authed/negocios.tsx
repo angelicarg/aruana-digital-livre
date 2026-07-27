@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Copy, Send, FileSignature, RefreshCw } from "lucide-react";
@@ -161,6 +161,53 @@ function NegociosPage() {
     },
     onError: () => toast.error("Não foi possível atualizar o status."),
   });
+
+  // Sincronização automática ao abrir a página: a Autentique não está
+  // chamando nosso webhook de forma confiável (o endpoint responde, mas o
+  // status nunca virou sozinho — ver comentário em api.autentique-webhook.ts),
+  // então relemos o status de cada contrato pendente aqui. Cada negócio é
+  // consultado no máximo uma vez por carregamento; o botão manual continua
+  // disponível para reconsultar na hora.
+  const autoSyncRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const pendentes = (deals ?? []).filter(
+      (deal) =>
+        deal.contrato_status === "enviado" &&
+        deal.contrato_autentique_id &&
+        !autoSyncRef.current.has(deal.id),
+    );
+    if (pendentes.length === 0) return;
+
+    // Marca antes de qualquer await — senão a re-execução do efeito (StrictMode
+    // em dev, ou um refetch rápido) dispararia a mesma consulta duas vezes.
+    for (const deal of pendentes) autoSyncRef.current.add(deal.id);
+
+    let cancelado = false;
+
+    (async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) return;
+
+      let algumMudou = false;
+      for (const deal of pendentes) {
+        try {
+          const resultado = await syncContractStatus({ data: { dealId: deal.id, accessToken } });
+          if (resultado.synced && resultado.status !== "enviado") algumMudou = true;
+        } catch {
+          // Silencioso de propósito: é uma atualização de fundo, e o botão
+          // manual dá o retorno de erro quando ela for pedida explicitamente.
+        }
+      }
+
+      if (algumMudou && !cancelado) invalidate();
+    })();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [deals]);
 
   return (
     <div>
