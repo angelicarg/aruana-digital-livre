@@ -13,3 +13,4 @@ __unconfig*
 todos.json
 backup-negocios-teste-*.json
 backup-intranet-*.json
+.claude/skills/
