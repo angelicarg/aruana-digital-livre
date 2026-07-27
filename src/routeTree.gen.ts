@@ -14,6 +14,7 @@ import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as DiagnosticoRouteImport } from './routes/diagnostico'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CasesRouteImport } from './routes/cases'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -58,6 +59,11 @@ const ServicosRoute = ServicosRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnosticoRoute = DiagnosticoRouteImport.update({
+  id: '/diagnostico',
+  path: '/diagnostico',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContatoRoute = ContatoRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRouteWithChildren
   '/cases': typeof CasesRoute
   '/contato': typeof ContatoRoute
+  '/diagnostico': typeof DiagnosticoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cases': typeof CasesRoute
   '/contato': typeof ContatoRoute
+  '/diagnostico': typeof DiagnosticoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/blog': typeof BlogRouteWithChildren
   '/cases': typeof CasesRoute
   '/contato': typeof ContatoRoute
+  '/diagnostico': typeof DiagnosticoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cases'
     | '/contato'
+    | '/diagnostico'
     | '/privacidade'
     | '/servicos'
     | '/sitemap.xml'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cases'
     | '/contato'
+    | '/diagnostico'
     | '/privacidade'
     | '/servicos'
     | '/sitemap.xml'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cases'
     | '/contato'
+    | '/diagnostico'
     | '/privacidade'
     | '/servicos'
     | '/sitemap.xml'
@@ -331,6 +343,7 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRouteWithChildren
   CasesRoute: typeof CasesRoute
   ContatoRoute: typeof ContatoRoute
+  DiagnosticoRoute: typeof DiagnosticoRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ServicosRoute: typeof ServicosRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -379,6 +392,13 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnostico': {
+      id: '/diagnostico'
+      path: '/diagnostico'
+      fullPath: '/diagnostico'
+      preLoaderRoute: typeof DiagnosticoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contato': {
@@ -566,6 +586,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRouteWithChildren,
   CasesRoute: CasesRoute,
   ContatoRoute: ContatoRoute,
+  DiagnosticoRoute: DiagnosticoRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ServicosRoute: ServicosRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

@@ -26,11 +26,27 @@ export interface BlogPost {
 
 const RAW_POSTS: Omit<BlogPost, "body">[] = [
   {
+    slug: "acessibilidade-sites-lei-lbi-nbr-17225",
+    title: "Lei Brasileira de Inclusão e ABNT NBR 17225: o que o site da sua empresa realmente precisa cumprir",
+    metaTitle: "Acessibilidade em Sites: LBI e NBR 17225 | Aruanã",
+    metaDescription:
+      "O artigo 63 da LBI torna a acessibilidade obrigatória em sites de empresas. Desde março de 2025 existe norma técnica brasileira. Veja o que isso exige do seu site, na prática.",
+    keywords:
+      "acessibilidade em sites lei, ABNT NBR 17225, LBI site empresa, acessibilidade digital obrigatória, WCAG 2.2 Brasil",
+    tag: "Acessibilidade Digital",
+    readTime: "7 min",
+    date: "2026-07-27",
+    dateLabel: "27 Jul 2026",
+    excerpt:
+      "A LBI exige acessibilidade em sites de empresas desde 2015 — e desde março de 2025 a ABNT NBR 17225 diz exatamente o que isso significa. Entenda o que cumprir, na prática.",
+    relatedSlugs: ["5-erros-ao-criar-site", "como-escolher-agencia-web", "seo-sites-novos"],
+  },
+  {
     slug: "quanto-custa-criar-site",
     title: "Quanto Custa Criar um Site Profissional em 2026?",
     metaTitle: "Quanto Custa um Site em 2026? Preços Reais | Aruanã",
     metaDescription:
-      "Descubra quanto custa criar um site profissional em 2026. Preços reais, pacotes e o que está incluso. Guia completo com exemplos da Aruanã Digital.",
+      "Descubra quanto custa criar um site profissional em 2026. Preços reais, pacotes e o que está incluso em cada faixa. Guia completo, sem enrolação.",
     keywords: "quanto custa site, preço criação de sites, valor de site",
     tag: "Criação de Sites",
     readTime: "8 min",
