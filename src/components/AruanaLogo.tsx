@@ -18,14 +18,22 @@ export function AruanaLogo({ className = "", size = "md" }: Props) {
   const s = SIZES[size];
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <img
-        src={logoSrc}
-        alt=""
-        aria-hidden="true"
-        className={`${s.img} w-auto object-contain`}
-        loading="eager"
-        decoding="async"
-      />
+      <span className="relative inline-flex">
+        {/* Halo radial discreto atrás do símbolo: o corpo do peixe é azul-marinho
+            e some sobre os fundos navy do header/footer sem este contraste. */}
+        <span
+          aria-hidden="true"
+          className="absolute left-1/2 top-1/2 h-[130%] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(127,211,190,0.38)_0%,rgba(127,211,190,0.14)_45%,transparent_72%)]"
+        />
+        <img
+          src={logoSrc}
+          alt=""
+          aria-hidden="true"
+          className={`${s.img} relative w-auto object-contain`}
+          loading="eager"
+          decoding="async"
+        />
+      </span>
       <span className="flex flex-col gap-1 leading-none">
         <span className={`font-display font-black tracking-tight text-white ${s.name}`}>
           Aruanã

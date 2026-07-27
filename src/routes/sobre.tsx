@@ -49,15 +49,16 @@ function SobrePage() {
             <h2 className="text-3xl font-black sm:text-4xl">Nossa história</h2>
             <div className="mt-6 space-y-4 text-lg leading-relaxed text-muted-foreground">
               <p>
-                A Aruanã Digital nasceu da convicção de que a tecnologia precisa servir às pessoas —
-                não o contrário. O nome vem do aruanã, peixe amazônico de nome de origem indígena:
-                uma homenagem ao Brasil e aos povos originários, e uma recusa deliberada dos nomes
-                genéricos que o mundo da tecnologia costuma escolher.
+                O nome aruanã surge como uma homenagem à identidade brasileira, nossa cultura e aos
+                povos originários. O peixe aruanã é tradicional da Amazônia e carrega o significado
+                de inovação e o desafio de buscar caminhos novos, visto que é o peixe que quebra as
+                regras e pula e respira fora da água.
               </p>
               <p>
-                E tem um detalhe que virou filosofia de trabalho: o aruanã salta para fora d'água
-                para alcançar o que está acima da superfície. É isso que buscamos em cada projeto —
-                tirar a empresa do lugar onde ela está para alcançar o que parecia fora do alcance.
+                Esse detalhe é o que transformou a nossa filosofia de trabalho: o aruanã salta para
+                fora d'água para alcançar o que está acima da superfície. É isso que buscamos em
+                cada projeto — tirar a empresa do lugar onde ela está para alcançar o que parecia
+                fora do alcance.
               </p>
               <p>
                 Atendemos empresas, instituições de ensino e gestores que precisam transformar a
