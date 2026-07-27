@@ -94,7 +94,7 @@ function WebsitePmePage() {
               {
                 icon: SearchX,
                 title: "Seus clientes não te encontram no Google",
-                stat: "73% das buscas não chegam em sites de pequenas empresas",
+                stat: "Quem não aparece nas primeiras posições do Google raramente recebe o clique",
               },
               {
                 icon: MonitorX,

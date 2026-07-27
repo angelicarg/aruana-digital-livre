@@ -33,7 +33,7 @@ export const Route = createFileRoute("/cases")({
 const CASES = [
   {
     tag: "Serviços",
-    title: "Carlos Pinto Pintor",
+    title: "Carlos Pintor",
     desc: "Landing page com calculadora de orçamento em 3 passos, do cômodo até o valor final, direto para o fechamento via WhatsApp.",
     highlights: ["Orçamento em 3 passos", "Cálculo automático", "Fechamento via WhatsApp"],
     url: "https://carlos-pintor.vercel.app/",
@@ -97,7 +97,8 @@ function CasesPage() {
             <p className="text-sm leading-relaxed text-foreground/80">
               <span className="font-semibold text-brand-navy">Sobre estes cases:</span> são projetos de
               demonstração, criados para mostrar nossa metodologia, capacidade técnica e padrão de
-              qualidade — cada um funcionando de verdade, para você testar. Toda solução real é
+              qualidade — empresa fictícia, software real, cada um funcionando de verdade para você
+              testar. Toda solução real é
               personalizada conforme o desafio específico do cliente. Quer que sua empresa seja o
               próximo case?{" "}
               <a href="/contato" className="font-semibold text-brand-green underline hover:text-brand-green-deep">
@@ -118,9 +119,12 @@ function CasesPage() {
                 }`}
               >
                 <div className="bg-hero-gradient p-8 text-white">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-brand-green/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green">
                       {c.tag}
+                    </span>
+                    <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white/80">
+                      Projeto de demonstração
                     </span>
                     {c.status === "soon" && (
                       <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white/80">

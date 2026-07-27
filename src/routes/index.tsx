@@ -13,9 +13,9 @@ import {
   Rocket,
   Users,
   TrendingUp,
-  Quote,
   CheckCircle2,
   MessageCircle,
+  ExternalLink,
 } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
 import { trackEvent } from "@/lib/analytics";
@@ -191,21 +191,23 @@ const STEPS = [
   },
 ];
 
-const TESTIMONIALS = [
+// Prova verificável no lugar de depoimentos: projetos de demonstração no ar,
+// que o visitante pode abrir e testar. Nunca apresentar como clientes reais.
+const PROOF_PROJECTS = [
   {
-    name: "Mariana Costa",
-    role: "Diretora — Instituto Educar+",
-    text: "A Aruanã traduziu nossa visão em uma plataforma acessível e simples. Triplicamos o número de matrículas em 6 meses.",
+    name: "Clínica Dente Vivo",
+    desc: "Agende uma consulta de verdade: escolha a dentista, o dia e o horário, e veja a confirmação chegar.",
+    url: "https://dente-vivo.vercel.app/",
   },
   {
-    name: "Rafael Mendes",
-    role: "CEO — Logística MG",
-    text: "Automatizamos processos críticos e a equipe ganhou tempo para o que importa. Profissionais excepcionais.",
+    name: "Forno 81",
+    desc: "Monte um pedido no carrinho e converse com o Toninho, um atendente com IA real que conhece todo o cardápio.",
+    url: "https://forno81.vercel.app/",
   },
   {
-    name: "Letícia Almeida",
-    role: "Coordenadora Pedagógica",
-    text: "O cuidado com acessibilidade fez toda a diferença. Hoje atendemos um público muito mais amplo.",
+    name: "Patas Nobres",
+    desc: "Agende banho e tosa, explore a loja e peça uma recomendação de produto à assistente de IA.",
+    url: "https://patas-nobres.vercel.app/",
   },
 ];
 
@@ -464,28 +466,49 @@ function HomePage() {
         </div>
       </section>
 
-      {/* DEPOIMENTOS */}
+      {/* PROVA VERIFICÁVEL */}
       <section className="bg-muted py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto max-w-3xl text-center">
             <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
-              Depoimentos
+              Prova real
             </p>
-            <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl">Quem confia, transforma</h2>
+            <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl">
+              Não vamos te mostrar depoimento.{" "}
+              <span className="text-gradient-brand">Vamos te mostrar software funcionando.</span>
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Todos os projetos abaixo estão no ar — abra, clique, teste o agendamento, converse com
+              o chatbot. Construímos cada um para demonstrar o que é possível: empresa fictícia,
+              software real.
+            </p>
           </div>
           <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {TESTIMONIALS.map((t) => (
-              <figure key={t.name} className="rounded-3xl bg-card p-7 shadow-card">
-                <Quote className="h-8 w-8 text-brand-green" />
-                <blockquote className="mt-4 text-base leading-relaxed text-foreground">
-                  "{t.text}"
-                </blockquote>
-                <figcaption className="mt-6 border-t border-border pt-4">
-                  <p className="font-display font-bold">{t.name}</p>
-                  <p className="text-sm text-muted-foreground">{t.role}</p>
-                </figcaption>
-              </figure>
+            {PROOF_PROJECTS.map((p) => (
+              <article key={p.name} className="flex flex-col rounded-3xl bg-card p-7 shadow-card">
+                <span className="self-start rounded-full bg-brand-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+                  Projeto de demonstração
+                </span>
+                <h3 className="mt-4 font-display text-xl font-bold">{p.name}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
+                <a
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-green-deep transition hover:gap-3"
+                >
+                  Abrir e testar ao vivo <ExternalLink className="h-4 w-4" />
+                </a>
+              </article>
             ))}
+          </div>
+          <div className="mt-10 text-center">
+            <Link
+              to="/cases"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-7 py-3.5 font-semibold text-brand-navy-deep shadow-card transition hover:-translate-y-0.5 hover:border-brand-green"
+            >
+              Ver todos os projetos no ar <ArrowRight className="h-5 w-5" />
+            </Link>
           </div>
         </div>
       </section>
