@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Copy, Send, FileSignature } from "lucide-react";
+import { Plus, Copy, Send, FileSignature, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import {
   listDeals,
@@ -18,6 +18,7 @@ import { listClients } from "@/lib/intranet/clients";
 import { listProjects } from "@/lib/intranet/projects";
 import { listDocuments } from "@/lib/intranet/documents";
 import { sendImplantacaoPaymentLink } from "@/lib/api/deals.functions";
+import { syncContractStatus } from "@/lib/api/signature.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,6 +129,39 @@ function NegociosPage() {
     toast.success("Link copiado.");
   }
 
+  // Rede de segurança do webhook: relê o status direto da Autentique.
+  const syncMutation = useMutation({
+    mutationFn: async (dealId: string) => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) throw new Error("sem sessão");
+      return syncContractStatus({ data: { dealId, accessToken } });
+    },
+    onSuccess: (result) => {
+      if (result.synced) {
+        invalidate();
+        const mensagens = {
+          assinado: "Contrato assinado por todos os signatários.",
+          rejeitado: "A assinatura foi recusada.",
+          enviado: "Ainda aguardando assinatura de algum signatário.",
+        } as const;
+        toast.success(mensagens[result.status]);
+        return;
+      }
+      const erros: Record<string, string> = {
+        not_admin: "Sessão sem permissão. Entre novamente.",
+        not_configured: "Integração da Autentique não configurada.",
+        deal_not_found: "Negócio não encontrado.",
+        no_contract: "Este negócio ainda não tem contrato enviado.",
+        autentique_error: "Não foi possível consultar a Autentique agora.",
+        save_failed: "Status lido, mas houve falha ao salvar.",
+        unexpected_error: "Erro inesperado ao atualizar o status.",
+      };
+      toast.error(erros[result.reason] ?? "Não foi possível atualizar o status.");
+    },
+    onError: () => toast.error("Não foi possível atualizar o status."),
+  });
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -217,6 +251,19 @@ function NegociosPage() {
                             onClick={() => setContractDeal(deal)}
                           >
                             <FileSignature className="size-4" />
+                          </Button>
+                        )}
+                        {deal.contrato_status === "enviado" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Atualizar status pela Autentique"
+                            disabled={syncMutation.isPending}
+                            onClick={() => syncMutation.mutate(deal.id)}
+                          >
+                            <RefreshCw
+                              className={`size-4 ${syncMutation.isPending ? "animate-spin" : ""}`}
+                            />
                           </Button>
                         )}
                       </div>

@@ -76,6 +76,71 @@ async function autentiqueCreateDocument(params: {
   return { id: json.data.createDocument.id };
 }
 
+// ─── LEITURA DE STATUS (fonte da verdade) ───────────────────────────────────
+// O status de assinatura é sempre lido da API da Autentique, nunca inferido
+// do corpo de um webhook: o payload/HMAC deles não pôde ser validado contra
+// um evento real, então tratar o evento como mero "gatilho" e reconsultar o
+// documento é o que mantém o status correto mesmo se o webhook mudar de
+// formato ou nunca chegar (ver syncContractStatus + o botão na intranet).
+
+export type ContratoStatusRemoto = "assinado" | "rejeitado" | "enviado";
+
+// Usa os contadores da própria Autentique em vez de deduzir da lista de
+// signatários. A lista traz entradas que NÃO são assinaturas exigidas — o
+// dono da conta aparece nela com `action: null` (registro de autor) e nunca
+// assina. Contar a lista deixaria o contrato preso em "aguardando
+// assinatura" para sempre; `signatures_count`/`signed_count` são a
+// contabilidade oficial e já excluem essas entradas.
+const DOCUMENT_STATUS_QUERY = `
+  query DocumentStatus($id: UUID!) {
+    document(id: $id) {
+      id
+      signatures_count
+      signed_count
+      rejected_count
+    }
+  }
+`;
+
+export async function fetchAutentiqueStatus(
+  token: string,
+  documentId: string,
+): Promise<{ status: ContratoStatusRemoto } | { error: string }> {
+  const response = await fetch("https://api.autentique.com.br/v2/graphql", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ query: DOCUMENT_STATUS_QUERY, variables: { id: documentId } }),
+  });
+
+  let json: {
+    data?: {
+      document?: {
+        signatures_count: number;
+        signed_count: number;
+        rejected_count: number;
+      } | null;
+    };
+    errors?: { message: string }[];
+  };
+
+  try {
+    json = await response.json();
+  } catch {
+    return { error: `Resposta não-JSON da Autentique (status ${response.status})` };
+  }
+
+  if (json.errors?.length) return { error: json.errors.map((e) => e.message).join("; ") };
+
+  const doc = json.data?.document;
+  if (!doc) return { error: "Documento não encontrado na Autentique" };
+
+  if (doc.rejected_count > 0) return { status: "rejeitado" };
+  if (doc.signatures_count > 0 && doc.signed_count >= doc.signatures_count) {
+    return { status: "assinado" };
+  }
+  return { status: "enviado" };
+}
+
 const sendContractSchema = z.object({
   dealId: z.string().uuid(),
   documentId: z.string().uuid(),
@@ -199,5 +264,76 @@ export const sendContractForSignature = createServerFn({ method: "POST" })
     } catch (err) {
       console.error("[signature] sendContractForSignature unavailable", err);
       return { sent: false, reason: "unexpected_error" };
+    }
+  });
+
+// ─── SINCRONIZAÇÃO MANUAL ───────────────────────────────────────────────────
+// Rede de segurança para o webhook: reconsulta a Autentique e grava o status
+// real. Serve tanto para o botão "Atualizar status" da intranet quanto para
+// destravar qualquer contrato caso o evento não chegue.
+
+const syncContractSchema = z.object({
+  dealId: z.string().uuid(),
+  accessToken: z.string().min(1),
+});
+
+export type SyncContractResult =
+  | { synced: true; status: ContratoStatusRemoto }
+  | {
+      synced: false;
+      reason: "not_admin" | "not_configured" | "deal_not_found" | "no_contract" | "autentique_error" | "save_failed" | "unexpected_error";
+    };
+
+export const syncContractStatus = createServerFn({ method: "POST" })
+  .inputValidator(syncContractSchema)
+  .handler(async ({ data }): Promise<SyncContractResult> => {
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { requireIntranetAdmin, NotIntranetAdminError } = await import(
+        "@/lib/api/intranet-auth.server"
+      );
+
+      try {
+        await requireIntranetAdmin(supabaseAdmin, data.accessToken);
+      } catch (err) {
+        if (err instanceof NotIntranetAdminError) return { synced: false, reason: "not_admin" };
+        throw err;
+      }
+
+      const apiToken = process.env.AUTENTIQUE_API_TOKEN;
+      if (!apiToken) return { synced: false, reason: "not_configured" };
+
+      const { data: deal, error: dealError } = await supabaseAdmin
+        .from("intranet_deals")
+        .select("id, contrato_autentique_id")
+        .eq("id", data.dealId)
+        .maybeSingle();
+
+      if (dealError || !deal) return { synced: false, reason: "deal_not_found" };
+      if (!deal.contrato_autentique_id) return { synced: false, reason: "no_contract" };
+
+      const result = await fetchAutentiqueStatus(apiToken, deal.contrato_autentique_id);
+      if ("error" in result) {
+        console.error("[signature] sync: falha ao consultar Autentique", result.error);
+        return { synced: false, reason: "autentique_error" };
+      }
+
+      const { error: updateError } = await supabaseAdmin
+        .from("intranet_deals")
+        .update({
+          contrato_status: result.status,
+          ...(result.status === "assinado" ? { contrato_signed_at: new Date().toISOString() } : {}),
+        })
+        .eq("id", data.dealId);
+
+      if (updateError) {
+        console.error("[signature] sync: falha ao salvar status", updateError);
+        return { synced: false, reason: "save_failed" };
+      }
+
+      return { synced: true, status: result.status };
+    } catch (err) {
+      console.error("[signature] syncContractStatus unavailable", err);
+      return { synced: false, reason: "unexpected_error" };
     }
   });
