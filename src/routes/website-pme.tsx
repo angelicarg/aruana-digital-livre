@@ -182,39 +182,81 @@ function WebsitePmePage() {
         </div>
       </section>
 
-      {/* CASOS (ANÔNIMOS) */}
+      {/* PROVA VERIFICÁVEL */}
       <section className="bg-brand-cloud py-16 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-2xl font-black sm:text-3xl">Quem Confia, Transforma</h2>
+          <h2 className="text-center text-2xl font-black sm:text-3xl">
+            Não Acredite na Nossa Palavra. Teste.
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
+            Construímos estes projetos de demonstração — empresa fictícia, software real — e todos
+            estão no ar. Abra, agende, converse com o chatbot.
+          </p>
           <div className="mt-10 grid gap-6 sm:grid-cols-3">
             {[
               {
-                segmento: "Clínica de saúde · Uberlândia/MG",
-                texto:
-                  "Sistema de agendamento online com lembretes automáticos reduziu faltas e ligações repetidas pra remarcar consulta.",
+                nome: "Clínica Dente Vivo",
+                texto: "Agendamento online em tempo real, com escolha de profissional e horário.",
+                url: "https://dente-vivo.vercel.app/",
               },
               {
-                segmento: "Comércio de alimentos · Uberlândia/MG",
-                texto:
-                  "Loja virtual própria com atendimento automático por inteligência artificial tirou o negócio da dependência só das redes sociais.",
+                nome: "Forno 81",
+                texto: "Loja virtual com carrinho e atendente de IA que conhece o cardápio inteiro.",
+                url: "https://forno81.vercel.app/",
               },
               {
-                segmento: "Varejo · Minas Gerais",
-                texto:
-                  "Painel próprio de gestão de conteúdo e assistente virtual 24h substituíram o atendimento manual saindo das redes sociais.",
+                nome: "Página Mágica",
+                texto: "Livraria com painel de gestão completo e assistente virtual 24h.",
+                url: "https://pagina-magica.vercel.app/",
               },
             ].map((c) => (
-              <div key={c.segmento} className="rounded-3xl bg-card p-6 shadow-card">
+              <div key={c.nome} className="flex flex-col rounded-3xl bg-card p-6 shadow-card">
                 <p className="text-xs font-bold uppercase tracking-widest text-brand-green-deep">
-                  {c.segmento}
+                  Projeto de demonstração
                 </p>
-                <p className="mt-3 text-sm leading-relaxed text-foreground">{c.texto}</p>
+                <p className="mt-3 font-semibold">{c.nome}</p>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{c.texto}</p>
+                <a
+                  href={c.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 text-sm font-bold text-brand-green-deep transition hover:text-brand-green"
+                >
+                  Abrir e testar ao vivo →
+                </a>
               </div>
             ))}
           </div>
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            Casos reais de clientes, apresentados de forma anônima.
-          </p>
+        </div>
+      </section>
+
+      {/* ACESSIBILIDADE É LEI */}
+      <section className="bg-brand-navy-deep py-16 text-white sm:py-20 lg:py-24">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-3">
+            <Accessibility className="h-8 w-8 text-brand-green" aria-hidden="true" />
+            <h2 className="text-center text-2xl font-black sm:text-3xl">
+              Acessibilidade Não é Extra. É Lei — e É o Nosso Padrão.
+            </h2>
+          </div>
+          <div className="mx-auto mt-6 max-w-3xl space-y-4 text-white/85">
+            <p>
+              O Censo 2022 do IBGE contou <b>14,4 milhões de brasileiros com alguma deficiência</b> —
+              e entre pessoas com 70 anos ou mais, é mais de uma a cada quatro. Um site inacessível
+              simplesmente deixa esses clientes na porta.
+            </p>
+            <p>
+              Não é só receita perdida: o <b>artigo 63 da Lei Brasileira de Inclusão</b> (Lei
+              13.146/2015) obriga empresas com sede ou representação no Brasil a manter sites
+              acessíveis, e desde março de 2025 a norma <b>ABNT NBR 17225</b> define exatamente o
+              que isso significa, alinhada ao WCAG 2.2.
+            </p>
+            <p>
+              Quase nenhuma agência entrega isso. Na Aruanã, nossa equipe tem especialistas em
+              acessibilidade digital e <b>todo site já nasce em conformidade</b> — VLibras, navegação
+              por teclado, leitor de tela — sem custo extra, porque é o padrão.
+            </p>
+          </div>
         </div>
       </section>
 

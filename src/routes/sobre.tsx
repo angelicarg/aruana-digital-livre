@@ -50,9 +50,14 @@ function SobrePage() {
             <div className="mt-6 space-y-4 text-lg leading-relaxed text-muted-foreground">
               <p>
                 A Aruanã Digital nasceu da convicção de que a tecnologia precisa servir às pessoas —
-                não o contrário. Inspirada na força e elegância do peixe Aruanã, símbolo de
-                movimento, prosperidade e visão de longo alcance, a marca representa nosso
-                compromisso com soluções que evoluem junto ao cliente.
+                não o contrário. O nome vem do aruanã, peixe amazônico de nome de origem indígena:
+                uma homenagem ao Brasil e aos povos originários, e uma recusa deliberada dos nomes
+                genéricos que o mundo da tecnologia costuma escolher.
+              </p>
+              <p>
+                E tem um detalhe que virou filosofia de trabalho: o aruanã salta para fora d'água
+                para alcançar o que está acima da superfície. É isso que buscamos em cada projeto —
+                tirar a empresa do lugar onde ela está para alcançar o que parecia fora do alcance.
               </p>
               <p>
                 Atendemos empresas, instituições de ensino e gestores que precisam transformar a
