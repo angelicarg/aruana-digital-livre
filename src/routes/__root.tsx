@@ -41,7 +41,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
+      <div className="w-full max-w-xl text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Algo deu errado</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Tente recarregar a página ou voltar ao início.
@@ -63,6 +63,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             Início
           </a>
         </div>
+        {/* Detalhe técnico visível de propósito: sem um serviço de telemetria,
+            esta tela é o único lugar onde o erro real aparece para diagnóstico. */}
+        <details className="mt-8 rounded-lg border border-border bg-muted/50 p-4 text-left">
+          <summary className="cursor-pointer text-sm font-semibold text-muted-foreground">
+            Detalhes técnicos (envie para o suporte)
+          </summary>
+          <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap break-all text-xs text-muted-foreground">
+            {String(error?.message ?? error)}
+            {"\n\n"}
+            {error?.stack ?? ""}
+          </pre>
+        </details>
       </div>
     </div>
   );
