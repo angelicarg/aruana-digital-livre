@@ -87,18 +87,6 @@ Responda honestamente:
 
 Se você respondeu "não" em 3 ou mais perguntas, seu site provavelmente está deixando dinheiro na mesa.
 
-## Como a Aruanã Digital Evita Esses Erros
-
-Todos os nossos sites são funcionais e bonitos (prioridade: função antes de forma), 100% responsivos, otimizados para SEO desde o início, com CTAs estratégicas em cada página, performance 90+ em PageSpeed, acessibilidade WCAG 2.1 e blog integrado, pronto para publicar.
-
-[Veja nossos projetos de exemplo →](/cases)
-
-## Quer Revisar Seu Site Atual?
-
-Se você já tem um site e acha que está cometendo esses erros: faça um diagnóstico gratuito, identifique os problemas de verdade e tenha um plano de como corrigir.
-
-[Solicitar diagnóstico →](/contato)
-
 ## Resumo dos 5 Erros
 
 | # | Erro | Impacto | Solução |
@@ -108,3 +96,9 @@ Se você já tem um site e acha que está cometendo esses erros: faça um diagn�
 | 3 | Sem SEO | Invisível no Google | Otimizar conteúdo |
 | 4 | Sem CTA clara | Visitante não sabe o que fazer | CTAs estratégicas |
 | 5 | Nunca atualiza | Perde ranking | Manutenção mensal |
+
+---
+
+**Quer revisar o seu site atual?** Se você acha que está cometendo algum desses erros, fazemos um diagnóstico gratuito em até 48 horas: velocidade, SEO, acessibilidade e conversão, com as três prioridades de correção em linguagem de negócio.
+
+[Solicitar o diagnóstico gratuito →](/diagnostico)

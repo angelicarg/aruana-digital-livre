@@ -8,7 +8,7 @@ Neste artigo, vamos quebrar isso de forma clara para que você entenda exatament
 
 ## Quanto Custa um Site? Os Números Reais
 
-Na Aruanã Digital, trabalhamos com **4 faixas de preço** que cobrem 90% das necessidades do mercado:
+No mercado brasileiro, os projetos se agrupam em **4 faixas de preço** que cobrem 90% das necessidades:
 
 ### 1. Site Básico: R$1.500 a R$4.000
 
@@ -184,18 +184,6 @@ Recomendamos investir em manutenção mensal (R$300-1.000/mês), novos artigos d
 
 Isso mantém seu site seguro, rápido, atualizado no Google e gerando leads consistentemente.
 
-## Nossos Cases Reais
-
-Na Aruanã Digital, desenvolvemos sites em todos os 4 pacotes: portfólios e landing pages no Site Básico, projetos com agendamento e leads no Site Profissional, e-commerce e plataformas no Site Avançado, e soluções customizadas no Sob Medida.
-
-[Conheça nossos projetos de exemplo →](/cases)
-
-## Pronto para Começar?
-
-Ainda com dúvidas sobre qual pacote escolher? Converse com nossa equipe. Vamos analisar sua situação específica e recomendar exatamente o que você precisa — e não mais do que precisa.
-
-[Solicitar orçamento →](/contato)
-
 ## Resumo do Artigo
 
 - **Site Básico (R$1,5k-4k):** presença online simples
@@ -204,3 +192,9 @@ Ainda com dúvidas sobre qual pacote escolher? Converse com nossa equipe. Vamos 
 - **Site Sob Medida (40k+):** solução 100% customizada
 
 **A dica de ouro:** escolha pelo que seu negócio precisa, não pelo preço. Um site bom se paga em 2-3 meses em leads.
+
+---
+
+**Na Aruanã Digital, trabalhamos com essas 4 faixas** — portfólios e landing pages no Essencial, projetos com agendamento e leads no Profissional, e-commerce e IA no Avançado, e soluções customizadas no Sob Medida. Todos os projetos de demonstração estão no ar para você testar.
+
+[Conheça nossos projetos de exemplo →](/cases) · [Solicitar orçamento →](/contato)

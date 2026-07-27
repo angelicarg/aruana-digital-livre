@@ -30,7 +30,7 @@ A verdade é que leva tempo: praticamente nada no mês 1 (o Google está indexan
 
 **Método 3 — use ferramentas:** Ubersuggest (pago, mas acessível), Semrush (mais caro, profissional) ou Google Keyword Planner (gratuito, mas básico).
 
-**Resultado:** uma lista de 10 a 15 palavras-chave que sua pessoa ideal busca. Para uma agência como a Aruanã, por exemplo: "criação de sites" (muito competitivo), "criar site profissional" (competitivo), "como criar um website" (menos competitivo, mas com tráfego) e "agência web Uberlândia" (local, pouco competitivo e muito qualificado).
+**Resultado:** uma lista de 10 a 15 palavras-chave que sua pessoa ideal busca. Para uma clínica de fisioterapia, por exemplo: "fisioterapia" (muito competitivo), "fisioterapia esportiva" (competitivo), "exercícios para dor no ombro" (menos competitivo, mas com tráfego) e "fisioterapeuta em Uberlândia" (local, pouco competitivo e muito qualificado).
 
 ## Passo 2: Otimizar Páginas Existentes
 
@@ -38,13 +38,13 @@ Pegue suas páginas atuais e otimize com palavras-chave. Na home, por exemplo: i
 
 ```
 ANTES:
-<title>Aruanã Digital</title>
-<meta name="description" content="Agência web">
+<title>Clínica Movimente</title>
+<meta name="description" content="Clínica de fisioterapia">
 
 DEPOIS:
-<title>Criação de Sites Profissionais | Aruanã Digital</title>
-<meta name="description" content="Criação de sites institucionais
-para empresas em Uberlândia. Design premium, SEO e performance.">
+<title>Fisioterapia Esportiva em Uberlândia | Clínica Movimente</title>
+<meta name="description" content="Avaliação e tratamento de lesões
+esportivas em Uberlândia. Agende sua sessão online.">
 ```
 
 Repita para as páginas de Serviços, Sobre e Cases. Tempo estimado: 2-3 horas. Resultado esperado: cerca de 10-15% mais tráfego em 2-4 semanas.
@@ -66,7 +66,7 @@ Mais conteúdo significa mais chances de rankear, os artigos educam o cliente e 
 
 **O que é:** conseguir links de outros sites apontando pro seu. É como votos de confiança — quanto mais votos, mais o Google confia em você.
 
-**Como conseguir, gratuitamente:** cadastre seu site em diretórios de agências, escreva artigos como convidado em outros blogs, feche parcerias de menção mútua com negócios complementares, e mencione pessoas e empresas conhecidas nos seus próprios artigos (elas tendem a compartilhar).
+**Como conseguir, gratuitamente:** cadastre seu site em diretórios do seu setor, escreva artigos como convidado em outros blogs, feche parcerias de menção mútua com negócios complementares, e mencione pessoas e empresas conhecidas nos seus próprios artigos (elas tendem a compartilhar).
 
 **Meta:** 1 backlink por mês no começo — parece pouco, mas é a consistência que importa.
 
@@ -85,23 +85,23 @@ Cliques subindo é sinal de que está funcionando; impressões subindo indica qu
 ## Exemplo Real: Página de Artigo Otimizada
 
 ```
-TITLE (55 caracteres):
-"Quanto Custa um Site em 2026? Preços Reais | Aruanã"
+TITLE (57 caracteres):
+"Quanto Custa uma Sessão de Fisioterapia? | Movimente"
 
-META (155 caracteres):
-"Descubra quanto custa criar site profissional em 2026.
-Preços reais de R$1,5k a R$40k, pacotes e o que inclui."
+META (152 caracteres):
+"Descubra quanto custa uma sessão de fisioterapia em 2026.
+Valores reais por tipo de tratamento e o que está incluso."
 
 H1:
-"Quanto Custa um Site Profissional em 2026?"
+"Quanto Custa uma Sessão de Fisioterapia em 2026?"
 
 HEADERS:
-H2: "Quanto Custa um Site? Os Números Reais"
-H3: "1. Site Básico: R$1.500 a R$4.000"
-H3: "2. Site Profissional: R$6.000 a R$12.000"
+H2: "Quanto Custa? Os Números Reais"
+H3: "1. Sessão avulsa: R$120 a R$200"
+H3: "2. Pacote mensal: R$400 a R$700"
 
 ALT TEXT EM IMAGENS:
-<img src="tabela.png" alt="Tabela de preços criação de sites">
+<img src="tabela.png" alt="Tabela de preços de sessões de fisioterapia">
 ```
 
 A palavra-chave (ou uma variação natural dela) aparece no title, na meta, nos primeiros parágrafos, em cada H2/H3 e no último parágrafo — sempre de forma natural, nunca forçada.

@@ -16,7 +16,7 @@ Mas qual você realmente precisa? Neste artigo vamos descomplicar.
 
 **Desvantagens:** mais caro (R$6k-30k), precisa de conteúdo constante e pode ficar genérico se não for bem feito.
 
-**Exemplo:** um site de agência web, como o da própria Aruanã.
+**Exemplo:** o site de um escritório de arquitetura ou de uma clínica — apresenta a empresa, os serviços, a equipe e o blog.
 
 ## Landing Page
 
@@ -75,7 +75,7 @@ Se o seu negócio é vender produtos físicos ou digitais, com múltiplos itens 
 
 Muitas empresas combinam as três camadas: o **Site Institucional** cria presença de marca, educa o cliente, sustenta o blog para SEO e gera leads qualificados; as **Landing Pages** entram para lançar produtos específicos, rodar campanhas no Google Ads e sustentar promoções pontuais com conversão rápida; e o **E-commerce**, quando faz sentido, entra se a empresa vende produtos e a escala é prioridade.
 
-A própria Aruanã Digital segue esse raciocínio: tem site institucional (credibilidade), pode usar landing pages pontuais para cada pacote, mas não tem e-commerce, porque vende serviço, não produto.
+Uma empresa de serviços típica segue esse raciocínio: mantém o site institucional pela credibilidade, usa landing pages pontuais para campanhas específicas e não tem e-commerce, porque vende serviço, não produto.
 
 ## Matriz de Decisão
 

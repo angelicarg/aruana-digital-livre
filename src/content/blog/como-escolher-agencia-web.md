@@ -102,13 +102,13 @@ Se observar esses, provavelmente é uma boa agência: faz perguntas estratégica
 
 Crie uma tabela com critérios como portfólio, tempo de resposta, experiência na sua área, preço, se fala sobre SEO, referências e tecnologia — e dê uma nota para cada agência em cada critério. A que somar mais pontos sai na frente.
 
-## Conheça a Aruanã Digital
-
-Atendemos todos os critérios acima: portfólio com 7 projetos reais (todos ao vivo), respondemos em menos de 2 horas, experiência em múltiplas áreas (saúde, educação, e-commerce e mais), preço justo e transparente, SEO como padrão — não como extra —, referências de clientes satisfeitos, stack moderna (React, Next.js) e suporte contínuo pós-lançamento.
-
 ## Próximo Passo
 
-Converse com algumas agências, use esse checklist e depois escolha a que tiver mais "green flags". Converse com a gente também — não vamos insistir, mas ficaremos felizes em responder suas perguntas.
+Converse com algumas agências, use esse checklist e depois escolha a que tiver mais "green flags".
+
+---
+
+**Sobre a Aruanã Digital:** nosso portfólio é de projetos de demonstração no ar — empresa fictícia, software real — para você testar a qualidade antes de qualquer conversa. Preço transparente, SEO e acessibilidade como padrão (não como extra), contrato claro e suporte contínuo pós-lançamento. Converse com a gente também — não vamos insistir, mas ficaremos felizes em responder suas perguntas.
 
 [Fale com um especialista da Aruanã →](/contato)
 
