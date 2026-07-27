@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -103,9 +104,12 @@ export function DocumentUploadDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+            {/* Campo de arquivo fica fora do react-hook-form (o File vive em
+                useState) — então o rótulo é o Label simples: FormLabel exige o
+                contexto de um FormField e lança erro fora dele. */}
             <div className="space-y-2">
-              <FormLabel>Arquivo</FormLabel>
-              <Input type="file" onChange={handleFileChange} />
+              <Label htmlFor="document-file">Arquivo</Label>
+              <Input id="document-file" type="file" onChange={handleFileChange} />
               {fileError && <p className="text-[0.8rem] font-medium text-destructive">{fileError}</p>}
             </div>
 
