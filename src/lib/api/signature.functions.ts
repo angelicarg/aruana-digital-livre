@@ -159,11 +159,18 @@ export const sendContractForSignature = createServerFn({ method: "POST" })
         return { sent: false, reason: "file_download_failed" };
       }
 
+      // A Autentique valida o tipo do arquivo pela EXTENSÃO do nome enviado no
+      // multipart. O nome de exibição do documento normalmente não tem extensão
+      // ("Contrato de Teste"), o que faz a API recusar com must_be_type — por
+      // isso o nome enviado é o do arquivo físico no storage, que sempre tem a
+      // extensão real.
+      const storageFileName = document.storage_path.split("/").pop() || "contrato.pdf";
+
       const result = await autentiqueCreateDocument({
         token: apiToken,
         name: `Contrato — ${deal.intranet_clients?.name ?? "Cliente"}`,
         file: fileBlob,
-        fileName: document.name,
+        fileName: storageFileName,
         signerEmail: data.signerEmail,
       });
 
