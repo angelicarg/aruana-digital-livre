@@ -8,10 +8,27 @@ interface Props {
   size?: "sm" | "md" | "lg";
 }
 
+// O halo é mais intenso nos tamanhos pequenos (header), onde o símbolo tem menos
+// área para se destacar; no lg (footer) a versão suave já basta.
 const SIZES = {
-  sm: { img: "h-9", name: "text-base", tag: "text-[9px]" },
-  md: { img: "h-11 sm:h-12", name: "text-lg sm:text-xl", tag: "text-[10px]" },
-  lg: { img: "h-16 sm:h-20", name: "text-2xl", tag: "text-xs" },
+  sm: {
+    img: "h-9",
+    name: "text-base",
+    tag: "text-[9px]",
+    halo: "bg-[radial-gradient(circle_at_center,rgba(127,211,190,0.60)_0%,rgba(127,211,190,0.24)_45%,transparent_72%)]",
+  },
+  md: {
+    img: "h-11 sm:h-12",
+    name: "text-lg sm:text-xl",
+    tag: "text-[10px]",
+    halo: "bg-[radial-gradient(circle_at_center,rgba(127,211,190,0.60)_0%,rgba(127,211,190,0.24)_45%,transparent_72%)]",
+  },
+  lg: {
+    img: "h-16 sm:h-20",
+    name: "text-2xl",
+    tag: "text-xs",
+    halo: "bg-[radial-gradient(circle_at_center,rgba(127,211,190,0.38)_0%,rgba(127,211,190,0.14)_45%,transparent_72%)]",
+  },
 } as const;
 
 export function AruanaLogo({ className = "", size = "md" }: Props) {
@@ -23,7 +40,7 @@ export function AruanaLogo({ className = "", size = "md" }: Props) {
             e some sobre os fundos navy do header/footer sem este contraste. */}
         <span
           aria-hidden="true"
-          className="absolute left-1/2 top-1/2 h-[130%] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(127,211,190,0.38)_0%,rgba(127,211,190,0.14)_45%,transparent_72%)]"
+          className={`absolute left-1/2 top-1/2 h-[130%] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-full ${s.halo}`}
         />
         <img
           src={logoSrc}
