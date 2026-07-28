@@ -45,6 +45,15 @@ person named publicly (the company speaks through the Aru mascot; the team is on
 described generically), and the logo is never AI-regenerated. Read it before writing any
 user-facing copy; several of these rules exist because the opposite was published once.
 
+### Geração de imagem/vídeo (`KLING.md`)
+
+`KLING.md` documenta o conector Kling AI (MCP): catálogo de modelos, custo em créditos,
+fluxo de produção e regras de precisão de prompt. Dois pontos que custam dinheiro se
+ignorados: os modelos `kling-video-v3_0*` têm `resolution` **default `4k`** (~150
+créditos por clipe de 5 s), e o campo `creditsConsumed` da resposta de submissão é a
+fonte de verdade do custo. Ler antes de gerar qualquer peça — e ler o `BRAND.md` junto,
+porque o logo nunca pode ser gerado por IA e o Aru precisa de imagem de referência.
+
 ### Intranet (`src/routes/intranet/`)
 
 Auth-gated admin area behind Supabase Auth. All protected pages live under `src/routes/intranet/_authed/` — the `_authed/route.tsx` layout does the auth guard (`beforeLoad` redirect + a client-side `useEffect` re-check, since the SSR dev server and the static production build don't share the same session-check path — see the comment in that file for why both checks exist). Adding a new intranet page means adding both the route file under `_authed/` and a nav entry in `NAV_ITEMS` in `_authed/route.tsx`.
