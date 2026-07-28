@@ -35,6 +35,10 @@ de terceiros para planejamento antecipado.
 | `text_to_image` / `gemini-3.1-flash-image` | 0.5k, 1:1, imageCount=1 | **8** |
 | `text_to_image` / `gpt-image-2` | 1k, quality=medium, 9:16 | **8** |
 | `text_to_image` / `gemini-3-pro-image` | 1k, 9:16, image_count=1 | **20** |
+| `text_to_video` / `kling-video-v3_0_turbo` | 5 s, 720p, 9:16, sem áudio | **40** |
+
+O clipe de vídeo medido saiu a **8 créditos/segundo em 720p**, não 6 como as fontes
+públicas indicam — some ~33% sobre a estimativa. Trate a tabela abaixo como piso.
 
 Comparativo com o mesmo prompt (28/07/2026): **`gpt-image-2` teve a melhor aderência
 à instrução** — foi o único a respeitar "personagem de costas, rosto não

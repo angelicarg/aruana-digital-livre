@@ -60,7 +60,9 @@ CINZA = (199, 211, 208)
 CINZA_FRACO = (138, 156, 152)
 LINHA = (48, 72, 92)
 
-LARG, ALT = 1080, 1350
+# Formato do JSON: "carrossel" (padrão, 4:5) ou "reel" (9:16). Definido em main().
+FORMATOS = {"carrossel": (1080, 1350), "reel": (1080, 1920)}
+LARG, ALT = FORMATOS["carrossel"]
 MARGEM = 80
 
 
@@ -135,9 +137,11 @@ def cabecalho(base, d, indice, total):
         x += lg.size[0] + 22
     texto_tracked(d, (x, 86), "ARUANÃ DIGITAL",
                   fonte("Inter", "SemiBold", 25), VERDE_CLARO, tracking=5.5)
-    f = fonte("Inter", "Bold", 25)
-    rot = f"{indice}/{total}"
-    d.text((LARG - MARGEM - d.textlength(rot, font=f), 86), rot, font=f, fill=BRANCO)
+    # Numeração só faz sentido em carrossel; num reel os cards viram cenas.
+    if (LARG, ALT) == FORMATOS["carrossel"]:
+        f = fonte("Inter", "Bold", 25)
+        rot = f"{indice}/{total}"
+        d.text((LARG - MARGEM - d.textlength(rot, font=f), 86), rot, font=f, fill=BRANCO)
 
 
 def rodape(d, card):
@@ -258,6 +262,11 @@ def main():
         if not os.path.isfile(os.path.join(FONTES, f)):
             sys.exit(AJUDA_FONTES)
     spec = json.load(open(sys.argv[1], encoding="utf-8"))
+    global LARG, ALT
+    fmt = spec.get("formato", "carrossel")
+    if fmt not in FORMATOS:
+        sys.exit(f"formato inválido: {fmt} (use {' ou '.join(FORMATOS)})")
+    LARG, ALT = FORMATOS[fmt]
     cards = spec["cards"]
     saida = os.path.join(os.path.dirname(sys.argv[1]), spec["nome"])
     os.makedirs(saida, exist_ok=True)
