@@ -31,7 +31,20 @@ de terceiros para planejamento antecipado.
 
 | Job | Configuração | Créditos |
 |---|---|---|
+| `text_to_image` / `kling-image-v3_0_omni` | 1k, 9:16, imageCount=1 | **1** |
 | `text_to_image` / `gemini-3.1-flash-image` | 0.5k, 1:1, imageCount=1 | **8** |
+| `text_to_image` / `gpt-image-2` | 1k, quality=medium, 9:16 | **8** |
+| `text_to_image` / `gemini-3-pro-image` | 1k, 9:16, image_count=1 | **20** |
+
+Comparativo com o mesmo prompt (28/07/2026): **`gpt-image-2` teve a melhor aderência
+à instrução** — foi o único a respeitar "personagem de costas, rosto não
+identificável", e renderizou texto correto. `gemini-3-pro-image` fez a foto mais
+bonita mas desobedeceu ao enquadramento, por 2,5× o preço. `kling-image-v3_0_omni`
+errou o texto ("SEÛ") mas entregou composição utilizável por **1 crédito** — é o
+modelo de exploração.
+
+Atenção ao nome do modelo: em `text_to_image` é `gpt-image-2` (com hífen); em
+`image_to_image` é `gpt-image2`.
 
 ### Estimativas para planejamento (série Kling 3.0, fontes de terceiros)
 
@@ -100,6 +113,34 @@ Outras alavancas:
 - **720p basta** para Stories/Reels vistos no celular.
 - **Reaproveitar URLs**: URLs devolvidas por tarefas Kling anteriores servem direto como
   input de outra geração, sem re-upload.
+
+## Antes de gerar: a peça precisa mesmo de IA?
+
+Na maioria dos casos, **não**. Post de carrossel, card de estatística, peça com
+headline — tudo isso é **composição**, não geração: o Aru vem dos assets oficiais e
+o texto é desenhado em fonte real. `scripts/gerar-pecas.py` faz isso a partir de um
+JSON.
+
+| | Peça gerada por IA | Peça composta |
+|---|---|---|
+| Texto | erra acento ("SEÛ SITE") | perfeito, fonte real |
+| Personagem | varia a cada geração | idêntico, é o mesmo arquivo |
+| Custo | 8–20 créditos por tentativa | **zero** |
+| Corrigir uma vírgula | regerar tudo | editar o JSON e rodar |
+| Logo | proibido gerar (BRAND.md 4) | colado do master |
+
+Um carrossel de 6 cards custa **zero créditos**. A geração fica reservada para o
+que composição não faz: cenas fotográficas novas, poses inéditas do Aru e vídeo.
+
+### Assets oficiais
+
+`public/marca/` é a fonte única de verdade, publicada em
+`https://aruanadigital.com/marca/` — o manifesto `assets.json` lista URLs, dimensões
+e regras de uso. Serve para o Cowork, para os modelos Gemini/GPT (que aceitam URL
+externa) e para qualquer ferramenta futura. Nome sempre versionado (`-v1`), porque
+substituir um arquivo mantendo o nome deixa o CDN servindo a versão antiga.
+
+`midia/` é a pasta de trabalho — fora do Git, para rascunho e material bruto.
 
 ## Peças acima de 15 s: encadeamento
 

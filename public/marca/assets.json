@@ -1,0 +1,62 @@
+{
+  "descricao": "Assets oficiais da marca Aruanã Digital. Fonte única de verdade para qualquer ferramenta que precise do Aru ou do logo. Regras de uso em BRAND.md.",
+  "atualizado_em": "2026-07-28",
+  "base": "https://aruanadigital.com/marca/",
+  "regras": [
+    "O logo NUNCA pode ser regenerado, redesenhado ou recolorido por IA — use sempre o arquivo abaixo, colado.",
+    "O nome 'Aruanã Digital' vai sempre em texto real ao lado do símbolo, nunca embutido na imagem.",
+    "O Aru é o porta-voz da marca; nenhuma pessoa da equipe é citada nominalmente.",
+    "Ao gerar novas poses do Aru, use estes arquivos como imagem de referência — nunca descreva o personagem por texto."
+  ],
+  "assets": [
+    {
+      "id": "logo",
+      "arquivo": "logo-aruana-v1.png",
+      "url": "https://aruanadigital.com/marca/logo-aruana-v1.png",
+      "tipo": "logo",
+      "dimensoes": [512, 512],
+      "fundo": "transparente",
+      "observacao": "Símbolo do peixe, sem dizeres. Arte escura — sobre fundo escuro precisa de contraste ou versão chapada (pendência aberta no BRAND.md)."
+    },
+    {
+      "id": "aru-apontando",
+      "arquivo": "aru-apontando-v1.png",
+      "url": "https://aruanadigital.com/marca/aru-apontando-v1.png",
+      "tipo": "mascote",
+      "dimensoes": [811, 1200],
+      "fundo": "transparente",
+      "observacao": "Aponta para a direita. Bom para cards com texto à direita."
+    },
+    {
+      "id": "aru-joia",
+      "arquivo": "aru-joia-v1.png",
+      "url": "https://aruanadigital.com/marca/aru-joia-v1.png",
+      "tipo": "mascote",
+      "dimensoes": [816, 1200],
+      "fundo": "transparente",
+      "observacao": "Polegar para cima. Bom para card de fechamento / CTA."
+    },
+    {
+      "id": "aru-frente",
+      "arquivo": "aru-frente-v1.png",
+      "url": "https://aruanadigital.com/marca/aru-frente-v1.png",
+      "tipo": "mascote",
+      "dimensoes": [816, 1200],
+      "fundo": "transparente",
+      "observacao": "De frente, postura neutra. Bom para abertura e como referência principal em geração de vídeo."
+    }
+  ],
+  "tipografia": {
+    "display": "Sora",
+    "texto": "Inter",
+    "licenca": "SIL Open Font License 1.1",
+    "origem": "Google Fonts"
+  },
+  "cores": {
+    "brand-green": "#00C57A",
+    "brand-green-deep": "#019852",
+    "brand-navy": "#0A2A44",
+    "brand-navy-deep": "#041B33",
+    "brand-cloud": "#F5F7FA"
+  }
+}
