@@ -45,6 +45,16 @@ person named publicly (the company speaks through the Aru mascot; the team is on
 described generically), and the logo is never AI-regenerated. Read it before writing any
 user-facing copy; several of these rules exist because the opposite was published once.
 
+### Régua de criação de conteúdo (`MARKETING.md`)
+
+`MARKETING.md` reúne os benchmarks e princípios que guiam vídeo, redes e campanha —
+com a tese central de que **não queremos viralizar**: audiência errada envenena a
+entrega futura, e busca orgânica converte ~5× mais que social pago. Traz também o
+contexto de 2026 sobre conteúdo gerado por IA (rótulo automático "AI info", prioridade
+do Instagram para conteúdo "cru") e a tabela do que o BRAND.md veta com o substituto de
+cada tática. Os números de lá são para decisão interna: publicar qualquer estatística
+exige fonte própria verificável, por causa da regra 3.
+
 ### Geração de imagem/vídeo (`KLING.md`)
 
 `KLING.md` documenta o conector Kling AI (MCP): catálogo de modelos, custo em créditos,
