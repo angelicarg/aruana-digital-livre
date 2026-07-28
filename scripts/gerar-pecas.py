@@ -120,8 +120,20 @@ def colar_aru(base, nome, altura_rel, ancora):
     base.alpha_composite(im, (x, int(ALT * ancora[1])))
 
 
-def cabecalho(d, indice, total):
-    texto_tracked(d, (MARGEM, 86), "ARUANÃ DIGITAL",
+def cabecalho(base, d, indice, total):
+    """Símbolo + nome em texto real — BRAND.md: o nome nunca vai embutido na
+    imagem, vai sempre ao lado do símbolo. Sobre fundo escuro usa-se a versão
+    monocromática clara, porque no master o corpo do peixe é espaço negativo e
+    desaparece."""
+    x = MARGEM
+    marca = os.path.join(RAIZ, "public", "marca", "logo-mono-claro-v1.png")
+    if os.path.isfile(marca):
+        lg = Image.open(marca).convert("RGBA")
+        h = 52
+        lg = lg.resize((round(lg.size[0] * h / lg.size[1]), h), Image.LANCZOS)
+        base.alpha_composite(lg, (x, 72))
+        x += lg.size[0] + 22
+    texto_tracked(d, (x, 86), "ARUANÃ DIGITAL",
                   fonte("Inter", "SemiBold", 25), VERDE_CLARO, tracking=5.5)
     f = fonte("Inter", "Bold", 25)
     rot = f"{indice}/{total}"
@@ -205,7 +217,7 @@ def montar(card, indice, total):
         colar_aru(base, card["aru"], card.get("aru_altura", 0.74),
                   card.get("aru_ancora", (0.02, 0.14)))
         d = ImageDraw.Draw(base)
-        cabecalho(d, indice, total)
+        cabecalho(base, d, indice, total)
         x, larg = int(LARG * 0.46), int(LARG * 0.46)
         h = bloco_texto(d, card, x, 0, larg, desenhar=False)
         y = int(ALT * 0.13) + max((ALT - MARGEM - int(ALT * 0.13) - h) // 2, 0)
@@ -215,7 +227,7 @@ def montar(card, indice, total):
         colar_aru(base, card["aru"], card.get("aru_altura", 0.72),
                   card.get("aru_ancora", (0.52, 0.03)))
         d = ImageDraw.Draw(base)
-        cabecalho(d, indice, total)
+        cabecalho(base, d, indice, total)
         # véu escuro para o texto não competir com o personagem
         alt_veu = int(ALT * 0.42)
         veu = Image.new("RGBA", (LARG, alt_veu), (0, 0, 0, 0))
@@ -227,7 +239,7 @@ def montar(card, indice, total):
 
     else:  # texto puro — miolo informativo do carrossel
         d = ImageDraw.Draw(base)
-        cabecalho(d, indice, total)
+        cabecalho(base, d, indice, total)
         larg = LARG - 2 * MARGEM
         h = bloco_texto(d, card, MARGEM, 0, larg, desenhar=False)
         topo, base_util = int(ALT * 0.16), ALT - MARGEM - (110 if card.get("rodape") else 0)

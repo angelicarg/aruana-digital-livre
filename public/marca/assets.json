@@ -16,7 +16,25 @@
       "tipo": "logo",
       "dimensoes": [512, 512],
       "fundo": "transparente",
-      "observacao": "Símbolo do peixe, sem dizeres. Arte escura — sobre fundo escuro precisa de contraste ou versão chapada (pendência aberta no BRAND.md)."
+      "observacao": "Símbolo do peixe, sem dizeres. Use APENAS sobre fundo claro: o corpo do peixe é espaço negativo (não há pixel branco na arte), então sobre fundo escuro ele desaparece. Para fundo escuro use logo-mono-claro-v1."
+    },
+    {
+      "id": "logo-mono-claro",
+      "arquivo": "logo-mono-claro-v1.png",
+      "url": "https://aruanadigital.com/marca/logo-mono-claro-v1.png",
+      "tipo": "logo",
+      "dimensoes": [512, 452],
+      "fundo": "transparente",
+      "observacao": "Versão chapada de uma cor (cloud #F5F7FA), para fundo escuro. Derivada do master por processamento determinístico da silhueta — nunca por IA."
+    },
+    {
+      "id": "logo-mono-navy",
+      "arquivo": "logo-mono-navy-v1.png",
+      "url": "https://aruanadigital.com/marca/logo-mono-navy-v1.png",
+      "tipo": "logo",
+      "dimensoes": [512, 452],
+      "fundo": "transparente",
+      "observacao": "Versão chapada de uma cor (navy #041B33), para fundo claro, impressão e marca d'água. Derivada do master, nunca por IA."
     },
     {
       "id": "aru-apontando",
