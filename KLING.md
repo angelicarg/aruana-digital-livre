@@ -194,6 +194,36 @@ depois", porque o movimento da boca é gerado com o áudio. Isso impõe restriç
 - **Manter `resolution` fora de `4k`**: o default do omni é `4k`, e com áudio isso fica
   proibitivo. Usar `1080p`.
 
+### Como fazer o Aru falar (fluxo definitivo)
+
+Nenhum gerador de vídeo produz voz utilizável para a marca. O caminho que funciona tem
+três etapas, e a voz **nunca** vem do gerador:
+
+1. **Locução** — gerada localmente com `edge-tts` (grátis, sem conta, sem limite). Só
+   existe uma voz masculina nativa em pt-BR, `pt-BR-AntonioNeural`; `rate` e `pitch`
+   ajustam idade e ritmo. As multilíngues `en-US-AndrewMultilingualNeural` e
+   `en-US-BrianMultilingualNeural` também falam português e têm timbres alternativos.
+
+   ```python
+   import asyncio, edge_tts
+   asyncio.run(edge_tts.Communicate(
+       "texto", "pt-BR-AntonioNeural", rate="+8%", pitch="+18Hz").save("voz.mp3"))
+   ```
+
+   Requer `pip install edge-tts` e `typing_extensions` atualizado (o Python 3.9 desta
+   máquina quebra o import com a versão antiga).
+
+2. **Lip-sync** — recurso **Avatar** do site do Kling (não existe no conector MCP).
+   Recebe uma imagem e um arquivo de áudio, e devolve o personagem falando. **Ele
+   reproduz o áudio sem alterar** — correlação medida de 0,9994 entre entrada e saída.
+   Não é clonagem de voz nem TTS: só sincroniza a boca com o que você deu.
+
+   Custa 80 créditos por geração. A imagem precisa ter o **rosto grande, frontal e
+   desobstruído** — provavelmente roda detecção facial, e cena em plano médio falha.
+   Queima uma legenda automática ilegível e a marca d'água; ambas saem com crop na pós.
+
+3. **Montagem** — `scripts/montar-video.sh`, custo zero.
+
 ### A voz não é controlável — testado em 28/07/2026
 
 **Conclusão fechada: não use áudio nativo do Kling.** Um clipe gerado com o prompt
