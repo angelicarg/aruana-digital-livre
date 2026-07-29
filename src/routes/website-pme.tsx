@@ -39,7 +39,11 @@ export const Route = createFileRoute("/website-pme")({
         property: "og:description",
         content: "Presença digital profissional, otimizada para Google e pronta para converter clientes.",
       },
+      { property: "og:url", content: "https://aruanadigital.com/website-pme" },
     ],
+    // Esta página recebe tráfego de anúncio, então chega sempre com UTM na URL. Sem
+    // canonical, cada combinação de parâmetros vira uma URL distinta para o Google.
+    links: [{ rel: "canonical", href: "https://aruanadigital.com/website-pme" }],
   }),
   component: WebsitePmePage,
 });

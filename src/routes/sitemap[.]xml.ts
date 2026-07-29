@@ -26,7 +26,10 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/contato", changefreq: "yearly", priority: "0.8" },
           { path: "/website-pme", changefreq: "monthly", priority: "0.7" },
           { path: "/diagnostico", changefreq: "monthly", priority: "0.8" },
-          { path: "/experiencias/sala-yoga", changefreq: "monthly", priority: "0.6" },
+          // /experiencias/sala-yoga fica fora de propósito: a rota declara
+          // `robots: noindex` enquanto é protótipo. Listar no sitemap uma página que
+          // pede para não ser indexada é contradição, e o Search Console reclama.
+          // Reincluir aqui no mesmo commit em que o noindex sair da rota.
           { path: "/privacidade", changefreq: "yearly", priority: "0.3" },
         ];
 
