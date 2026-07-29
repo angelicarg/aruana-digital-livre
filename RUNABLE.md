@@ -130,6 +130,39 @@ alternativa continua sendo queimar aqui com `scripts/montar-video.sh --legendas`
 controle fino de sincronia e custo zero — vale quando a legenda do Runable dessincronizar
 ou quebrar linha em lugar ruim.
 
+## Custos medidos
+
+Primeira leitura real do painel (Account → Token Usage), em 29/07/2026:
+
+| Operação | Custo | Relação |
+|---|---|---|
+| **Vídeo falado** (20 s, 1080×1916, legenda embutida) | **5.484** | — |
+| Clonagem de voz (a partir de amostras) | 197 | 1/28 do vídeo |
+| Cena de vídeo do Aru (geração de imagem) | 145 | 1/38 do vídeo |
+
+**A proporção é a informação que importa: um vídeo falado custa cerca de 38 cenas.**
+É o número que justifica o passo 4 do fluxo — aprovar a cena em imagem antes de animar.
+Errar uma cena custa 145; errar um vídeo custa 5.484.
+
+Saldos no mesmo momento: 20.674 disponíveis no total, 19.516 de 25.000 consumidos no mês,
+1.158 de 1.500 no dia.
+
+### ⚠️ A contabilidade ainda não fecha
+
+Não usar os números acima como conversão exata até isto ser esclarecido:
+
+- O painel lista as operações em **tokens** e os saldos em **credits**. Não está dito que
+  são a mesma unidade.
+- O teto **diário** é 1.500, mas o vídeo aparece custando **5.484** — e ele foi gerado
+  nesse dia. Se fossem a mesma unidade, não teria sido possível.
+- O teto mensal é 25.000 com 19.516 consumidos, o que deixa exatamente **5.484** de
+  saldo no mês — número idêntico ao custo do vídeo. Provável coincidência, mas convém
+  confirmar antes de tratar como dado.
+
+**Como resolver:** na próxima geração, anotar o saldo **antes e depois**. A diferença é a
+fonte de verdade, do mesmo jeito que o `creditsConsumed` é no Kling. Até lá, planejar pela
+proporção (vídeo ≈ 38 cenas), não pelo valor absoluto.
+
 ## Erros que custam crédito
 
 - Deixar o **áudio ligado** sem precisar — dobra o custo e a voz sorteada é inútil.
