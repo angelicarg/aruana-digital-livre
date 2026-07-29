@@ -24,6 +24,49 @@ material publicado em nome da Aruanã Digital. Decididas em 26/07/2026; este arq
 7. Acessibilidade não é item opcional de orçamento — é o padrão, e o próprio site é
    a primeira prova disso.
 
+## Quem é o Aru
+
+O Aru é o porta-voz da marca (regra 5). Até 28/07/2026 nada disto estava escrito, e
+cada ferramenta inventava um Aru diferente — esta seção existe para que qualquer
+pessoa ou IA produza o mesmo personagem.
+
+**Quem ele é:** personagem masculino, jovem adulto. Entende de tecnologia e gosta de
+explicar, mas não é técnico arrogante nem vendedor animado.
+
+**Como ele fala:** como um vizinho prestativo que por acaso entende de internet.
+Confiança tranquila em vez de empolgação. Explica sem fazer ninguém se sentir burro.
+Não promete milagre, não usa superlativo, não pressiona.
+
+**O que ele nunca é:** eufórico, sarcástico, condescendente, "vendedor". O público é
+dono de pequeno negócio que já foi enrolado por agência — o Aru precisa soar
+confiável, não animado.
+
+Descrição canônica para ferramentas de IA (usar sempre esta, em inglês):
+
+> Warm, grounded and genuinely helpful. Speaks to the viewer like a friendly neighbour
+> who happens to understand technology — never salesy, never condescending, never
+> hyped. Quiet confidence instead of excitement: small smiles between phrases, calm
+> nods, attentive eye contact. Patient and clear, the kind of character who explains
+> something without ever making you feel behind.
+
+Evitar as palavras *excited*, *energetic* e *enthusiastic* no prompt: elas produzem
+gesticulação larga e sorriso permanente, que é o cacoete de mascote de propaganda.
+
+**Aparência:** vem sempre dos arquivos oficiais em
+`https://aruanadigital.com/marca/` (apontando, joia, de frente). **Nunca descrever o
+Aru por texto** para gerar imagem — sai um personagem diferente a cada vez. Novas
+poses partem dessas referências.
+
+**Voz:** `en-US-BrianMultilingualNeural`, `rate=+5%`, `pitch=+10Hz`, gerada por
+`scripts/gerar-voz.py`. Escolhida em 28/07/2026 entre cinco amostras. Nenhum gerador
+de vídeo produz voz controlável — todos sorteiam —, então a locução **nunca** vem do
+gerador de vídeo: nasce no script e entra depois, por lip-sync ou narração em off.
+Trocar de voz é decisão de marca, não conveniência técnica.
+
+**Pendência:** o símbolo "A" verde aparece no moletom, e nas imagens de referência
+também nos tênis. Enquanto estiver nas referências, ele reaparece em toda geração —
+ver a pendência aberta na seção Logo.
+
 ## Logo
 
 - Master atual: exportado em 26/07/2026, símbolo do peixe sem dizeres, fundo
