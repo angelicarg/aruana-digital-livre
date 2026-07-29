@@ -1,0 +1,95 @@
+# Mantém os projetos Supabase do plano gratuito fora da pausa por inatividade.
+#
+# A Supabase pausa um projeto free depois de 7 dias sem atividade de API. Já aconteceu
+# duas vezes com ltwgvyqlobgvjdtzvpln (20/07 e 29/07 de 2026), porque a tarefa agendada
+# anterior rodava no app de desktop e só disparava com o app aberto. Esta Action roda na
+# infraestrutura do GitHub: não depende de máquina ligada nem de app aberto.
+#
+# Secrets necessários (Settings → Secrets and variables → Actions → New repository secret):
+#   SUPABASE_KEEPALIVE_KEY_MAIN    chave publishable de sslfzxrtcolifxnnvvpk
+#                                  (é o VITE_SUPABASE_PUBLISHABLE_KEY do .env deste repo)
+#   SUPABASE_KEEPALIVE_KEY_PAGINA  chave publishable de ltwgvyqlobgvjdtzvpln
+#                                  (está no .env do repo da Página Mágica)
+#
+# A chave publishable é pública por natureza — vai no bundle do cliente —, mas fica em
+# secret para não ampliar a exposição sem motivo.
+#
+# Comportamento medido em 29/07/2026, que justifica os endpoints escolhidos:
+#   /rest/v1/leads?select=id&limit=1  com chave -> 200  (toca o banco: atividade real)
+#   /auth/v1/health                   com chave -> 200
+#   /auth/v1/health                   sem chave -> 401  (a chave é mesmo exigida)
+#   /rest/v1/                         com chave -> 401  ("Only secret API keys")
+#   qualquer endpoint, projeto pausado          -> 000  (para de resolver DNS)
+#
+# ⚠️ O GitHub desativa workflows agendados em repositório sem commits por 60 dias.
+# Se este repo ficar dois meses parado, reative em Actions → este workflow → Enable.
+
+name: Supabase keep-alive
+
+on:
+  schedule:
+    # A cada 2 dias, 09:17 UTC. Bem abaixo da janela de 7 dias, com folga para uma
+    # execução falhar sem que a pausa aconteça.
+    - cron: "17 9 */2 * *"
+  workflow_dispatch: # permite rodar à mão pelo painel do Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping nos dois projetos
+        env:
+          KEY_MAIN: ${{ secrets.SUPABASE_KEEPALIVE_KEY_MAIN }}
+          KEY_PAGINA: ${{ secrets.SUPABASE_KEEPALIVE_KEY_PAGINA }}
+        run: |
+          set -u
+          falhou=0
+
+          # $1 nome legível  $2 project ref  $3 chave  $4 caminho a chamar
+          ping_projeto() {
+            nome="$1"; ref="$2"; chave="$3"; caminho="$4"
+
+            if [ -z "$chave" ]; then
+              echo "::error::$nome ($ref): secret ausente ou vazio."
+              falhou=1
+              return
+            fi
+
+            # --max-time cobre o projeto pausado, que para de resolver DNS em vez de
+            # devolver erro HTTP — sem timeout o curl fica pendurado.
+            codigo=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+                       -H "apikey: $chave" \
+                       -H "Authorization: Bearer $chave" \
+                       "https://$ref.supabase.co$caminho" || echo "000")
+
+            case "$codigo" in
+              200)
+                echo "✓ $nome ($ref): HTTP 200"
+                ;;
+              000)
+                echo "::error::$nome ($ref): sem resposta — projeto provavelmente PAUSADO. Retomar em https://supabase.com/dashboard/project/$ref"
+                falhou=1
+                ;;
+              401|403)
+                echo "::error::$nome ($ref): HTTP $codigo — a chave do secret está errada ou foi rotacionada."
+                falhou=1
+                ;;
+              *)
+                echo "::error::$nome ($ref): HTTP $codigo (esperado 200)."
+                falhou=1
+                ;;
+            esac
+          }
+
+          # Projeto principal: consulta REST de verdade, que toca o banco.
+          ping_projeto "Aruanã / Dente Vivo / PortLibras / Patas Nobres" \
+                       "sslfzxrtcolifxnnvvpk" "$KEY_MAIN" \
+                       "/rest/v1/leads?select=id&limit=1"
+
+          # Página Mágica: ainda não sabemos uma tabela com leitura anônima aqui, então
+          # usa o health autenticado. Trocar por uma consulta REST quando soubermos.
+          ping_projeto "Página Mágica / Clínica Visão" \
+                       "ltwgvyqlobgvjdtzvpln" "$KEY_PAGINA" \
+                       "/auth/v1/health"
+
+          exit $falhou
