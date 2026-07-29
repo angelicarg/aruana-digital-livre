@@ -35,10 +35,20 @@ de terceiros para planejamento antecipado.
 | `text_to_image` / `gemini-3.1-flash-image` | 0.5k, 1:1, imageCount=1 | **8** |
 | `text_to_image` / `gpt-image-2` | 1k, quality=medium, 9:16 | **8** |
 | `text_to_image` / `gemini-3-pro-image` | 1k, 9:16, image_count=1 | **20** |
-| `text_to_video` / `kling-video-v3_0_turbo` | 5 s, 720p, 9:16, sem áudio | **40** |
+| `image_to_image` / `kling-image-v3_0_omni` | 1k, 9:16, 1 ref | **1** |
+| `text_to_video` / `kling-video-v3_0_turbo` | 5 s, 720p, sem áudio | **40** (8 cr/s) |
+| `image_to_video` / `kling-video-v3_0` | 5 s, 720p, **com áudio**, first+tail | **45** (9 cr/s) |
 
-O clipe de vídeo medido saiu a **8 créditos/segundo em 720p**, não 6 como as fontes
-públicas indicam — some ~33% sobre a estimativa. Trate a tabela abaixo como piso.
+Duas surpresas úteis:
+- O turbo **não é o mais barato por segundo**. Sem áudio ele custa 8 cr/s, enquanto o
+  `v3_0` completo — com áudio nativo e `tail_image` — sai a 9 cr/s. A vantagem do turbo
+  é velocidade, não preço.
+- **Job que falha é estornado.** Uma geração `FAIL` devolveu os 15 créditos (conferido
+  no saldo). Experimentar custa menos do que parece.
+
+**A 1 crédito por imagem no `kling-image-v3_0_omni` @1k, iterar cena é praticamente
+livre** — vinte tentativas custam menos que meio clipe de vídeo. É a alavanca principal
+para chegar ao enquadramento certo antes de animar.
 
 Comparativo com o mesmo prompt (28/07/2026): **`gpt-image-2` teve a melhor aderência
 à instrução** — foi o único a respeitar "personagem de costas, rosto não
@@ -184,7 +194,26 @@ depois", porque o movimento da boca é gerado com o áudio. Isso impõe restriç
 - **Manter `resolution` fora de `4k`**: o default do omni é `4k`, e com áudio isso fica
   proibitivo. Usar `1080p`.
 
-### O risco de consistência de voz
+### A voz não é controlável — testado em 28/07/2026
+
+**Conclusão fechada: não use áudio nativo do Kling.** Um clipe gerado com o prompt
+pedindo explicitamente *"voz masculina, jovem adulta, tom médio, calorosa, sotaque
+brasileiro neutro"* voltou com voz **aguda e em português europeu ou espanhol**. O
+prompt não controla nem o idioma, nem o sotaque, nem o registro — só existe o
+interruptor `enable_audio`, e a voz é sorteada a cada geração.
+
+O Veo tem a mesma limitação, e recusa entrada de áudio por escrito ("não consigo usar
+entrada de áudio para geração de vídeo no momento").
+
+Consequência prática: **gerar sempre com `enable_audio=false`**. Além de evitar voz
+inutilizável, economiza 33% — 6 créditos/segundo contra 9 com áudio. Voz vem de fora
+(gravada ou TTS dedicado) e entra na montagem com `--audio-mestre`, onde é a mesma
+para sempre e o texto é seu.
+
+Se um clipe já foi gerado com áudio ruim, **não regere** — basta remover a faixa na
+montagem, custo zero.
+
+### O risco de consistência de voz (histórico)
 
 Cada geração produz a voz do zero, então **dois clipes falados podem sair com timbres
 diferentes** — grave para uma marca cujo porta-voz é sempre o mesmo personagem. A
@@ -260,6 +289,28 @@ deve ("sem distorção" tende a produzir distorção).
    pelo ambiente de 图片2"*. Idem no `image_to_image` dos modelos Kling, até 10 refs.
 4. **`prefer_multi_shots`** — corta ou não entre planos.
 5. **O prompt** — o controle mais fraco; não deve carregar o peso da precisão.
+
+### O prompt não tem memória
+
+Cada geração parte do zero. **Toda instrução de marca precisa ser repetida por inteiro,
+em todo prompt** — o que você não disser volta ao default do modelo. Um prompt que
+esqueceu de dizer "notebook prateado liso, sem marca" recebeu de volta um notebook com
+o logo da Apple, mesmo depois de quatro gerações seguidas terem saído limpas.
+
+Repetir sempre: superfícies sem marca nem logotipo · roupas e tênis sem estampa · a cor
+exata do personagem ("preserve o verde-água da pele").
+
+### Descreva geometria, não emoção
+
+"Preocupado" o modelo ignora. **"Sobrancelhas bem franzidas para baixo, boca fechada e
+torta para um lado, queixo recolhido"** ele executa — e foi assim que o Aru deixou de
+sorrir pela primeira vez. Vale para tudo: descreva a posição do corpo, não o sentimento.
+
+### Cuidado com a luz colorindo o personagem
+
+Pedir "luz fria da tela no rosto" deixou o Aru azul-petróleo, quebrando a continuidade
+com as outras cenas. Ao pedir luz colorida, diga também qual é a luz **principal** e
+que a cor do personagem deve ser preservada.
 
 **Estrutura de prompt** (uma frase por bloco, nessa ordem):
 
