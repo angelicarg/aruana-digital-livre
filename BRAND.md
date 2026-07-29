@@ -57,15 +57,31 @@ gesticulação larga e sorriso permanente, que é o cacoete de mascote de propag
 Aru por texto** para gerar imagem — sai um personagem diferente a cada vez. Novas
 poses partem dessas referências.
 
-**Voz:** `en-US-BrianMultilingualNeural`, `rate=+5%`, `pitch=+10Hz`, gerada por
-`scripts/gerar-voz.py`. Escolhida em 28/07/2026 entre cinco amostras. Nenhum gerador
-de vídeo produz voz controlável — todos sorteiam —, então a locução **nunca** vem do
-gerador de vídeo: nasce no script e entra depois, por lip-sync ou narração em off.
-Trocar de voz é decisão de marca, não conveniência técnica.
+**Voz:** a **voz clonada do Aru no Runable**. Oficial desde 29/07/2026.
 
-**Pendência:** o símbolo "A" verde aparece no moletom, e nas imagens de referência
-também nos tênis. Enquanto estiver nas referências, ele reaparece em toda geração —
-ver a pendência aberta na seção Logo.
+Substituiu o `en-US-BrianMultilingualNeural` (edge-tts), que tinha sido escolhido em
+28/07/2026 entre cinco amostras. Motivo da troca: o Brian é **monocórdio** — mantém o
+mesmo tom do início ao fim, e a clonagem entrega variação de entonação, que é o que
+faz o Aru soar como alguém explicando em vez de um leitor automático.
+
+Impressão digital para conferência, medida em 29/07/2026 sobre um clipe real
+(F0 por autocorrelação, 764 quadros vozeados):
+
+| Voz | F0 mediana |
+|---|---|
+| Aru oficial (clone do Runable) | **216 Hz** |
+| Brian (aposentado) | 142 Hz |
+
+Se um clipe novo vier fora da faixa dos ~216 Hz, o gerador trocou a voz sozinho e a
+peça não pode ir ao ar. Trocar de voz é decisão de marca, não conveniência técnica.
+
+`scripts/gerar-voz.py` continua no repositório, mas gera a voz **antiga**. Não usar
+para peça publicada sem decisão explícita.
+
+**Símbolo "A" verde:** faz parte do figurino do Aru — aparece no moletom e, nas
+imagens de referência, também nos tênis. **Decidido em 29/07/2026: fica.** Não é
+preciso pedir para o modelo omiti-lo (e não adiantava: enquanto está na referência,
+ele volta em toda geração). Poses novas devem mantê-lo.
 
 ## Logo
 
@@ -76,8 +92,10 @@ ver a pendência aberta na seção Logo.
   `src/components/AruanaLogo.tsx`), nunca embutido em imagem.
 - A marca segue multicolorida por enquanto; a versão chapada de uma cor
   (favicon pequeno, marca d'água, impressão) é uma pendência aberta.
-- Pendência aberta: destino do símbolo "A" verde (usado no moletom do Aru) —
-  decidir se vira marca secundária de uso restrito ou é aposentado.
+- O símbolo "A" verde (moletom e tênis do Aru) **não é logo nem marca secundária**:
+  é figurino do personagem. Decidido em 29/07/2026 que fica, e o kit não precisa ser
+  refeito. Como não é elemento de marca, não se aplica a peça, documento ou assinatura
+  — só ao Aru.
 
 ## Estatísticas com fonte já validadas
 
