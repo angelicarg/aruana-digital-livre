@@ -44,7 +44,7 @@ export function SiteFooter() {
               <MessageCircle className="h-5 w-5" />
             </a>
             <a
-              href="mailto:aruanadigital@aruanadigital.com"
+              href="mailto:aruana@aruanadigital.com"
               aria-label="E-mail"
               className="grid h-11 w-11 place-items-center rounded-full bg-white/5 transition hover:bg-brand-green hover:text-white"
             >
@@ -89,7 +89,7 @@ export function SiteFooter() {
               <MessageCircle className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> (34) 99208-6611
             </li>
             <li className="flex items-start gap-2">
-              <Mail className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> aruanadigital@aruanadigital.com
+              <Mail className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> aruana@aruanadigital.com
             </li>
             <li className="flex items-start gap-2">
               <MapPin className="h-4 w-4 shrink-0 text-brand-green mt-0.5" /> Uberlândia / MG

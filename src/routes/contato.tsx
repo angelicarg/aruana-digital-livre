@@ -189,8 +189,8 @@ function ContatoPage() {
               {
                 icon: Mail,
                 t: "E-mail institucional",
-                v: "aruanadigital@aruanadigital.com",
-                href: "mailto:aruanadigital@aruanadigital.com",
+                v: "aruana@aruanadigital.com",
+                href: "mailto:aruana@aruanadigital.com",
               },
               {
                 icon: Instagram,

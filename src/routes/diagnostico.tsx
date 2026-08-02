@@ -155,20 +155,25 @@ function DiagnosticoPage() {
   const [nome, setNome] = useState("");
   const [site, setSite] = useState("");
   const [whats, setWhats] = useState("");
+  const [email, setEmail] = useState("");
   const [segmento, setSegmento] = useState("");
-  const [erros, setErros] = useState<{ nome?: boolean; site?: boolean; whats?: boolean }>({});
+  const [erros, setErros] = useState<{ nome?: boolean; site?: boolean; whats?: boolean; email?: boolean }>({});
 
   const nomeRef = useRef<HTMLInputElement>(null);
   const siteRef = useRef<HTMLInputElement>(null);
   const whatsRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
     const novos = {
       nome: nome.trim().length < 2,
       site: site.trim().length === 0,
       whats: whats.replace(/\D/g, "").length < 10,
+      email: !emailValido,
     };
     setErros(novos);
 
@@ -176,6 +181,7 @@ function DiagnosticoPage() {
     if (novos.nome) return nomeRef.current?.focus();
     if (novos.site) return siteRef.current?.focus();
     if (novos.whats) return whatsRef.current?.focus();
+    if (novos.email) return emailRef.current?.focus();
 
     const linhas = [
       "Olá! Quero solicitar o Diagnóstico Gratuito de Site.",
@@ -183,6 +189,7 @@ function DiagnosticoPage() {
       `Nome: ${nome.trim()}`,
       `Site: ${site.trim()}`,
       `WhatsApp: ${whats.trim()}`,
+      `E-mail: ${email.trim()}`,
       ...(segmento ? [`Segmento: ${segmento}`] : []),
       "",
       "Vim pela página de diagnóstico do site da Aruanã.",
@@ -239,6 +246,15 @@ function DiagnosticoPage() {
                 </li>
               ))}
             </ul>
+            <div className="mt-7 max-w-xl rounded-2xl border border-brand-green/40 bg-brand-green/10 p-5">
+              <p className="font-display text-base font-bold text-white">
+                Ainda não tem site? Essa proposta também é para você.
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-white/80">
+                Preencha o formulário ao lado com seu e-mail e WhatsApp — a gente entra em
+                contato e mostra por onde começar, sem custo.
+              </p>
+            </div>
             <p className="mt-7 max-w-xl border-l-2 border-brand-green pl-4 text-sm text-white/70">
               Sem custo, sem cadastro em ferramenta e sem proposta comercial junto. O relatório é
               seu mesmo que você nunca contrate nada com a gente.
@@ -328,6 +344,31 @@ function DiagnosticoPage() {
                 {erros.whats && (
                   <p id="diag-erro-whats" role="alert" className="mt-1.5 text-sm font-semibold text-destructive">
                     Informe um número com DDD, no formato (34) 90000-0000.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="diag-email" className="mb-1.5 block text-sm font-semibold">
+                  E-mail
+                </label>
+                <input
+                  ref={emailRef}
+                  id="diag-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="voce@suaempresa.com.br"
+                  className={inputClass}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={erros.email === true}
+                  aria-describedby="diag-erro-email"
+                  required
+                />
+                {erros.email && (
+                  <p id="diag-erro-email" role="alert" className="mt-1.5 text-sm font-semibold text-destructive">
+                    Informe um e-mail válido — enviamos o relatório também por lá.
                   </p>
                 )}
               </div>
@@ -532,7 +573,7 @@ function DiagnosticoPage() {
               <MessageCircle className="h-4 w-4 text-brand-green" /> (34) 99208-6611
             </span>
             <span className="flex items-center gap-1.5">
-              <Mail className="h-4 w-4 text-brand-green" /> aruanadigital@aruanadigital.com
+              <Mail className="h-4 w-4 text-brand-green" /> aruana@aruanadigital.com
             </span>
             <span className="flex items-center gap-1.5">
               <MapPin className="h-4 w-4 text-brand-green" /> Uberlândia / MG

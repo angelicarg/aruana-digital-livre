@@ -378,7 +378,7 @@ function WebsitePmePage() {
               <MessageCircle className="h-4 w-4 text-brand-green" /> (34) 99208-6611
             </span>
             <span className="flex items-center gap-1.5">
-              <Mail className="h-4 w-4 text-brand-green" /> aruanadigital@aruanadigital.com
+              <Mail className="h-4 w-4 text-brand-green" /> aruana@aruanadigital.com
             </span>
             <span className="flex items-center gap-1.5">
               <MapPin className="h-4 w-4 text-brand-green" /> Uberlândia / MG

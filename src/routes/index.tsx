@@ -64,7 +64,7 @@ export const Route = createFileRoute("/")({
           name: "Aruanã Digital",
           url: "https://aruanadigital.com/",
           image: `https://aruanadigital.com${heroFish}`,
-          email: "aruanadigital@aruanadigital.com",
+          email: "aruana@aruanadigital.com",
           description:
             "Agência de criação de sites institucionais para empresas, com foco em SEO, performance, acessibilidade e resultados. Sediada em Uberlândia/MG, atende empresas de todo o Brasil.",
           address: {
