@@ -126,8 +126,8 @@ export function BudgetSimulator({
       ...(form.email.trim() ? [`E-mail: ${form.email.trim()}`] : []),
       `Negócio: ${form.tipoNegocio}`,
       `Pacote sugerido: ${pacote.nome}`,
-      `Implantação: ${setup.comDesconto ? `${setup.comDesconto} (de ${setup.original})` : setup.original}`,
-      `Mensalidade: ${mensal.comDesconto ? `${mensal.comDesconto} (de ${mensal.original})` : mensal.original}`,
+      `Implantação: ${setup.original}${setup.comDesconto ? ` → ${setup.comDesconto} (economiza!)` : ''}`,
+      `Mensalidade: ${mensal.original}${mensal.comDesconto ? ` → ${mensal.comDesconto} (economiza!)` : ''}`,
       "",
       "Gostaria de saber mais!",
     ];

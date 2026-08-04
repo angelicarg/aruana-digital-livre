@@ -3,7 +3,7 @@ import { X, Sparkles } from "lucide-react";
 import { PROMO, isPromoActive } from "@/lib/pricing";
 import { isPromoDismissed, dismissPromo, hasCompletedSimulator } from "@/lib/lead-storage";
 
-const DWELL_MS = 10_000;
+const DWELL_MS = 3_000;
 const SCROLL_THRESHOLD = 0.3;
 
 const expiraEm = PROMO.expiresAt.toLocaleDateString("pt-BR", {
@@ -70,12 +70,12 @@ export function PromoBanner({ onAbrirSimulador }: { onAbrirSimulador: () => void
       aria-label="Oferta de lançamento"
       className="animate-fade-down sticky top-0 z-50 w-full border-b border-border bg-card/98 shadow-premium backdrop-blur"
     >
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 py-3 sm:flex-row sm:gap-4 sm:px-6 sm:py-3.5">
-        <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-brand-gradient text-white">
-          <Sparkles className="h-5 w-5" />
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-4 sm:flex-row sm:gap-5 sm:px-6 sm:py-5">
+        <div className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-brand-gradient text-white">
+          <Sparkles className="h-6 w-6" />
         </div>
 
-        <div className="flex-1 text-center text-sm sm:text-left">
+        <div className="flex-1 text-center text-base sm:text-left">
           <span className="font-bold text-foreground">Condição de lançamento:</span>{" "}
           <span className="text-muted-foreground">
             {PROMO.setupDiscountPct}% off na implantação + {PROMO.monthlyDiscountPct}% off nos primeiros{" "}
@@ -89,7 +89,7 @@ export function PromoBanner({ onAbrirSimulador }: { onAbrirSimulador: () => void
               onAbrirSimulador();
               setVisible(false);
             }}
-            className="whitespace-nowrap rounded-full bg-brand-gradient px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:scale-105"
+            className="whitespace-nowrap rounded-full bg-brand-gradient px-6 py-3 text-base font-semibold text-white shadow-glow transition hover:scale-105"
           >
             Simular meu orçamento
           </button>
