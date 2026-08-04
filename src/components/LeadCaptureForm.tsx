@@ -34,10 +34,10 @@ export function LeadCaptureForm() {
           email: formData.email.trim(),
           whatsapp: formData.telefone.trim(),
           tipoNegocio: "Não especificado",
-          precisaAgendamento: null,
-          interesseAvancado: null,
+          precisaAgendamento: false,
+          interesseAvancado: "nenhum",
           temSite: null,
-          pacoteSugerido: null,
+          pacoteSugerido: "essencial",
           origem: "home_lead_form",
         },
       });

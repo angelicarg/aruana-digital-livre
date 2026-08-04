@@ -13,11 +13,11 @@ const leadSchema = z.object({
   whatsapp: z.string().trim().min(8).max(30),
   email: z.string().trim().max(160).nullable(),
   tipoNegocio: z.string().trim().min(1).max(120),
-  precisaAgendamento: z.boolean(),
-  interesseAvancado: z.enum(["nenhum", "loja", "loja_ia", "sob_medida"]),
+  precisaAgendamento: z.boolean().nullable(),
+  interesseAvancado: z.enum(["nenhum", "loja", "loja_ia", "sob_medida"]).nullable(),
   temSite: z.boolean().nullable(),
-  pacoteSugerido: z.enum(["essencial", "profissional", "avancado", "sob_medida"]),
-  origem: z.enum(["banner", "simulador"]),
+  pacoteSugerido: z.enum(["essencial", "profissional", "avancado", "sob_medida"]).nullable(),
+  origem: z.enum(["banner", "simulador", "home_lead_form"]),
 });
 
 export const submitLead = createServerFn({ method: "POST" })
