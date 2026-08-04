@@ -18,6 +18,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
+import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { trackEvent } from "@/lib/analytics";
 import heroFish from "@/assets/hero-fish.jpg";
 
@@ -64,7 +65,7 @@ export const Route = createFileRoute("/")({
           name: "Aruanã Digital",
           url: "https://aruanadigital.com/",
           image: `https://aruanadigital.com${heroFish}`,
-          email: "aruana@aruanadigital.com",
+          email: "aruanadigital@aruanadigital.com",
           description:
             "Agência de criação de sites institucionais para empresas, com foco em SEO, performance, acessibilidade e resultados. Sediada em Uberlândia/MG, atende empresas de todo o Brasil.",
           address: {
@@ -509,6 +510,26 @@ function HomePage() {
             >
               Ver todos os projetos no ar <ArrowRight className="h-5 w-5" />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* LEAD CAPTURE FORM */}
+      <section className="bg-muted py-20 lg:py-28">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl bg-card p-8 shadow-card sm:p-10">
+            <div className="mb-8 text-center">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+                Próximo passo
+              </p>
+              <h2 className="text-3xl font-black sm:text-4xl">
+                Vamos conversar sobre seu projeto?
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Deixe seus dados aqui — em 3 passos rápidos. Sem spam, sem complicação.
+              </p>
+            </div>
+            <LeadCaptureForm />
           </div>
         </div>
       </section>
