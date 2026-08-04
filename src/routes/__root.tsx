@@ -134,6 +134,20 @@ function RootShell({ children }: { children: ReactNode }) {
             }}
           />
         )}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-EJ9N0GX6X1"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-EJ9N0GX6X1');
+            `,
+          }}
+        />
       </head>
       <body>
         {GTM_ID && (
