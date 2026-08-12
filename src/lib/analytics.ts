@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     dataLayer?: Record<string, unknown>[];
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -23,8 +24,15 @@ export interface EventParams {
 }
 
 export function trackEvent(event: EventName, params: EventParams = {}) {
-  if (typeof window === "undefined" || !window.dataLayer) return;
-  window.dataLayer.push({ event, timestamp: new Date().toISOString(), ...params });
+  if (typeof window === "undefined") return;
+
+  // Preferir gtag() se disponível (mais direto com GA4)
+  if (typeof window.gtag === "function") {
+    window.gtag("event", event, params);
+  } else if (window.dataLayer) {
+    // Fallback para dataLayer.push() se gtag não estiver disponível
+    window.dataLayer.push({ event, timestamp: new Date().toISOString(), ...params });
+  }
 }
 
 export function setupAnalytics() {
