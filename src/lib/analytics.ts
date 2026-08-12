@@ -24,14 +24,18 @@ export interface EventParams {
 }
 
 export function trackEvent(event: EventName, params: EventParams = {}) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !window.dataLayer) return;
 
-  // Preferir gtag() se disponível (mais direto com GA4)
+  // Usar dataLayer.push() com formato correto para GA4/GTM
+  window.dataLayer.push({
+    event,
+    timestamp: new Date().toISOString(),
+    ...params,
+  });
+
+  // Também chamar gtag() diretamente se disponível (redundância para garantir)
   if (typeof window.gtag === "function") {
     window.gtag("event", event, params);
-  } else if (window.dataLayer) {
-    // Fallback para dataLayer.push() se gtag não estiver disponível
-    window.dataLayer.push({ event, timestamp: new Date().toISOString(), ...params });
   }
 }
 
