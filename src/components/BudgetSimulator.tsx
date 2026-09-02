@@ -181,7 +181,7 @@ export function BudgetSimulator({
                     }}
                     className={`rounded-xl border px-4 py-3 text-left text-sm font-medium transition ${
                       form.tipoNegocio === t
-                        ? "border-brand-green bg-brand-green/10 text-brand-green-deep"
+                        ? "border-brand-green bg-brand-green/10 text-brand-green-text"
                         : "border-border hover:border-brand-green/50"
                     }`}
                   >
@@ -229,7 +229,7 @@ export function BudgetSimulator({
                     }}
                     className={`flex-1 rounded-xl border px-4 py-4 text-sm font-semibold transition ${
                       form.precisaAgendamento === o.value
-                        ? "border-brand-green bg-brand-green/10 text-brand-green-deep"
+                        ? "border-brand-green bg-brand-green/10 text-brand-green-text"
                         : "border-border hover:border-brand-green/50"
                     }`}
                   >
@@ -254,7 +254,7 @@ export function BudgetSimulator({
                     }}
                     className={`rounded-xl border px-4 py-3 text-left text-sm font-medium transition ${
                       form.interesseAvancado === o.value
-                        ? "border-brand-green bg-brand-green/10 text-brand-green-deep"
+                        ? "border-brand-green bg-brand-green/10 text-brand-green-text"
                         : "border-border hover:border-brand-green/50"
                     }`}
                   >
@@ -283,7 +283,7 @@ export function BudgetSimulator({
                     }}
                     className={`flex-1 rounded-xl border px-4 py-4 text-sm font-semibold transition ${
                       form.temSite === o.value
-                        ? "border-brand-green bg-brand-green/10 text-brand-green-deep"
+                        ? "border-brand-green bg-brand-green/10 text-brand-green-text"
                         : "border-border hover:border-brand-green/50"
                     }`}
                   >
@@ -363,7 +363,7 @@ export function BudgetSimulator({
                 <Row label="Implantação" preco={precoSetup(pacote)} highlight />
                 <Row label="Mensalidade" preco={precoMensal(pacote)} />
                 {isPromoActive() && pacote.setupMax !== null && (
-                  <p className="mt-3 text-xs font-medium text-brand-green-deep">
+                  <p className="mt-3 text-xs font-medium text-brand-green-text">
                     ✨ Condição de lançamento: {PROMO.setupDiscountPct}% off na implantação e{" "}
                     {PROMO.monthlyDiscountPct}% off nos primeiros {PROMO.monthlyDiscountMonths} meses.
                   </p>
@@ -411,7 +411,7 @@ function Row({ label, preco, highlight }: { label: string; preco: FaixaPreco; hi
         {preco.comDesconto && (
           <span className="text-xs text-muted-foreground line-through">{preco.original}</span>
         )}
-        <span className={`text-sm font-bold ${highlight ? "text-brand-green-deep" : "text-foreground"}`}>
+        <span className={`text-sm font-bold ${highlight ? "text-brand-green-text" : "text-foreground"}`}>
           {preco.comDesconto ?? preco.original}
         </span>
       </span>

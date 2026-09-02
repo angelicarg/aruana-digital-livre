@@ -111,7 +111,7 @@ function ContatoPage() {
                 </p>
                 <button
                   onClick={() => setSent(false)}
-                  className="mt-2 text-sm underline text-muted-foreground hover:text-brand-green-deep"
+                  className="mt-2 text-sm underline text-muted-foreground hover:text-brand-green-text"
                 >
                   Enviar outra mensagem
                 </button>
@@ -189,8 +189,8 @@ function ContatoPage() {
               {
                 icon: Mail,
                 t: "E-mail institucional",
-                v: "aruana@aruanadigital.com",
-                href: "mailto:aruana@aruanadigital.com",
+                v: "aruanadigital@aruanadigital.com",
+                href: "mailto:aruanadigital@aruanadigital.com",
               },
               {
                 icon: Instagram,

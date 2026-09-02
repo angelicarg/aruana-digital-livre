@@ -424,7 +424,7 @@ function DiagnosticoPage() {
           <div className="mt-10 grid gap-6 sm:grid-cols-3">
             {PROVA.map((p) => (
               <article key={p.nome} className="flex flex-col rounded-3xl bg-card p-6 shadow-card">
-                <span className="self-start rounded-full bg-brand-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+                <span className="self-start rounded-full bg-brand-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green-text">
                   Projeto de demonstração
                 </span>
                 <h3 className="mt-4 font-display text-lg font-bold">{p.nome}</h3>
@@ -433,7 +433,7 @@ function DiagnosticoPage() {
                   href={p.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand-green-deep transition hover:gap-3"
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand-green-text transition hover:gap-3"
                 >
                   Abrir e testar ao vivo <ExternalLink className="h-4 w-4" />
                 </a>
@@ -573,7 +573,7 @@ function DiagnosticoPage() {
               <MessageCircle className="h-4 w-4 text-brand-green" /> (34) 99208-6611
             </span>
             <span className="flex items-center gap-1.5">
-              <Mail className="h-4 w-4 text-brand-green" /> aruana@aruanadigital.com
+              <Mail className="h-4 w-4 text-brand-green" /> aruanadigital@aruanadigital.com
             </span>
             <span className="flex items-center gap-1.5">
               <MapPin className="h-4 w-4 text-brand-green" /> Uberlândia / MG

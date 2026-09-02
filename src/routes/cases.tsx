@@ -101,7 +101,7 @@ function CasesPage() {
               testar. Toda solução real é
               personalizada conforme o desafio específico do cliente. Quer que sua empresa seja o
               próximo case?{" "}
-              <a href="/contato" className="font-semibold text-brand-green underline hover:text-brand-green-deep">
+              <a href="/contato" className="font-semibold text-brand-green-text underline">
                 Fale com nossa equipe
               </a>
               .
@@ -145,7 +145,7 @@ function CasesPage() {
                     <div className="grid grid-cols-3 divide-x divide-border">
                       {c.highlights.map((h) => (
                         <div key={h} className="flex items-center p-5 text-center">
-                          <p className="text-xs font-bold leading-snug text-brand-green-deep">{h}</p>
+                          <p className="text-xs font-bold leading-snug text-brand-green-text">{h}</p>
                         </div>
                       ))}
                     </div>

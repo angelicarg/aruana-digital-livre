@@ -74,6 +74,7 @@ function WebsitePmePage() {
 
   return (
     <div className="min-h-dvh bg-background">
+      <main>
       {/* HERO */}
       <section className="relative overflow-hidden bg-hero-gradient text-white">
         <div className="absolute inset-0 grid-pattern opacity-40" aria-hidden="true" />
@@ -243,7 +244,7 @@ function WebsitePmePage() {
               },
             ].map((c) => (
               <div key={c.nome} className="flex flex-col rounded-3xl bg-card p-6 shadow-card">
-                <p className="text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+                <p className="text-xs font-bold uppercase tracking-widest text-brand-green-text">
                   Projeto de demonstração
                 </p>
                 <p className="mt-3 font-semibold">{c.nome}</p>
@@ -252,7 +253,7 @@ function WebsitePmePage() {
                   href={c.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-4 text-sm font-bold text-brand-green-deep transition hover:text-brand-green"
+                  className="mt-4 text-sm font-bold text-brand-green-text transition hover:underline"
                 >
                   Abrir e testar ao vivo →
                 </a>
@@ -419,6 +420,8 @@ function WebsitePmePage() {
           </p>
         </div>
       </section>
+
+      </main>
 
       {/* FOOTER */}
       <footer className="bg-brand-navy-deep py-10 text-white/70">

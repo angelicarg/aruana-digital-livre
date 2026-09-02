@@ -253,7 +253,7 @@ function ServicosPage() {
                 <s.icon className="h-10 w-10" />
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+                <p className="text-xs font-bold uppercase tracking-widest text-brand-green-text">
                   Serviço {String(i + 1).padStart(2, "0")}
                 </p>
                 <h2 className="mt-2 text-2xl font-black sm:text-3xl">{s.title}</h2>
@@ -265,7 +265,7 @@ function ServicosPage() {
                     <p className="mt-2 text-foreground">{s.problem}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-bold uppercase tracking-wider text-brand-green-deep">
+                    <p className="text-sm font-bold uppercase tracking-wider text-brand-green-text">
                       Nossa solução
                     </p>
                     <p className="mt-2 text-foreground">{s.solution}</p>
@@ -283,7 +283,7 @@ function ServicosPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => trackEvent("click_whatsapp", { placement: "servicos_card", service: s.title })}
-                  className="mt-6 inline-flex items-center gap-2 font-semibold text-brand-green-deep hover:gap-3 transition-all"
+                  className="mt-6 inline-flex items-center gap-2 font-semibold text-brand-green-text hover:gap-3 transition-all"
                 >
                   Quero esse serviço <ArrowRight className="h-4 w-4" />
                 </a>

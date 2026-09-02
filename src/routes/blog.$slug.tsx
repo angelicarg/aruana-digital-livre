@@ -69,7 +69,7 @@ function BlogPostPage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-green hover:text-brand-green-deep"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-green-text hover:underline"
           >
             <ArrowLeft className="h-4 w-4" /> Voltar para o blog
           </Link>

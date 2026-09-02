@@ -279,7 +279,7 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
                 Sobre a Aruanã Digital
               </p>
               <h2 className="text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
@@ -300,7 +300,7 @@ function HomePage() {
                   ["Compromisso", "Acessibilidade e impacto social em cada projeto."],
                 ].map(([t, d]) => (
                   <div key={t} className="rounded-2xl bg-card p-5 shadow-card">
-                    <p className="font-display text-sm font-bold uppercase tracking-wider text-brand-green-deep">
+                    <p className="font-display text-sm font-bold uppercase tracking-wider text-brand-green-text">
                       {t}
                     </p>
                     <p className="mt-2 text-sm text-muted-foreground">{d}</p>
@@ -339,7 +339,7 @@ function HomePage() {
       <section className="py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
               O que entregamos
             </p>
             <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl">
@@ -363,7 +363,7 @@ function HomePage() {
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
                 <Link
                   to="/servicos"
-                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-green-deep transition group-hover:gap-2.5"
+                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-green-text transition group-hover:gap-2.5"
                 >
                   Saiba mais <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -403,7 +403,7 @@ function HomePage() {
       <section className="py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
               Metodologia
             </p>
             <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl">A jornada Aruanã</h2>
@@ -471,7 +471,7 @@ function HomePage() {
       <section className="bg-muted py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
               Prova real
             </p>
             <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl">
@@ -487,7 +487,7 @@ function HomePage() {
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {PROOF_PROJECTS.map((p) => (
               <article key={p.name} className="flex flex-col rounded-3xl bg-card p-7 shadow-card">
-                <span className="self-start rounded-full bg-brand-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+                <span className="self-start rounded-full bg-brand-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green-text">
                   Projeto de demonstração
                 </span>
                 <h3 className="mt-4 font-display text-xl font-bold">{p.name}</h3>
@@ -496,7 +496,7 @@ function HomePage() {
                   href={p.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-green-deep transition hover:gap-3"
+                  className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-green-text transition hover:gap-3"
                 >
                   Abrir e testar ao vivo <ExternalLink className="h-4 w-4" />
                 </a>
@@ -519,7 +519,7 @@ function HomePage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl bg-card p-8 shadow-card sm:p-10">
             <div className="mb-8 text-center">
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-deep">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
                 Próximo passo
               </p>
               <h2 className="text-3xl font-black sm:text-4xl">
