@@ -10,6 +10,7 @@ export type EventName =
   | "click_link"
   | "click_cta"
   | "form_start"
+  | "form_field_focus"
   | "form_field_error"
   | "form_submit"
   | "scroll_depth"

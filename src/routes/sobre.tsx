@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
 import { Heart, Target, Eye, Sparkles, GraduationCap, Accessibility } from "lucide-react";
-import mascot from "@/assets/mascot-aru.png";
+import mascot from "@/assets/mascot-aru.webp";
 import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/sobre")({

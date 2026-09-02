@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import mascotAru from "#/assets/mascot-face.png";
+import mascotAru from "#/assets/mascot-face.webp";
 import { sendChatMessage } from "#/lib/api/chat.functions";
 import { trackEvent } from "#/lib/analytics";
 

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   SearchX,
   MonitorX,
@@ -15,13 +16,30 @@ import {
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AruanaLogo } from "@/components/AruanaLogo";
-import mascot from "@/assets/mascot-aru.png";
+import { LeadCaptureForm } from "@/components/LeadCaptureForm";
+import { trackEvent } from "@/lib/analytics";
+import mascot from "@/assets/mascot-aru.webp";
 
 const WHATSAPP_NUMBER = "5534992086611";
 
-function whatsappHref(context: string) {
-  const message = `Olá! Vi o anúncio da Aruanã Digital e quero criar um website profissional para o meu negócio. (${context})`;
+function whatsappHref(context: string, origem?: string) {
+  const sufixo = origem ? `${context} · ${origem}` : context;
+  const message = `Olá! Vi o anúncio da Aruanã Digital e quero criar um website profissional para o meu negócio. (${sufixo})`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+
+// A UTM só existe no cliente. Resolver no primeiro efeito mantém o HTML do
+// servidor igual ao da hidratação — o href base já funciona sem ela.
+function useOrigemCampanha() {
+  const [origem, setOrigem] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const partes = [p.get("utm_source"), p.get("utm_campaign"), p.get("utm_content")].filter(Boolean);
+    if (partes.length > 0) setOrigem(partes.join("/"));
+  }, []);
+
+  return origem;
 }
 
 export const Route = createFileRoute("/website-pme")({
@@ -49,13 +67,18 @@ export const Route = createFileRoute("/website-pme")({
 });
 
 function WebsitePmePage() {
+  const origem = useOrigemCampanha();
+
+  const registrarClique = (placement: string) =>
+    trackEvent("click_whatsapp", { placement, campanha: origem ?? "sem_utm" });
+
   return (
     <div className="min-h-dvh bg-background">
       {/* HERO */}
       <section className="relative overflow-hidden bg-hero-gradient text-white">
         <div className="absolute inset-0 grid-pattern opacity-40" aria-hidden="true" />
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.2fr_1fr] lg:py-28 lg:px-8">
-          <div className="animate-fade-up text-center lg:text-left">
+          <div className="text-center lg:text-left">
             <p className="text-sm font-semibold uppercase tracking-widest text-brand-green">
               Aruanã Digital
             </p>
@@ -68,7 +91,8 @@ function WebsitePmePage() {
             </p>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <a
-                href={whatsappHref("Hero")}
+                href={whatsappHref("Hero", origem)}
+                onClick={() => registrarClique("hero")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-gradient px-8 py-4 text-base font-semibold text-white shadow-glow transition hover:scale-105 sm:w-auto"
@@ -83,7 +107,11 @@ function WebsitePmePage() {
               src={mascot}
               alt="Aru, mascote da Aruanã Digital"
               className="animate-float w-56 sm:w-72 lg:w-80"
+              width={640}
+              height={427}
               loading="eager"
+              fetchPriority="high"
+              decoding="async"
             />
           </div>
         </div>
@@ -234,6 +262,28 @@ function WebsitePmePage() {
         </div>
       </section>
 
+      {/* CAPTURA — via de menor compromisso */}
+      <section className="py-16 sm:py-20 lg:py-24">
+        <div className="mx-auto grid max-w-5xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+          <div>
+            <h2 className="text-2xl font-black sm:text-3xl">
+              Prefere Não Chamar no WhatsApp Agora?
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              Deixe seu contato em 3 passos rápidos e a gente procura você — no horário que
+              combinar. Sem spam, sem ligação insistente.
+            </p>
+            <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 shrink-0 text-brand-green-deep" />
+              Seus dados ficam só com a gente. Nunca repassamos a terceiros.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8">
+            <LeadCaptureForm />
+          </div>
+        </div>
+      </section>
+
       {/* ACESSIBILIDADE É LEI */}
       <section className="bg-brand-navy-deep py-16 text-white sm:py-20 lg:py-24">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
@@ -354,7 +404,8 @@ function WebsitePmePage() {
             Agende uma conversa grátis com nosso especialista — sem compromisso.
           </p>
           <a
-            href={whatsappHref("CTA final")}
+            href={whatsappHref("CTA final", origem)}
+            onClick={() => registrarClique("cta_final")}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-brand-gradient px-8 py-4 text-base font-semibold text-white shadow-glow transition hover:scale-105"
@@ -378,7 +429,7 @@ function WebsitePmePage() {
               <MessageCircle className="h-4 w-4 text-brand-green" /> (34) 99208-6611
             </span>
             <span className="flex items-center gap-1.5">
-              <Mail className="h-4 w-4 text-brand-green" /> aruana@aruanadigital.com
+              <Mail className="h-4 w-4 text-brand-green" /> aruanadigital@aruanadigital.com
             </span>
             <span className="flex items-center gap-1.5">
               <MapPin className="h-4 w-4 text-brand-green" /> Uberlândia / MG

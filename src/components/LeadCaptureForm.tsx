@@ -81,7 +81,7 @@ export function LeadCaptureForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       {step === 0 && (
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-foreground">Como você se chama?</label>
+          <label htmlFor="lead-nome" className="text-sm font-semibold text-foreground">Como você se chama?</label>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
             <User className="h-5 w-5 text-muted-foreground" />
             <input
@@ -90,6 +90,9 @@ export function LeadCaptureForm() {
               value={formData.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
               onFocus={() => trackEvent("form_field_focus", { field: "nome" })}
+              id="lead-nome"
+              name="nome"
+              autoComplete="name"
               className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
               autoFocus
             />
@@ -99,7 +102,7 @@ export function LeadCaptureForm() {
 
       {step === 1 && (
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-foreground">Seu e-mail</label>
+          <label htmlFor="lead-email" className="text-sm font-semibold text-foreground">Seu e-mail</label>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
             <Mail className="h-5 w-5 text-muted-foreground" />
             <input
@@ -108,6 +111,9 @@ export function LeadCaptureForm() {
               value={formData.email}
               onChange={(e) => handleChange("email", e.target.value)}
               onFocus={() => trackEvent("form_field_focus", { field: "email" })}
+              id="lead-email"
+              name="email"
+              autoComplete="email"
               className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
               autoFocus
             />
@@ -117,7 +123,7 @@ export function LeadCaptureForm() {
 
       {step === 2 && (
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-foreground">Seu WhatsApp</label>
+          <label htmlFor="lead-telefone" className="text-sm font-semibold text-foreground">Seu WhatsApp</label>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
             <MessageCircle className="h-5 w-5 text-muted-foreground" />
             <input
@@ -126,6 +132,9 @@ export function LeadCaptureForm() {
               value={formData.telefone}
               onChange={(e) => handleChange("telefone", e.target.value.replace(/\D/g, "").slice(0, 11))}
               onFocus={() => trackEvent("form_field_focus", { field: "telefone" })}
+              id="lead-telefone"
+              name="telefone"
+              autoComplete="tel"
               className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
               autoFocus
             />
