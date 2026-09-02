@@ -142,7 +142,9 @@ function RootShell({ children }: { children: ReactNode }) {
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
+              function gtag(){
+                dataLayer.push(arguments);
+              }
               gtag('js', new Date());
               gtag('config', 'G-EJ9N0GX6X1');
             `,
@@ -185,6 +187,39 @@ function RootShell({ children }: { children: ReactNode }) {
                   new window.VLibras.Widget('https://vlibras.gov.br/app');
                 };
                 document.body.appendChild(script);
+
+                // O plugin do gov.br injeta as imagens do widget sem alt e o botão
+                // sem nome acessível. Rotulamos por fora, sem alterar o plugin.
+                var rotular = function () {
+                  var pronto = 0;
+                  var popup = document.getElementById('vlibras-popup');
+                  if (popup) {
+                    if (!popup.hasAttribute('alt')) {
+                      popup.setAttribute('alt', 'Convite para ativar o VLibras, tradutor de Libras desta página');
+                    }
+                    pronto++;
+                  }
+                  var botao = document.getElementById('vlibras-button');
+                  if (botao) {
+                    if (!botao.getAttribute('aria-label')) {
+                      botao.setAttribute('aria-label', 'Abrir o VLibras, tradutor de Língua Brasileira de Sinais');
+                    }
+                    var icone = botao.querySelector('img');
+                    // Decorativa: o nome do controle fica no aria-label do botão.
+                    if (icone && !icone.hasAttribute('alt')) icone.setAttribute('alt', '');
+                    pronto++;
+                  }
+                  return pronto === 2;
+                };
+
+                // O widget pode demorar (rede lenta) e recria os nos ao abrir e
+                // fechar, então não basta observar uma vez: reaplicamos no clique.
+                rotular();
+                var obs = new MutationObserver(function () {
+                  if (rotular()) obs.disconnect();
+                });
+                obs.observe(document.body, { childList: true, subtree: true });
+                document.addEventListener('click', function () { rotular(); }, true);
               })();
             `,
           }}
