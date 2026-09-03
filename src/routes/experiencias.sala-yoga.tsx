@@ -1,14 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Sparkles, Stars, MeshReflectorMaterial } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import * as THREE from "three";
 import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize } from "lucide-react";
+import { CenaSala, controleSala } from "@/components/SalaYoga3D";
 
 const WHATSAPP_NUMBER = "5534992086611";
-const BREATH_PERIOD = 8; // segundos por ciclo inspira+expira, compartilhado entre 3D e overlay
+const BREATH_PERIOD = 8; // segundos por ciclo inspira+expira
 
 function whatsappHref(context: string) {
   const message = `Olá! Testei a Sala de Yoga em RV da Aruanã Digital e quero saber mais. (${context})`;
@@ -31,275 +29,6 @@ export const Route = createFileRoute("/experiencias/sala-yoga")({
 });
 
 const xrStore = createXRStore();
-
-// Frequências solfeggio — usadas em música de meditação/bem-estar, soam bem em qualquer combinação.
-const CHIME_NOTES = [396.0, 417.0, 528.0, 639.0, 741.0];
-
-function SkyDome() {
-  const material = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        uniforms: {
-          colorTop: { value: new THREE.Color("#0A2E29") },
-          colorHorizon: { value: new THREE.Color("#051826") },
-          colorBottom: { value: new THREE.Color("#010509") },
-        },
-        vertexShader: `
-          varying vec3 vWorldPosition;
-          void main() {
-            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-            vWorldPosition = worldPosition.xyz;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-        fragmentShader: `
-          uniform vec3 colorTop;
-          uniform vec3 colorHorizon;
-          uniform vec3 colorBottom;
-          varying vec3 vWorldPosition;
-          void main() {
-            float y = normalize(vWorldPosition).y;
-            vec3 lower = mix(colorBottom, colorHorizon, smoothstep(-1.0, 0.05, y));
-            vec3 sky = mix(lower, colorTop, smoothstep(0.05, 1.0, y));
-            gl_FragColor = vec4(sky, 1.0);
-          }
-        `,
-        side: THREE.BackSide,
-        depthWrite: false,
-      }),
-    []
-  );
-  return (
-    <mesh material={material}>
-      <sphereGeometry args={[80, 32, 32]} />
-    </mesh>
-  );
-}
-
-// Gera uma textura de nebulosa em canvas (gradiente radial + manchas orgânicas) — 100% procedural, sem imagem externa.
-function createNebulaTexture(hue: number) {
-  const size = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return new THREE.Texture();
-
-  const cx = size / 2;
-  const cy = size / 2;
-  const base = ctx.createRadialGradient(cx, cy, 0, cx, cy, size / 2);
-  base.addColorStop(0, `hsla(${hue}, 85%, 65%, 0.5)`);
-  base.addColorStop(0.45, `hsla(${hue}, 80%, 55%, 0.22)`);
-  base.addColorStop(1, `hsla(${hue}, 70%, 40%, 0)`);
-  ctx.fillStyle = base;
-  ctx.fillRect(0, 0, size, size);
-
-  for (let i = 0; i < 7; i++) {
-    const bx = cx + (Math.random() - 0.5) * size * 0.55;
-    const by = cy + (Math.random() - 0.5) * size * 0.55;
-    const r = size * (0.1 + Math.random() * 0.16);
-    const blobHue = hue + (Math.random() * 30 - 15);
-    const blob = ctx.createRadialGradient(bx, by, 0, bx, by, r);
-    blob.addColorStop(0, `hsla(${blobHue}, 85%, 70%, 0.32)`);
-    blob.addColorStop(1, `hsla(${blobHue}, 80%, 50%, 0)`);
-    ctx.fillStyle = blob;
-    ctx.beginPath();
-    ctx.arc(bx, by, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
-function NebulaField() {
-  const textures = useMemo(() => [createNebulaTexture(300), createNebulaTexture(185), createNebulaTexture(40)], []);
-
-  const placements = useMemo(() => {
-    const count = 8;
-    return Array.from({ length: count }, (_, i) => {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = 0.25 + Math.random() * 0.6; // evita o zênite/nadir puro, espalha ao redor do horizonte
-      const r = 55 + Math.random() * 15;
-      const pos: [number, number, number] = [
-        r * Math.sin(phi * Math.PI) * Math.cos(theta),
-        r * Math.cos(phi * Math.PI),
-        r * Math.sin(phi * Math.PI) * Math.sin(theta),
-      ];
-      return { pos, scale: 20 + Math.random() * 24, tex: i % 3 };
-    });
-  }, []);
-
-  return (
-    <>
-      {placements.map((p, i) => (
-        <sprite key={i} position={p.pos} scale={[p.scale, p.scale, 1]}>
-          <spriteMaterial map={textures[p.tex]} transparent depthWrite={false} opacity={0.85} blending={THREE.AdditiveBlending} />
-        </sprite>
-      ))}
-    </>
-  );
-}
-
-function ReflectiveFloor() {
-  return (
-    <mesh position={[0, -1.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-      <circleGeometry args={[3.6, 64]} />
-      <MeshReflectorMaterial
-        blur={[120, 40]}
-        resolution={1024}
-        mixBlur={0.6}
-        mixStrength={18}
-        roughness={0.4}
-        depthScale={1.1}
-        minDepthThreshold={0.4}
-        maxDepthThreshold={1.4}
-        color="#052E28"
-        metalness={0.5}
-      />
-    </mesh>
-  );
-}
-
-function BreathOrb() {
-  const ref = useRef<THREE.Mesh>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    if (ref.current) {
-      const wave = Math.sin((t / BREATH_PERIOD) * Math.PI * 2); // -1..1
-      const s = 0.55 + (wave * 0.5 + 0.5) * 0.35; // 0.55..0.9
-      ref.current.scale.setScalar(s);
-      ref.current.rotation.y = t * 0.15;
-    }
-    if (materialRef.current) {
-      // aura de energia — deriva lenta de matiz entre teal, azul e violeta suave (não passa por vermelho/verde puro, mantém o clima zen)
-      const hue = 0.42 + (Math.sin(t * 0.05) * 0.5 + 0.5) * 0.16;
-      materialRef.current.emissive.setHSL(hue, 0.65, 0.5);
-      materialRef.current.color.setHSL(hue, 0.5, 0.62);
-    }
-  });
-  return (
-    <mesh ref={ref} position={[0, 0.5, 0]}>
-      <icosahedronGeometry args={[1, 1]} />
-      <meshStandardMaterial ref={materialRef} emissiveIntensity={0.9} roughness={0.25} metalness={0.1} />
-    </mesh>
-  );
-}
-
-function SacredRing() {
-  const groupRef = useRef<THREE.Group>(null);
-  useFrame(({ clock }) => {
-    if (groupRef.current) groupRef.current.rotation.z = clock.getElapsedTime() * 0.05;
-  });
-  const ringRotations = [0, Math.PI / 3, (2 * Math.PI) / 3];
-  return (
-    <group ref={groupRef} position={[0, 0.5, 0]}>
-      {ringRotations.map((rot, i) => (
-        <mesh key={i} rotation={[Math.PI / 2, 0, rot]}>
-          <torusGeometry args={[1.6, 0.008, 8, 96]} />
-          <meshStandardMaterial
-            color="#7CF0D8"
-            emissive="#00CCA7"
-            emissiveIntensity={1.4}
-            transparent
-            opacity={0.5}
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function Wisp({ position, onChime }: { position: [number, number, number]; onChime: () => void }) {
-  const ref = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
-  const baseY = position[1];
-  const phase = useMemo(() => position[0] * 1.7, [position]);
-
-  useFrame(({ clock }) => {
-    if (!ref.current) return;
-    ref.current.position.y = baseY + Math.sin(clock.getElapsedTime() + phase) * 0.18;
-  });
-
-  return (
-    <mesh
-      ref={ref}
-      position={position}
-      onClick={(e) => {
-        e.stopPropagation();
-        onChime();
-      }}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        setHovered(true);
-      }}
-      onPointerOut={() => setHovered(false)}
-      scale={hovered ? 1.4 : 1}
-    >
-      <sphereGeometry args={[0.12, 16, 16]} />
-      <meshStandardMaterial color="#DFFFF6" emissive="#7CF0D8" emissiveIntensity={hovered ? 2 : 1.2} />
-    </mesh>
-  );
-}
-
-const WISP_POSITIONS: [number, number, number][] = [
-  [-2.4, 0.3, -1.2],
-  [2.1, 0.8, -1.6],
-  [-1.6, 1.1, 1.8],
-  [1.8, 0.2, 1.4],
-  [0, 1.6, -2.4],
-];
-
-function DriftingGroup({ children }: { children: React.ReactNode }) {
-  const ref = useRef<THREE.Group>(null);
-  useFrame(({ clock }) => {
-    if (ref.current) ref.current.rotation.y = clock.getElapsedTime() * 0.02;
-  });
-  return <group ref={ref}>{children}</group>;
-}
-
-function Scene({ onChime }: { onChime: (freq: number) => void }) {
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <hemisphereLight args={["#00CCA7", "#041B33", 0.6]} />
-      <pointLight position={[0, 3, 2]} intensity={0.5} color="#7CF0D8" />
-      <fog attach="fog" args={["#062A24", 9, 42]} />
-
-      <SkyDome />
-      <NebulaField />
-      <Stars radius={60} depth={50} count={2500} factor={4} saturation={0} fade speed={0.4} />
-      <ReflectiveFloor />
-      <BreathOrb />
-      <SacredRing />
-
-      {WISP_POSITIONS.map((pos, i) => (
-        <Wisp key={i} position={pos} onChime={() => onChime(CHIME_NOTES[i % CHIME_NOTES.length])} />
-      ))}
-
-      <DriftingGroup>
-        <Sparkles count={90} scale={[9, 3.5, 9]} size={3} speed={0.25} color="#7CF0D8" />
-      </DriftingGroup>
-
-      <OrbitControls
-        enablePan={false}
-        minDistance={3}
-        maxDistance={11}
-        maxPolarAngle={Math.PI / 1.9}
-        autoRotate
-        autoRotateSpeed={0.35}
-        enableDamping
-        dampingFactor={0.08}
-      />
-
-      <EffectComposer>
-        <Bloom luminanceThreshold={0.2} luminanceSmoothing={0.9} intensity={0.7} mipmapBlur />
-      </EffectComposer>
-    </>
-  );
-}
 
 const DRONE_MAX_GAIN = 0.7; // ganho real quando o slider está em 100%
 
@@ -370,23 +99,7 @@ function useAmbientAudio() {
 
   const toggleMute = () => setVolume(volume > 0 ? 0 : lastVolumeRef.current || 0.4);
 
-  const playChime = (freq: number) => {
-    const ctx = ensureContext();
-    if (ctx.state === "suspended") ctx.resume();
-    const osc = ctx.createOscillator();
-    osc.type = "sine";
-    osc.frequency.value = freq;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.6);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 1.7);
-  };
-
-  return { volume, setVolume, toggleMute, playChime };
+  return { volume, setVolume, toggleMute };
 }
 
 function BreathingGuide() {
@@ -428,10 +141,50 @@ function useFullscreen(ref: React.RefObject<HTMLElement | null>) {
   return { isFullscreen, toggle };
 }
 
+/** Botões de caminhada. O teclado resolve no computador, mas no celular não há
+ *  tecla — sem isto a sala vira um panorama de um ponto só. */
+function Caminhada() {
+  const segurar = (eixo: "frente" | "lado", valor: number) => ({
+    onPointerDown: () => {
+      controleSala[eixo] = valor;
+    },
+    onPointerUp: () => {
+      controleSala[eixo] = 0;
+    },
+    onPointerLeave: () => {
+      controleSala[eixo] = 0;
+    },
+    // Sem isto o toque também rola a página por baixo do controle.
+    onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+  });
+
+  const botao =
+    "pointer-events-auto grid h-11 w-11 place-items-center rounded-full bg-black/35 text-lg text-white/90 backdrop-blur-sm transition select-none touch-none hover:bg-black/55";
+
+  return (
+    <div className="flex flex-col items-center gap-1.5" aria-hidden="true">
+      <button {...segurar("frente", 1)} className={botao} tabIndex={-1}>
+        ↑
+      </button>
+      <div className="flex gap-1.5">
+        <button {...segurar("lado", -1)} className={botao} tabIndex={-1}>
+          ←
+        </button>
+        <button {...segurar("frente", -1)} className={botao} tabIndex={-1}>
+          ↓
+        </button>
+        <button {...segurar("lado", 1)} className={botao} tabIndex={-1}>
+          →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function SalaYogaPage() {
   const [mounted, setMounted] = useState(false);
   const [xrSupported, setXrSupported] = useState(false);
-  const { volume, setVolume, toggleMute, playChime } = useAmbientAudio();
+  const { volume, setVolume, toggleMute } = useAmbientAudio();
   const containerRef = useRef<HTMLDivElement>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(containerRef);
 
@@ -444,7 +197,7 @@ function SalaYogaPage() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative h-dvh w-full overflow-hidden bg-[#041B33]">
+    <div ref={containerRef} className="relative h-dvh w-full overflow-hidden bg-[#1a1512]">
       <style>{`
         @keyframes breathe {
           0%, 100% { transform: scale(0.8); }
@@ -453,10 +206,14 @@ function SalaYogaPage() {
       `}</style>
 
       {mounted && (
-        <Canvas camera={{ position: [0, 1.4, 6.5], fov: 55 }} dpr={[1, 2]}>
+        <Canvas
+          camera={{ position: [0, 1.6, 1.2], fov: 60 }}
+          dpr={[1, 1.75]}
+          gl={{ antialias: true }}
+        >
           <XR store={xrStore}>
             <Suspense fallback={null}>
-              <Scene onChime={playChime} />
+              <CenaSala />
             </Suspense>
           </XR>
         </Canvas>
@@ -512,13 +269,20 @@ function SalaYogaPage() {
           <BreathingGuide />
         </div>
 
+        {/* Meia altura, à esquerda: no centro o teclado direcional cobria o guia
+            de respiração, embaixo brigava com o título, e à direita esbarraria no
+            VLibras e no botão de acessibilidade, que moram lá. */}
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 sm:left-6">
+          <Caminhada />
+        </div>
+
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-sm font-semibold tracking-wide text-white/90 sm:text-base">
             Sala de Yoga &amp; Relaxamento — protótipo Aruanã Digital
           </h1>
           <p className="max-w-md text-xs text-white/60">
-            Arraste para olhar ao redor e clique nos pontos de luz para tocar um sino. Funciona em qualquer
-            aparelho — com headset, é imersão completa.
+            Arraste para olhar ao redor. Use as setas, W A S D ou os botões abaixo para caminhar pela
+            sala. Funciona em qualquer aparelho — com headset, é imersão completa.
           </p>
           <a
             href={whatsappHref("Sala de Yoga - protótipo RV")}
