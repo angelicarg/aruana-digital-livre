@@ -200,41 +200,48 @@ function RootShell({ children }: { children: ReactNode }) {
                 };
                 document.body.appendChild(script);
 
-                // O plugin do gov.br injeta as imagens do widget sem alt e o botão
-                // sem nome acessível. Rotulamos por fora, sem alterar o plugin.
-                var rotular = function () {
-                  var popup = document.getElementById('vlibras-popup');
+                // O widget do gov.br renderiza dentro de um SHADOW ROOT aberto, em
+                // #vlibras-access-wrapper. Nem document.getElementById nem um
+                // MutationObserver no body alcancam la dentro — o Lighthouse enxerga
+                // porque le a arvore achatada. Por isso e preciso entrar na raiz.
+                //
+                // O botao ja vem com aria-label do proprio plugin (cita os avatares),
+                // entao nao mexemos nele. O que falta sao os dois alt.
+                var rotular = function (raiz) {
+                  var popup = raiz.querySelector('#vlibras-popup');
                   if (popup && !popup.hasAttribute('alt')) {
                     popup.setAttribute('alt', 'Convite para ativar o VLibras, tradutor de Libras desta página');
                   }
-                  var botao = document.getElementById('vlibras-button');
-                  if (botao) {
-                    if (!botao.getAttribute('aria-label')) {
-                      botao.setAttribute('aria-label', 'Abrir o VLibras, tradutor de Língua Brasileira de Sinais');
-                    }
-                    var icone = botao.querySelector('img');
-                    // Decorativa: o nome do controle fica no aria-label do botão.
-                    if (icone && !icone.hasAttribute('alt')) icone.setAttribute('alt', '');
-                  }
-                  // Rede de seguranca: se o plugin mudar os ids numa versao futura,
-                  // qualquer imagem restante dentro do widget entra como decorativa
-                  // em vez de voltar a reprovar sem ninguem perceber.
-                  var caixa = document.getElementById('vlibras-access') || document.querySelector('[vw]');
-                  if (caixa) {
-                    var sobrando = caixa.querySelectorAll('img:not([alt])');
-                    for (var i = 0; i < sobrando.length; i++) sobrando[i].setAttribute('alt', '');
-                  }
+                  // O icone dentro do botao e decorativo: quem nomeia o controle e o
+                  // aria-label. Vale para qualquer imagem restante — se o plugin mudar
+                  // os ids, ela entra como decorativa em vez de reprovar em silencio.
+                  var imgs = raiz.querySelectorAll('img:not([alt])');
+                  for (var i = 0; i < imgs.length; i++) imgs[i].setAttribute('alt', '');
                 };
 
-                // Sem desconectar: o widget troca os nos depois de montar, e uma
-                // versao anterior deste codigo parava de observar assim que rotulava
-                // o primeiro par -- os nos definitivos chegavam sem alt e ninguem via.
-                // O callback e barato (dois getElementById) e roda por lote, nao por no.
-                rotular();
-                new MutationObserver(rotular).observe(document.body, {
-                  childList: true,
-                  subtree: true,
-                });
+                var ligado = false;
+                var ligar = function () {
+                  if (ligado) return true;
+                  var wrapper = document.getElementById('vlibras-access-wrapper');
+                  if (!wrapper || !wrapper.shadowRoot) return false;
+                  ligado = true;
+                  var raiz = wrapper.shadowRoot;
+                  rotular(raiz);
+                  // Permanente: o widget remonta o conteudo ao abrir e fechar.
+                  new MutationObserver(function () { rotular(raiz); }).observe(raiz, {
+                    childList: true,
+                    subtree: true,
+                  });
+                  return true;
+                };
+
+                if (!ligar()) {
+                  // O wrapper so aparece quando o plugin termina de carregar.
+                  new MutationObserver(ligar).observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                  });
+                }
               })();
             `,
           }}
