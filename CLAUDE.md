@@ -116,6 +116,26 @@ offer) are campaign pages: they render their own header/footer instead of `PageL
 and are deliberately absent from the site nav, but they are in `sitemap.xml`. Both carry
 the verifiable-proof block with the demo projects, because they receive cold traffic.
 
+### Modelos 3D e a pasta `modelagem/`
+
+Os `.glb` em `public/modelos/` são artefatos de build, não fontes. A fonte de
+`sala-yoga.glb` é `modelagem/sala-yoga/sala_yoga.py` — um script do Blender onde
+cada decisão visual (dimensões, sol, luz interna, montanhas, tapetes, quadros,
+câmeras) é uma constante nomeada no topo, para que ajustar seja trocar número e
+não remodelar. Sem esse script o `.glb` é um arquivo fechado: não dá para mudar
+nem a cor de uma parede. `modelagem/sala-yoga/LEIAME.md` traz os dois comandos
+(gerar e otimizar) e o caminho do Blender portátil.
+
+Os quadros da parede entram por arquivo: qualquer `arte/quadro_N.png` em retrato
+2:3 é usado no render seguinte, sem tocar no script. Os dois atuais foram
+extraídos de uma imagem gerada por IA que trazia a arte já pendurada em um
+cenário, em perspectiva — `arte/recortar.py` os endireita por transformação
+projetiva, porque recorte retangular sairia trapezoidal.
+
+O pipeline de otimização (Draco + WebP a 512 px) leva a sala de 1,74 MB para
+49 KB. Vale para qualquer peça nova: exportar do Blender, otimizar, copiar para
+`public/modelos/`.
+
 ### Supabase project sharing
 
 This repo's Supabase project is shared with other properties (Dente Vivo, PortLibras, Patas Nobres) — not dedicated to this site alone. Keep that in mind before assuming a schema change here is isolated.
