@@ -27,7 +27,7 @@ export interface EventParams {
 export function trackEvent(event: EventName, params: EventParams = {}) {
   if (typeof window === "undefined" || !window.dataLayer) return;
 
-  // Usar dataLayer.push() com formato correto para GA4/GTM
+  // O dataLayer e criado pelo trecho do gtag no __root; o GA4 consome dele.
   window.dataLayer.push({
     event,
     timestamp: new Date().toISOString(),

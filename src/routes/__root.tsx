@@ -130,22 +130,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-const GTM_ID = import.meta.env.VITE_GTM_ID as string | undefined;
-
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR">
       <head>
         <HeadContent />
-        {GTM_ID && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');
-              `,
-            }}
-          />
-        )}
         <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-EJ9N0GX6X1"
@@ -194,13 +183,6 @@ function RootShell({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        {GTM_ID && (
-          <noscript
-            dangerouslySetInnerHTML={{
-              __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
-            }}
-          />
-        )}
         {children}
         {/* O container do VLibras é criado fora da árvore do React de propósito:
             o widget muta o próprio DOM, e qualquer nó gerenciado pelo React seria

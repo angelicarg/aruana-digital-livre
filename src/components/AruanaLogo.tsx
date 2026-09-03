@@ -1,4 +1,4 @@
-import logoSrc from "@/assets/aruana-logo.png";
+import logoSrc from "@/assets/aruana-logo.webp";
 
 // O símbolo é sempre o arquivo master (nunca regenerado por IA — ver BRAND.md).
 // O nome fica em texto real: acessível, indexável e legível em qualquer tamanho.
@@ -47,6 +47,8 @@ export function AruanaLogo({ className = "", size = "md" }: Props) {
           alt=""
           aria-hidden="true"
           className={`${s.img} relative w-auto object-contain`}
+          width={289}
+          height={256}
           loading="eager"
           decoding="async"
         />
