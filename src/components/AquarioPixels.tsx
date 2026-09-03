@@ -7,7 +7,22 @@ type Props = {
   className?: string;
 };
 
-type Gota = { x: number; y: number; v: number; t: number; f: number; r: number };
+type Gota = {
+  x: number;
+  y: number;
+  v: number;
+  t: number;
+  f: number;
+  r: number;
+  /** Profundidade 0–1. Governa tamanho, velocidade e nitidez ao mesmo tempo: é o que
+   *  cria paralaxe, em vez de três variações aleatórias que não conversam. */
+  z: number;
+  cor: string;
+};
+
+// Faixa verde–turquesa–ciano da marca. O vídeo de referência trazia azuis também,
+// mas azul não está na paleta — entra só com decisão explícita.
+const CORES = ["0, 197, 122", "127, 211, 190", "79, 209, 197", "45, 212, 167", "168, 233, 215"];
 
 const GOTAS_DESKTOP = 1400;
 const GOTAS_MOBILE = 600;
@@ -92,15 +107,21 @@ export function AquarioPixels({ imagem, className = "" }: Props) {
         g.t += dt;
         g.y += Math.sin(g.t * 0.7 + g.f) * 0.012 * dt;
 
-        if (g.x < -0.02) {
-          g.x = 1.02;
+        if (g.x < -0.04) {
+          g.x = 1.04;
           g.y = Math.random();
         }
 
-        // Passando pelo corpo, a gota acende: é o brilho da água contra o peixe.
-        const brilho = (0.18 + dentro * 0.85) * (0.72 + 0.28 * Math.sin(g.t * 1.6 + g.f));
-        ctx.fillStyle = `rgba(146, 220, 200, ${Math.min(1, brilho).toFixed(3)})`;
-        ctx.fillRect(g.x * w, g.y * h, g.r * dpr, g.r * dpr);
+        // Passando pelo corpo, o quadrado acende: é o brilho da água contra o peixe.
+        const pulso = 0.72 + 0.28 * Math.sin(g.t * 1.6 + g.f);
+        // Perto = grande e presente; longe = pequeno e apagado. A versão anterior fazia
+        // o contrário e sumia justamente com os quadrados que dão o efeito.
+        const presenca = 0.45 + g.z * 0.55;
+        const brilho = (0.55 + dentro * 0.85) * pulso * presenca;
+
+        const lado = g.r * dpr;
+        ctx.fillStyle = `rgba(${g.cor}, ${Math.min(1, brilho).toFixed(3)})`;
+        ctx.fillRect(g.x * w, g.y * h, lado, lado);
       }
     };
 
@@ -109,15 +130,21 @@ export function AquarioPixels({ imagem, className = "" }: Props) {
       dimensionar();
       mascara = montarMascara(img);
       const total = window.innerWidth < 640 ? GOTAS_MOBILE : GOTAS_DESKTOP;
-      gotas = Array.from({ length: total }, () => ({
-        x: Math.random(),
-        y: Math.random(),
-        // Velocidades diferentes dão profundidade: o fundo passa devagar, a frente corre.
-        v: 0.02 + Math.random() * 0.075,
-        t: Math.random() * 40,
-        f: Math.random() * Math.PI * 2,
-        r: 0.8 + Math.random() * 1.5,
-      }));
+      gotas = Array.from({ length: total }, () => {
+        // Uma única variável de profundidade amarra tamanho, velocidade e nitidez.
+        // Curva ao quadrado: muitos quadradinhos ao fundo, poucos grandes na frente.
+        const z = Math.pow(Math.random(), 2);
+        return {
+          x: Math.random(),
+          y: Math.random(),
+          v: 0.018 + z * 0.085,
+          t: Math.random() * 40,
+          f: Math.random() * Math.PI * 2,
+          r: 1.4 + z * 11,
+          z,
+          cor: CORES[(Math.random() * CORES.length) | 0],
+        };
+      });
       raf = requestAnimationFrame(desenhar);
     };
 
