@@ -203,13 +203,9 @@ function RootShell({ children }: { children: ReactNode }) {
                 // O plugin do gov.br injeta as imagens do widget sem alt e o botão
                 // sem nome acessível. Rotulamos por fora, sem alterar o plugin.
                 var rotular = function () {
-                  var pronto = 0;
                   var popup = document.getElementById('vlibras-popup');
-                  if (popup) {
-                    if (!popup.hasAttribute('alt')) {
-                      popup.setAttribute('alt', 'Convite para ativar o VLibras, tradutor de Libras desta página');
-                    }
-                    pronto++;
+                  if (popup && !popup.hasAttribute('alt')) {
+                    popup.setAttribute('alt', 'Convite para ativar o VLibras, tradutor de Libras desta página');
                   }
                   var botao = document.getElementById('vlibras-button');
                   if (botao) {
@@ -219,19 +215,26 @@ function RootShell({ children }: { children: ReactNode }) {
                     var icone = botao.querySelector('img');
                     // Decorativa: o nome do controle fica no aria-label do botão.
                     if (icone && !icone.hasAttribute('alt')) icone.setAttribute('alt', '');
-                    pronto++;
                   }
-                  return pronto === 2;
+                  // Rede de seguranca: se o plugin mudar os ids numa versao futura,
+                  // qualquer imagem restante dentro do widget entra como decorativa
+                  // em vez de voltar a reprovar sem ninguem perceber.
+                  var caixa = document.getElementById('vlibras-access') || document.querySelector('[vw]');
+                  if (caixa) {
+                    var sobrando = caixa.querySelectorAll('img:not([alt])');
+                    for (var i = 0; i < sobrando.length; i++) sobrando[i].setAttribute('alt', '');
+                  }
                 };
 
-                // O widget pode demorar (rede lenta) e recria os nos ao abrir e
-                // fechar, então não basta observar uma vez: reaplicamos no clique.
+                // Sem desconectar: o widget troca os nos depois de montar, e uma
+                // versao anterior deste codigo parava de observar assim que rotulava
+                // o primeiro par -- os nos definitivos chegavam sem alt e ninguem via.
+                // O callback e barato (dois getElementById) e roda por lote, nao por no.
                 rotular();
-                var obs = new MutationObserver(function () {
-                  if (rotular()) obs.disconnect();
+                new MutationObserver(rotular).observe(document.body, {
+                  childList: true,
+                  subtree: true,
                 });
-                obs.observe(document.body, { childList: true, subtree: true });
-                document.addEventListener('click', function () { rotular(); }, true);
               })();
             `,
           }}
