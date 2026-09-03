@@ -162,10 +162,35 @@ function RootShell({ children }: { children: ReactNode }) {
             `,
           }}
         />
-        {/* Contentsquare Analytics — Heatmaps, Session Recording, Conversion Tracking */}
+        {/* Contentsquare Analytics — Heatmaps, Session Recording, Conversion Tracking.
+            Carregado so depois do load, em tempo ocioso: com defer ele baixava
+            imediatamente (152 KB, 2,4 s) e ocupava a rede durante toda a janela que
+            decide o LCP, competindo com os outros 27 arquivos da pagina. Adiar nao
+            perde dado — a sessao so comeca a ser gravada alguns instantes depois. */}
         <script
-          src="https://t.contentsquare.net/uxa/f76ae271b8d64.js"
-          defer
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                var carregar = function () {
+                  if (window.__csCarregado) return;
+                  window.__csCarregado = true;
+                  var s = document.createElement('script');
+                  s.src = 'https://t.contentsquare.net/uxa/f76ae271b8d64.js';
+                  s.async = true;
+                  document.head.appendChild(s);
+                };
+                var agendar = function () {
+                  if (window.requestIdleCallback) {
+                    window.requestIdleCallback(carregar, { timeout: 4000 });
+                  } else {
+                    setTimeout(carregar, 1500);
+                  }
+                };
+                if (document.readyState === 'complete') agendar();
+                else window.addEventListener('load', agendar);
+              })();
+            `,
+          }}
         />
       </head>
       <body>
