@@ -23,6 +23,7 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as IntranetLoginRouteImport } from './routes/intranet/login'
 import { Route as FecharIdRouteImport } from './routes/fechar.$id'
 import { Route as ExperienciasSalaYogaRouteImport } from './routes/experiencias.sala-yoga'
+import { Route as ExperienciasProduto3dRouteImport } from './routes/experiencias.produto-3d'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiMercadopagoWebhookRouteImport } from './routes/api.mercadopago-webhook'
 import { Route as ApiAutentiqueWebhookRouteImport } from './routes/api.autentique-webhook'
@@ -106,6 +107,11 @@ const ExperienciasSalaYogaRoute = ExperienciasSalaYogaRouteImport.update({
   path: '/experiencias/sala-yoga',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExperienciasProduto3dRoute = ExperienciasProduto3dRouteImport.update({
+  id: '/experiencias/produto-3d',
+  path: '/experiencias/produto-3d',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/api/autentique-webhook': typeof ApiAutentiqueWebhookRoute
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/experiencias/produto-3d': typeof ExperienciasProduto3dRoute
   '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
   '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/api/autentique-webhook': typeof ApiAutentiqueWebhookRoute
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/experiencias/produto-3d': typeof ExperienciasProduto3dRoute
   '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
   '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/api/autentique-webhook': typeof ApiAutentiqueWebhookRoute
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/experiencias/produto-3d': typeof ExperienciasProduto3dRoute
   '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
   '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/api/autentique-webhook'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
+    | '/experiencias/produto-3d'
     | '/experiencias/sala-yoga'
     | '/fechar/$id'
     | '/intranet/login'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/api/autentique-webhook'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
+    | '/experiencias/produto-3d'
     | '/experiencias/sala-yoga'
     | '/fechar/$id'
     | '/intranet/login'
@@ -324,6 +335,7 @@ export interface FileRouteTypes {
     | '/api/autentique-webhook'
     | '/api/mercadopago-webhook'
     | '/blog/$slug'
+    | '/experiencias/produto-3d'
     | '/experiencias/sala-yoga'
     | '/fechar/$id'
     | '/intranet/login'
@@ -352,6 +364,7 @@ export interface RootRouteChildren {
   IntranetAuthedRouteRoute: typeof IntranetAuthedRouteRouteWithChildren
   ApiAutentiqueWebhookRoute: typeof ApiAutentiqueWebhookRoute
   ApiMercadopagoWebhookRoute: typeof ApiMercadopagoWebhookRoute
+  ExperienciasProduto3dRoute: typeof ExperienciasProduto3dRoute
   ExperienciasSalaYogaRoute: typeof ExperienciasSalaYogaRoute
   FecharIdRoute: typeof FecharIdRoute
   IntranetLoginRoute: typeof IntranetLoginRoute
@@ -455,6 +468,13 @@ declare module '@tanstack/react-router' {
       path: '/experiencias/sala-yoga'
       fullPath: '/experiencias/sala-yoga'
       preLoaderRoute: typeof ExperienciasSalaYogaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiencias/produto-3d': {
+      id: '/experiencias/produto-3d'
+      path: '/experiencias/produto-3d'
+      fullPath: '/experiencias/produto-3d'
+      preLoaderRoute: typeof ExperienciasProduto3dRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/$slug': {
@@ -595,6 +615,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntranetAuthedRouteRoute: IntranetAuthedRouteRouteWithChildren,
   ApiAutentiqueWebhookRoute: ApiAutentiqueWebhookRoute,
   ApiMercadopagoWebhookRoute: ApiMercadopagoWebhookRoute,
+  ExperienciasProduto3dRoute: ExperienciasProduto3dRoute,
   ExperienciasSalaYogaRoute: ExperienciasSalaYogaRoute,
   FecharIdRoute: FecharIdRoute,
   IntranetLoginRoute: IntranetLoginRoute,

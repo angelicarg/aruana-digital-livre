@@ -1,0 +1,11 @@
+camera-cc0.glb
+  "Camera 01" — Poly Haven (polyhaven.com), licenca CC0.
+  CC0 e equivalente a dominio publico: uso comercial livre, sem exigencia de credito.
+  Este arquivo existe por transparencia, nao por obrigacao legal.
+
+  Origem: gltf 1k + texturas (2,44 MB), otimizado com @gltf-transform/cli
+  (texturas em WebP, geometria em Draco) para 816 KB em arquivo unico.
+
+ATENCAO ao trocar de fonte: no Sketchfab a licenca varia por modelo. Downloads
+gratuitos costumam ser CC-BY (exige credito visivel) ou CC-BY-NC (proibe uso
+comercial). Modelo CC-BY-NC em site de cliente e violacao de direito autoral.
