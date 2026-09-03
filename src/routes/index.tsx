@@ -327,7 +327,7 @@ function HomePage() {
             <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-green/40 bg-brand-green/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-brand-green backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Tecnologia · Educação · Resultados
             </p>
-            <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-7xl">
+            <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-[4rem]">
               Transformamos sua presença digital em uma ferramenta ativa de{" "}
               <span className="text-gradient-brand">captação, inclusão e resultados reais.</span>
             </h1>
