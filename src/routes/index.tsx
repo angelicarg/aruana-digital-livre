@@ -585,6 +585,7 @@ function HomePage() {
                   href={p.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`Abrir e testar ao vivo: ${p.name}`}
                   className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-green-text transition hover:gap-3"
                 >
                   Abrir e testar ao vivo <ExternalLink className="h-4 w-4" />

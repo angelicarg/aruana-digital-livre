@@ -253,6 +253,7 @@ function WebsitePmePage() {
                   href={c.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`Abrir e testar ao vivo: ${c.nome}`}
                   className="mt-4 text-sm font-bold text-brand-green-text transition hover:underline"
                 >
                   Abrir e testar ao vivo →
