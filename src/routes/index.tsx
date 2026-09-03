@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
 import {
   ArrowRight,
   Sparkles,
@@ -215,7 +214,6 @@ const PROOF_PROJECTS = [
 ];
 
 function HomePage() {
-  const [aquarioVivo, setAquarioVivo] = useState(false);
   return (
     <PageLayout>
       {/* HERO */}
@@ -225,17 +223,16 @@ function HomePage() {
           {/* A imagem continua sendo o que pinta primeiro, o que sobra sem JavaScript
               e o og:image do compartilhamento. O canvas entra por cima depois de
               pronto — e nunca entra para quem pede menos movimento. */}
+          {/* O peixe é o arquivo master, intocado. O canvas por cima é só a água
+              passando por ele — nada é redesenhado nem regenerado. */}
           <img
             src={heroFish}
             alt=""
-            className={`absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right mix-blend-screen animate-float transition-opacity duration-1000 sm:w-[90%] lg:w-3/5 ${
-              aquarioVivo ? "opacity-0" : "opacity-25 sm:opacity-35 lg:opacity-40"
-            }`}
+            className="absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right opacity-25 mix-blend-screen animate-float sm:w-[90%] sm:opacity-35 lg:w-3/5 lg:opacity-40"
           />
           <AquarioPixels
             imagem={heroFish}
-            onPronto={() => setAquarioVivo(true)}
-            className="absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right mix-blend-screen sm:w-[90%] lg:w-3/5"
+            className="absolute inset-0 h-full w-full mix-blend-screen"
           />
           {/* Mobile: vertical fade from top so fish sits behind text softly */}
           <div className="absolute inset-0 bg-gradient-to-b from-brand-navy-deep via-brand-navy-deep/70 to-brand-navy-deep sm:hidden" />
