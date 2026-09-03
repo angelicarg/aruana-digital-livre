@@ -46,7 +46,10 @@ function useVale3D() {
       const rede = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } })
         .connection;
       if (rede?.saveData) return;
-      if (rede?.effectiveType && !["4g", "5g"].includes(rede.effectiveType)) return;
+      // Só barra em conexão declaradamente ruim. A Network Information API não
+      // existe no Safari nem no Firefox, e no Chrome reporta "3g" em conexão boa
+      // com frequência — exigir "4g" fazia o peixe quase nunca aparecer.
+      if (rede?.effectiveType && ["slow-2g", "2g"].includes(rede.effectiveType)) return;
 
       const memoria = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
       if (typeof memoria === "number" && memoria < 4) return;
