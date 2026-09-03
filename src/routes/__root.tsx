@@ -104,11 +104,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      // Fontes auto-hospedadas (ver @font-face em styles.css). O preload as tira
+      // do caminho critico: antes o navegador so descobria os .woff2 depois de
+      // buscar o CSS do Google. crossOrigin e obrigatorio mesmo na mesma origem,
+      // porque requisicao de fonte e sempre em modo CORS.
       {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800;900&display=swap",
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: "/fonts/inter-latin-var.woff2",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: "/fonts/sora-latin-var.woff2",
+        crossOrigin: "anonymous",
       },
     ],
   }),

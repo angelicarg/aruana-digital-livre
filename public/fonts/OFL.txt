@@ -1,0 +1,10 @@
+As fontes deste diretorio sao distribuidas sob a SIL Open Font License 1.1,
+que permite uso, modificacao e redistribuicao, inclusive auto-hospedagem.
+
+  inter-latin-var.woff2  Inter  (c) The Inter Project Authors
+                         https://github.com/rsms/inter
+  sora-latin-var.woff2   Sora   (c) The Sora Project Authors
+                         https://github.com/wildtypeltd/sora
+
+Ambas foram obtidas do Google Fonts, subconjunto latin, versao variavel.
+Texto completo da licenca: https://openfontlicense.org

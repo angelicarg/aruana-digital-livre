@@ -3,6 +3,26 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
+/* Fontes auto-hospedadas. Servidas pelo Google, elas custavam uma cadeia de
+   tres saltos no caminho critico (HTML -> css2 -> woff2) e seguravam a pintura.
+   Arquivos variaveis, subconjunto latin: Inter cobre 400-700, Sora 600-800.
+   Licenca em public/fonts/OFL.txt */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/inter-latin-var.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url("/fonts/sora-latin-var.woff2") format("woff2");
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
