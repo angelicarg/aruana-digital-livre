@@ -281,8 +281,10 @@ function HomePage() {
               peixe3D ? "opacity-0" : "opacity-25 sm:opacity-35 lg:opacity-40"
             }`}
           />
+          {/* Camada de trás: as gotas distantes, que o peixe encobre ao passar. */}
           <AquarioPixels
             imagem={heroFish}
+            faixaZ={[0, 0.55]}
             className="absolute inset-0 h-full w-full mix-blend-screen"
           />
 
@@ -299,6 +301,15 @@ function HomePage() {
               </div>
             </Suspense>
           )}
+
+          {/* Camada da frente: as gotas próximas — as maiores e mais rápidas —
+              passam por cima do peixe. É o que o coloca dentro do cardume em vez
+              de deslizando por cima dele. */}
+          <AquarioPixels
+            imagem={heroFish}
+            faixaZ={[0.55, 1]}
+            className="absolute inset-0 h-full w-full mix-blend-screen"
+          />
           {/* Mobile: vertical fade from top so fish sits behind text softly */}
           <div className="absolute inset-0 bg-gradient-to-b from-brand-navy-deep via-brand-navy-deep/70 to-brand-navy-deep sm:hidden" />
           {/* Tablet/Desktop: horizontal fade so left side stays readable */}

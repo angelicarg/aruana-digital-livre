@@ -5,6 +5,10 @@ type Props = {
   /** O mesmo hero-fish.jpg que já pinta atrás. Serve só para saber ONDE está o peixe:
    *  o desenho continua sendo o arquivo master, intocado. As partículas são água. */
   imagem: string;
+  /** Faixa de profundidade desta camada, em [0,1]. Serve para partir o cardume em
+   *  duas: o que fica atrás do peixe 3D e o que passa na frente dele. Sem isto o
+   *  peixe desliza por cima do campo inteiro e não parece estar dentro dele. */
+  faixaZ?: [number, number];
   className?: string;
 };
 
@@ -48,7 +52,7 @@ function montarMascara(img: HTMLImageElement) {
   return { grade, largura: MASCARA_L, altura: alt };
 }
 
-export function AquarioPixels({ imagem, className = "" }: Props) {
+export function AquarioPixels({ imagem, faixaZ = [0, 1], className = "" }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -133,10 +137,17 @@ export function AquarioPixels({ imagem, className = "" }: Props) {
       dimensionar();
       mascara = montarMascara(img);
       const total = window.innerWidth < 640 ? GOTAS_MOBILE : GOTAS_DESKTOP;
-      gotas = Array.from({ length: total }, () => {
+      // z = u², então P(z < a) = √a. Sorteando u dentro de [√min, √max] a camada
+      // recebe a fatia certa do cardume e a distribuição original é preservada.
+      const uMin = Math.sqrt(faixaZ[0]);
+      const uMax = Math.sqrt(faixaZ[1]);
+      const desta = Math.max(1, Math.round(total * (uMax - uMin)));
+
+      gotas = Array.from({ length: desta }, () => {
         // Uma única variável de profundidade amarra tamanho, velocidade e nitidez.
         // Curva ao quadrado: muitos quadradinhos ao fundo, poucos grandes na frente.
-        const z = Math.pow(Math.random(), 2);
+        const u = uMin + Math.random() * (uMax - uMin);
+        const z = u * u;
         return {
           x: Math.random(),
           y: Math.random(),
@@ -174,7 +185,7 @@ export function AquarioPixels({ imagem, className = "" }: Props) {
       observador.disconnect();
       redim.disconnect();
     };
-  }, [imagem]);
+  }, [imagem, faixaZ[0], faixaZ[1]]);
 
   return <canvas ref={ref} aria-hidden="true" className={className} />;
 }
