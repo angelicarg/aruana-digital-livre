@@ -6,12 +6,18 @@ type Props = {
    *  vem sempre do arquivo master). */
   imagem: string;
   className?: string;
+  /** Avisa quando as partículas assumiram. O hero usa para apagar a imagem estática:
+   *  enquanto ela fica visível por baixo, ela ancora a forma e o movimento lê como
+   *  brilho em cima de um peixe parado, não como natação. */
+  onPronto?: () => void;
 };
 
 type Particula = { x: number; y: number; ox: number; oy: number; f: number; a: number };
 
-const MAX_DESKTOP = 2600;
-const MAX_MOBILE = 1100;
+// Densidade alta de proposito: com a imagem estatica apagada, a nuvem precisa
+// desenhar o peixe sozinha. Com poucos pontos vira chuvisco, nao silhueta.
+const MAX_DESKTOP = 11000;
+const MAX_MOBILE = 4000;
 
 /** Amostra a imagem numa resolução baixa e devolve um ponto por pixel claro. */
 function extrairParticulas(img: HTMLImageElement, largura: number, teto: number): Particula[] {
@@ -26,8 +32,8 @@ function extrairParticulas(img: HTMLImageElement, largura: number, teto: number)
   const { data } = ctx.getImageData(0, 0, lienzo.width, lienzo.height);
   const candidatos: Particula[] = [];
 
-  for (let y = 0; y < lienzo.height; y += 2) {
-    for (let x = 0; x < lienzo.width; x += 2) {
+  for (let y = 0; y < lienzo.height; y += 1) {
+    for (let x = 0; x < lienzo.width; x += 1) {
       const i = (y * lienzo.width + x) * 4;
       // O peixe é traço claro sobre fundo navy: o canal verde separa bem os dois.
       const brilho = (data[i] + data[i + 1] * 2 + data[i + 2]) / 4;
@@ -51,7 +57,7 @@ function extrairParticulas(img: HTMLImageElement, largura: number, teto: number)
   return candidatos.slice(0, teto);
 }
 
-export function AquarioPixels({ imagem, className = "" }: Props) {
+export function AquarioPixels({ imagem, className = "", onPronto }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
   const [pronto, setPronto] = useState(false);
 
@@ -88,19 +94,32 @@ export function AquarioPixels({ imagem, className = "" }: Props) {
 
       const w = canvas.width;
       const h = canvas.height;
-      const ponto = Math.max(1, 1.15 * dpr);
-      const tempo = t * 0.00042;
+      const ponto = Math.max(1, 1.5 * dpr);
+      const tempo = t * 0.0016;
+
+      // Deriva do cardume inteiro, para o peixe avançar em vez de bater no lugar.
+      const glideX = Math.sin(tempo * 0.28) * 0.012;
+      const glideY = Math.sin(tempo * 0.19 + 1.1) * 0.007;
 
       for (let i = 0; i < particulas.length; i++) {
         const p = particulas[i];
-        // Duas senoides defasadas: correnteza lenta na horizontal, respiração na vertical.
-        const dx = Math.sin(tempo + p.f) * 0.012 + Math.sin(tempo * 0.37 + p.oy * 9) * 0.006;
-        const dy = Math.cos(tempo * 0.8 + p.f) * 0.008;
-        p.x = p.ox + dx;
-        p.y = p.oy + dy;
 
-        const cintila = 0.62 + 0.38 * Math.sin(tempo * 2.1 + p.f * 3);
-        ctx.fillStyle = `rgba(127, 211, 190, ${(p.a * cintila * 0.5).toFixed(3)})`;
+        // Peixe nada por onda que percorre o corpo da cabeça para a cauda. A fase
+        // depende da posição em x (cabeça à direita, ox alto), então a onda viaja —
+        // com fase aleatória por partícula isto virava cintilação, não natação.
+        const daCabeca = 1 - p.ox;
+        // Sinal negativo: a crista precisa caminhar da cabeça para a cauda. Com o
+        // sinal invertido a onda subia da cauda para a cabeça — nada nada assim.
+        const fase = tempo * 2.95 - daCabeca * 7.2;
+        // A cauda varre muito, a cabeça quase não sai do lugar.
+        const amp = 0.004 + 0.052 * daCabeca * daCabeca;
+
+        p.x = p.ox + glideX + Math.cos(fase) * amp * 0.22;
+        p.y = p.oy + glideY + Math.sin(fase) * amp;
+
+        // Cintilação leve e defasada, só para o cardume não parecer chapado.
+        const cintila = 0.78 + 0.22 * Math.sin(tempo * 1.4 + p.f);
+        ctx.fillStyle = `rgba(127, 211, 190, ${Math.min(1, p.a * cintila * 1.15).toFixed(3)})`;
         ctx.fillRect(p.x * w, p.y * h, ponto, ponto);
       }
     };
@@ -109,9 +128,10 @@ export function AquarioPixels({ imagem, className = "" }: Props) {
       if (!vivo || !img.naturalWidth) return;
       dimensionar();
       const teto = window.innerWidth < 640 ? MAX_MOBILE : MAX_DESKTOP;
-      particulas = extrairParticulas(img, 300, teto);
+      particulas = extrairParticulas(img, 420, teto);
       if (particulas.length === 0) return;
       setPronto(true);
+      onPronto?.();
       raf = requestAnimationFrame(desenhar);
     };
 
@@ -138,7 +158,7 @@ export function AquarioPixels({ imagem, className = "" }: Props) {
       observador.disconnect();
       redim.disconnect();
     };
-  }, [imagem]);
+  }, [imagem, onPronto]);
 
   return (
     <canvas
