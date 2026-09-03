@@ -1,5 +1,5 @@
-// Pequenos flags em localStorage compartilhados entre o PromoBanner e o
-// BudgetSimulator, para o banner não insistir com quem já dispensou ou já
+// Pequenos flags em localStorage compartilhados entre o PromoModal e o
+// BudgetSimulator, para o modal não insistir com quem já dispensou ou já
 // preencheu o simulador. Tudo client-only — sempre checar `typeof window`.
 
 const DISMISSED_KEY = "aruana_promo_dismissed_at";

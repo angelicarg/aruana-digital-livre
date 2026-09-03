@@ -1,5 +1,5 @@
 // Tabela de preços e configuração da promoção de lançamento, usadas pelo
-// PromoBanner e pelo BudgetSimulator. Fonte: briefing de marketing de
+// PromoModal e pelo BudgetSimulator. Fonte: briefing de marketing de
 // 2026-07-07 — mudar aqui reflete nos dois componentes automaticamente.
 
 export type PacoteId = "essencial" | "profissional" | "avancado" | "sob_medida";
@@ -98,8 +98,9 @@ export const PROMO = {
   setupDiscountPct: 30,
   monthlyDiscountPct: 30,
   monthlyDiscountMonths: 3,
-  // Prazo fixo de 60 dias a partir do lançamento do banner (2026-07-08).
-  expiresAt: new Date("2026-09-06T23:59:59-03:00"),
+  // Prorrogada até o fim de novembro de 2026 (decisão de 2026-09-03).
+  // Prazo anterior: 2026-09-06, 60 dias a partir do lançamento do banner.
+  expiresAt: new Date("2026-11-30T23:59:59-03:00"),
 } as const;
 
 export function isPromoActive(now: Date = new Date()): boolean {

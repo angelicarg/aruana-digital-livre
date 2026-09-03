@@ -59,6 +59,11 @@ export function BudgetSimulator({
 }: {
   open: boolean;
   onClose: () => void;
+  /** Valor gravado no banco, não rótulo de interface. Continua "banner" mesmo
+   *  depois da faixa virar modal: o enum é validado no servidor e a coluna
+   *  `origem` da tabela `leads` pode ter restrição de valores — trocar aqui
+   *  arriscaria quebrar a gravação do lead e ainda partiria o histórico em dois
+   *  rótulos para a mesma origem. */
   origem: "banner" | "simulador";
 }) {
   const [step, setStep] = useState(0);
