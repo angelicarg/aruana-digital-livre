@@ -319,7 +319,7 @@ function HomePage() {
           <div className="absolute -right-32 top-1/2 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-brand-green/15 blur-3xl animate-pulse-glow lg:h-[700px] lg:w-[700px]" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-40">
+        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-24">
           <div className="max-w-3xl animate-fade-up">
             <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-green/40 bg-brand-green/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-brand-green backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Tecnologia · Educação · Resultados
