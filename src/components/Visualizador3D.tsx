@@ -19,6 +19,8 @@ type Props = {
    * de tela: sem isto, a experiência inteira desaparece para esse usuário.
    */
   descricao: string;
+  /** Fundo da cena. O peixe da marca vive sobre navy no site; produto pede fundo claro. */
+  fundo?: "claro" | "escuro";
   className?: string;
 };
 
@@ -54,12 +56,16 @@ function Carregando() {
   );
 }
 
-export function Visualizador3D({ modelo, descricao, className = "" }: Props) {
+export function Visualizador3D({ modelo, descricao, fundo = "claro", className = "" }: Props) {
   const controles = useRef<OrbitControlsImpl>(null);
   const [interagiu, setInteragiu] = useState(false);
 
   return (
-    <div className={`relative overflow-hidden rounded-3xl bg-brand-cloud ${className}`}>
+    <div
+      className={`relative overflow-hidden rounded-3xl ${
+        fundo === "escuro" ? "bg-brand-navy-deep" : "bg-brand-cloud"
+      } ${className}`}
+    >
       {/* O canvas não é alcançável por leitor de tela. O texto abaixo é a alternativa
           real, não um enfeite — fica fora da tela mas dentro da árvore de acessibilidade. */}
       <p className="sr-only">{descricao}</p>

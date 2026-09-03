@@ -54,6 +54,30 @@ function ProdutoTresDPage() {
           />
         </Suspense>
 
+        <h2 className="mt-16 font-display text-2xl font-black sm:text-3xl">
+          O peixe da marca em 3D
+        </h2>
+        <p className="mt-3 max-w-2xl text-muted-foreground">
+          Mesmo componente, outro arquivo. Este é o símbolo do hero modelado em três
+          dimensões — o mesmo peixe, agora com volume. Ainda não está na home: o three.js
+          pesa, e a home é a página mais vista do site.
+        </p>
+
+        <Suspense
+          fallback={
+            <div className="mt-8 grid h-[420px] place-items-center rounded-3xl bg-brand-navy-deep text-sm text-white/60">
+              Carregando o peixe…
+            </div>
+          }
+        >
+          <Visualizador3D
+            modelo="/modelos/peixe-aruana.glb"
+            descricao="O peixe da marca Aruanã em três dimensões, visto de lado, com corpo alongado em facetas verdes, nadadeira dorsal, nadadeiras laterais e cauda bifurcada. Gira sozinho e pode ser girado e aproximado pelo visitante."
+            fundo="escuro"
+            className="mt-8 h-[420px] sm:h-[520px]"
+          />
+        </Suspense>
+
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
           {[
             {
