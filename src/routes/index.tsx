@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Suspense, lazy, useEffect, useState } from "react";
 import {
   ArrowRight,
   Sparkles,
@@ -22,6 +23,52 @@ import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { trackEvent } from "@/lib/analytics";
 import heroFish from "@/assets/hero-fish.jpg";
 import { AquarioPixels } from "@/components/AquarioPixels";
+
+// O three.js inteiro mora atrás deste import. Ele só é resolvido depois do load e
+// em tempo ocioso — nunca no caminho crítico da home, que é a página mais vista.
+const HeroPeixe3D = lazy(() => import("@/components/HeroPeixe3D"));
+
+/** Decide se vale gastar 500+ KB de three.js no aparelho de quem chegou.
+ *  Em qualquer dúvida a resposta é não: a imagem estática já entrega o hero. */
+function useVale3D() {
+  const [vale, setVale] = useState(false);
+
+  useEffect(() => {
+    // Escotilha de teste: `?peixe3d=1` força o 3D mesmo onde a heurística barraria,
+    // e `?peixe3d=0` desliga. Serve para avaliar a peça sem depender do palpite
+    // do navegador sobre a rede — que erra, e erra para os dois lados.
+    const forcado = new URLSearchParams(window.location.search).get("peixe3d");
+    if (forcado === "0") return;
+
+    if (forcado !== "1") {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const rede = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } })
+        .connection;
+      if (rede?.saveData) return;
+      if (rede?.effectiveType && !["4g", "5g"].includes(rede.effectiveType)) return;
+
+      const memoria = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+      if (typeof memoria === "number" && memoria < 4) return;
+    }
+
+    const agendar = () => {
+      if ("requestIdleCallback" in window) {
+        (window as Window & typeof globalThis).requestIdleCallback(() => setVale(true), {
+          timeout: 5000,
+        });
+      } else {
+        setTimeout(() => setVale(true), 2500);
+      }
+    };
+
+    if (document.readyState === "complete") agendar();
+    else window.addEventListener("load", agendar);
+    return () => window.removeEventListener("load", agendar);
+  }, []);
+
+  return vale;
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -214,6 +261,8 @@ const PROOF_PROJECTS = [
 ];
 
 function HomePage() {
+  const vale3D = useVale3D();
+  const [peixe3D, setPeixe3D] = useState(false);
   return (
     <PageLayout>
       {/* HERO */}
@@ -228,12 +277,28 @@ function HomePage() {
           <img
             src={heroFish}
             alt=""
-            className="absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right opacity-25 mix-blend-screen animate-float sm:w-[90%] sm:opacity-35 lg:w-3/5 lg:opacity-40"
+            className={`absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right mix-blend-screen animate-float transition-opacity duration-[1200ms] sm:w-[90%] lg:w-3/5 ${
+              peixe3D ? "opacity-0" : "opacity-25 sm:opacity-35 lg:opacity-40"
+            }`}
           />
           <AquarioPixels
             imagem={heroFish}
             className="absolute inset-0 h-full w-full mix-blend-screen"
           />
+
+          {/* Enxerto: se o 3D não carregar, falhar ou não valer a pena no aparelho,
+              nada acima muda. A imagem e o mar de pixels são o estado garantido. */}
+          {vale3D && (
+            <Suspense fallback={null}>
+              <div
+                className={`absolute inset-y-0 right-0 h-full w-[140%] max-w-none transition-opacity duration-[1200ms] sm:w-[90%] lg:w-3/5 ${
+                  peixe3D ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <HeroPeixe3D onPronto={() => setPeixe3D(true)} />
+              </div>
+            </Suspense>
+          )}
           {/* Mobile: vertical fade from top so fish sits behind text softly */}
           <div className="absolute inset-0 bg-gradient-to-b from-brand-navy-deep via-brand-navy-deep/70 to-brand-navy-deep sm:hidden" />
           {/* Tablet/Desktop: horizontal fade so left side stays readable */}
