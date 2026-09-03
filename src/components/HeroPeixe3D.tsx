@@ -2,6 +2,7 @@ import { Suspense, useEffect, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Center, Environment, Lightformer, useGLTF } from "@react-three/drei";
 import type { Group } from "three";
+import { estadoPeixe } from "@/lib/estadoPeixe";
 
 type Props = {
   /** Avisa quando o peixe já está pintando, para o hero apagar a imagem estática.
@@ -13,27 +14,56 @@ type Props = {
 // vem junto dele, e é por isso que ele nunca pode ser importado no topo do hero.
 useGLTF.setDecoderPath("/draco/");
 
+// Amplitudes do nado, em unidades da cena. Baixas de propósito: o peixe divide
+// espaço com o texto do hero e não pode virar distração.
+const NADO = { x: 0.42, y: 0.16, z: 0.5 };
+
 function Peixe({ onPronto }: { onPronto: () => void }) {
   const { scene } = useGLTF("/modelos/peixe-aruana.glb", "/draco/");
   const grupo = useRef<Group>(null);
+  const nascimento = useRef(0);
 
   useEffect(() => {
+    estadoPeixe.ativo = true;
     onPronto();
+    return () => {
+      estadoPeixe.ativo = false;
+      estadoPeixe.dx = 0;
+      estadoPeixe.dy = 0;
+    };
   }, [onPronto]);
 
   useFrame(({ clock }) => {
+    const g = grupo.current;
+    if (!g) return;
     const t = clock.elapsedTime;
-    if (!grupo.current) return;
-    // Nado lento: guinada leve, rolagem menor ainda e uma subida e descida suave.
-    grupo.current.rotation.y = -0.35 + Math.sin(t * 0.22) * 0.28;
-    grupo.current.rotation.z = Math.sin(t * 0.31) * 0.05;
-    grupo.current.position.y = Math.sin(t * 0.45) * 0.06;
+    if (!nascimento.current) nascimento.current = t;
+
+    // Entrada: chega do fundo da cena e avança até o lugar, no mesmo tempo em que
+    // a imagem estática se apaga. Sem isto a troca era um corte seco.
+    const entrada = Math.min((t - nascimento.current) / 1.6, 1);
+    const suave = 1 - Math.pow(1 - entrada, 3);
+
+    // Trajeto: três senoides de períodos primos entre si, para o caminho não
+    // repetir de forma óbvia. Lento — é peixe de aquário, não de corrida.
+    const x = Math.sin(t * 0.13) * NADO.x + Math.sin(t * 0.071) * NADO.x * 0.4;
+    const y = Math.sin(t * 0.19 + 1.3) * NADO.y;
+    const z = Math.sin(t * 0.097 + 0.6) * NADO.z;
+
+    g.position.set(x, y, (z - 2.6) + 2.6 * suave);
+    // O peixe aponta para onde está indo: a guinada acompanha a derivada do trajeto.
+    g.rotation.y = -0.3 + Math.cos(t * 0.13) * 0.34;
+    g.rotation.z = Math.sin(t * 0.23) * 0.06;
+
+    // Publica o deslocamento para o mar de pixels acompanhar.
+    estadoPeixe.dx = x * 0.19;
+    estadoPeixe.dy = -y * 0.26;
   });
 
   return (
     <group ref={grupo}>
       <Center>
-        <primitive object={scene} scale={0.021} />
+        <primitive object={scene} scale={0.012} />
       </Center>
     </group>
   );

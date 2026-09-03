@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { estadoPeixe } from "@/lib/estadoPeixe";
 
 type Props = {
   /** O mesmo hero-fish.jpg que já pinta atrás. Serve só para saber ONDE está o peixe:
@@ -76,8 +77,10 @@ export function AquarioPixels({ imagem, className = "" }: Props) {
 
     const corpoEm = (x: number, y: number) => {
       if (!mascara) return 0;
-      const mx = Math.floor(x * mascara.largura);
-      const my = Math.floor(y * mascara.altura);
+      // Enquanto o peixe 3D nada, a máscara caminha junto com ele. Sem isto a água
+      // continuaria acendendo no lugar do peixe da imagem estática — um fantasma.
+      const mx = Math.floor((x - estadoPeixe.dx) * mascara.largura);
+      const my = Math.floor((y - estadoPeixe.dy) * mascara.altura);
       if (mx < 0 || my < 0 || mx >= mascara.largura || my >= mascara.altura) return 0;
       return mascara.grade[my * mascara.largura + mx];
     };

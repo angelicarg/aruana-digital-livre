@@ -277,7 +277,7 @@ function HomePage() {
           <img
             src={heroFish}
             alt=""
-            className={`absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right mix-blend-screen animate-float transition-opacity duration-[1200ms] sm:w-[90%] lg:w-3/5 ${
+            className={`absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right mix-blend-screen animate-float transition-opacity duration-[2200ms] sm:w-[90%] lg:w-3/5 ${
               peixe3D ? "opacity-0" : "opacity-25 sm:opacity-35 lg:opacity-40"
             }`}
           />
@@ -291,7 +291,7 @@ function HomePage() {
           {vale3D && (
             <Suspense fallback={null}>
               <div
-                className={`absolute inset-y-0 right-0 h-full w-[140%] max-w-none transition-opacity duration-[1200ms] sm:w-[90%] lg:w-3/5 ${
+                className={`absolute inset-y-0 right-0 h-full w-[140%] max-w-none transition-opacity duration-[2200ms] sm:w-[90%] lg:w-3/5 ${
                   peixe3D ? "opacity-100" : "opacity-0"
                 }`}
               >
