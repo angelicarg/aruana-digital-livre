@@ -1,7 +1,7 @@
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Center, Environment, Lightformer, useGLTF } from "@react-three/drei";
-import type { Group } from "three";
+import * as THREE from "three";
 import { estadoPeixe } from "@/lib/estadoPeixe";
 
 type Props = {
@@ -14,14 +14,97 @@ type Props = {
 // vem junto dele, e é por isso que ele nunca pode ser importado no topo do hero.
 useGLTF.setDecoderPath("/draco/");
 
-// Amplitudes do nado, em unidades da cena. Baixas de propósito: o peixe divide
-// espaço com o texto do hero e não pode virar distração.
-const NADO = { x: 0.42, y: 0.16, z: 0.5 };
+/** Descobre qual ponta do eixo longo é a cauda: ela afina, a cabeça não.
+ *  Feito pela geometria em vez de fixado na mão, para não quebrar se o modelo
+ *  for reexportado com outra orientação. */
+function acharCauda(raiz: THREE.Object3D) {
+  let min = Infinity;
+  let max = -Infinity;
+  const alturas: { x: number; y: number }[] = [];
+
+  raiz.traverse((o) => {
+    const malha = o as THREE.Mesh;
+    if (!malha.isMesh) return;
+    const pos = malha.geometry.getAttribute("position");
+    for (let i = 0; i < pos.count; i += 7) {
+      const x = pos.getX(i);
+      const y = pos.getY(i);
+      if (x < min) min = x;
+      if (x > max) max = x;
+      alturas.push({ x, y });
+    }
+  });
+
+  const faixa = max - min || 1;
+  const extremo = (dentro: (t: number) => boolean) => {
+    let lo = Infinity;
+    let hi = -Infinity;
+    for (const p of alturas) {
+      const t = (p.x - min) / faixa;
+      if (!dentro(t)) continue;
+      if (p.y < lo) lo = p.y;
+      if (p.y > hi) hi = p.y;
+    }
+    return hi - lo;
+  };
+
+  const alturaInicio = extremo((t) => t < 0.12);
+  const alturaFim = extremo((t) => t > 0.88);
+  // A cauda é a ponta com menor altura de corpo.
+  return { min, max, cabecaEmX: alturaInicio > alturaFim ? min : max };
+}
 
 function Peixe({ onPronto }: { onPronto: () => void }) {
   const { scene } = useGLTF("/modelos/peixe-aruana.glb", "/draco/");
-  const grupo = useRef<Group>(null);
+  const grupo = useRef<THREE.Group>(null);
   const nascimento = useRef(0);
+  const shaders = useRef<{ uniforms: Record<string, { value: number }> }[]>([]);
+
+  const eixo = useMemo(() => acharCauda(scene), [scene]);
+
+  // Deformação da malha na GPU. O modelo não tem esqueleto: girar um bloco rígido
+  // parece objeto rodando, não peixe nadando. A onda que percorre o corpo da cabeça
+  // para a cauda é o que dá vida — e no vertex shader custa praticamente nada.
+  useMemo(() => {
+    shaders.current = [];
+    scene.traverse((o) => {
+      const malha = o as THREE.Mesh;
+      if (!malha.isMesh) return;
+      const material = malha.material as THREE.Material;
+
+      material.onBeforeCompile = (shader) => {
+        shader.uniforms.uTempo = { value: 0 };
+        shader.uniforms.uMinX = { value: eixo.min };
+        shader.uniforms.uMaxX = { value: eixo.max };
+        shader.uniforms.uCabecaNoMin = { value: eixo.cabecaEmX === eixo.min ? 1 : 0 };
+
+        shader.vertexShader =
+          `uniform float uTempo;
+           uniform float uMinX;
+           uniform float uMaxX;
+           uniform float uCabecaNoMin;
+          ` + shader.vertexShader;
+
+        shader.vertexShader = shader.vertexShader.replace(
+          "#include <begin_vertex>",
+          `#include <begin_vertex>
+           float faixa = max(uMaxX - uMinX, 0.0001);
+           float t = (transformed.x - uMinX) / faixa;
+           // 0 na cabeça, 1 na cauda, independente da orientação do arquivo.
+           float daCabeca = mix(1.0 - t, t, uCabecaNoMin);
+           // A crista caminha da cabeça para a cauda; a cauda varre muito mais.
+           float fase = uTempo * 2.6 - daCabeca * 6.5;
+           float amp = faixa * (0.004 + 0.055 * daCabeca * daCabeca);
+           transformed.z += sin(fase) * amp;
+           transformed.y += cos(fase) * amp * 0.12;
+          `,
+        );
+
+        shaders.current.push(shader as unknown as { uniforms: Record<string, { value: number }> });
+      };
+      material.needsUpdate = true;
+    });
+  }, [scene, eixo]);
 
   useEffect(() => {
     estadoPeixe.ativo = true;
@@ -39,25 +122,25 @@ function Peixe({ onPronto }: { onPronto: () => void }) {
     const t = clock.elapsedTime;
     if (!nascimento.current) nascimento.current = t;
 
-    // Entrada: chega do fundo da cena e avança até o lugar, no mesmo tempo em que
-    // a imagem estática se apaga. Sem isto a troca era um corte seco.
+    for (const s of shaders.current) if (s.uniforms.uTempo) s.uniforms.uTempo.value = t;
+
+    // Entrada: chega do fundo da cena e avança até o lugar enquanto a imagem
+    // estática se apaga.
     const entrada = Math.min((t - nascimento.current) / 1.6, 1);
     const suave = 1 - Math.pow(1 - entrada, 3);
 
-    // Trajeto: três senoides de períodos primos entre si, para o caminho não
-    // repetir de forma óbvia. Lento — é peixe de aquário, não de corrida.
-    const x = Math.sin(t * 0.13) * NADO.x + Math.sin(t * 0.071) * NADO.x * 0.4;
-    const y = Math.sin(t * 0.19 + 1.3) * NADO.y;
-    const z = Math.sin(t * 0.097 + 0.6) * NADO.z;
+    // Fica no lugar: só sobe e desce, como peixe parado contra a correnteza.
+    // O deslocamento lateral foi removido — jogava o peixe para fora do quadro.
+    const y = Math.sin(t * 0.34) * 0.13 + Math.sin(t * 0.21 + 0.8) * 0.05;
+    g.position.set(0, y, -2.2 + 2.2 * suave);
 
-    g.position.set(x, y, (z - 2.6) + 2.6 * suave);
-    // O peixe aponta para onde está indo: a guinada acompanha a derivada do trajeto.
-    g.rotation.y = -0.3 + Math.cos(t * 0.13) * 0.34;
-    g.rotation.z = Math.sin(t * 0.23) * 0.06;
+    // Ângulo fixo de três quartos: é ele que deixa a ondulação do corpo visível.
+    // A guinada animada saiu — num modelo rígido ela ficava dura e feia.
+    g.rotation.y = -0.5;
+    g.rotation.z = Math.sin(t * 0.34) * 0.045;
 
-    // Publica o deslocamento para o mar de pixels acompanhar.
-    estadoPeixe.dx = x * 0.19;
-    estadoPeixe.dy = -y * 0.26;
+    estadoPeixe.dx = 0;
+    estadoPeixe.dy = -y * 0.3;
   });
 
   return (
