@@ -271,3 +271,17 @@
     animation: fade-down 0.7s ease-out both;
   }
 }
+
+/* Movimento involuntario na tela e gatilho vestibular e para parte do espectro
+   autista. O projeto anima o peixe do hero, o mascote e o halo continuamente;
+   sem isto, nada disso para quando o sistema operacional pede que pare. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

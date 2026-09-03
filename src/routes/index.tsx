@@ -21,6 +21,7 @@ import { PageLayout } from "@/components/PageLayout";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { trackEvent } from "@/lib/analytics";
 import heroFish from "@/assets/hero-fish.jpg";
+import { AquarioPixels } from "@/components/AquarioPixels";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -219,10 +220,17 @@ function HomePage() {
       <section className="relative overflow-hidden bg-brand-navy-deep text-white">
         {/* Fish as ambient background */}
         <div className="absolute inset-0" aria-hidden="true">
+          {/* A imagem continua sendo o que pinta primeiro, o que sobra sem JavaScript
+              e o og:image do compartilhamento. O canvas entra por cima depois de
+              pronto — e nunca entra para quem pede menos movimento. */}
           <img
             src={heroFish}
             alt=""
             className="absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right opacity-25 mix-blend-screen animate-float sm:w-[90%] sm:opacity-35 lg:w-3/5 lg:opacity-40"
+          />
+          <AquarioPixels
+            imagem={heroFish}
+            className="absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right mix-blend-screen sm:w-[90%] lg:w-3/5"
           />
           {/* Mobile: vertical fade from top so fish sits behind text softly */}
           <div className="absolute inset-0 bg-gradient-to-b from-brand-navy-deep via-brand-navy-deep/70 to-brand-navy-deep sm:hidden" />
