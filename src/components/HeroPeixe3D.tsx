@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Center, Environment, Lightformer, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -13,6 +13,28 @@ type Props = {
 // Este módulo só é carregado sob demanda, bem depois do load. O three.js inteiro
 // vem junto dele, e é por isso que ele nunca pode ser importado no topo do hero.
 useGLTF.setDecoderPath("/draco/");
+
+// Escala por tamanho de tela. No mobile o peixe já está no ponto; no desktop o
+// quadro é mais largo e ele pedia mais presença. O corte é o breakpoint `lg`,
+// que é onde o contêiner passa a ocupar 3/5 da largura do hero.
+const ESCALA_MOBILE = 0.012;
+const ESCALA_DESKTOP = 0.016;
+
+/** Reage a mudança de largura em tempo real — girar o aparelho ou redimensionar a
+ *  janela muda o enquadramento, e uma leitura única no mount deixaria a escala errada. */
+function useEscala() {
+  const [desktop, setDesktop] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const aplicar = () => setDesktop(mq.matches);
+    aplicar();
+    mq.addEventListener("change", aplicar);
+    return () => mq.removeEventListener("change", aplicar);
+  }, []);
+
+  return desktop ? ESCALA_DESKTOP : ESCALA_MOBILE;
+}
 
 /** Descobre qual ponta do eixo longo é a cauda: ela afina, a cabeça não.
  *  Feito pela geometria em vez de fixado na mão, para não quebrar se o modelo
@@ -61,6 +83,7 @@ function Peixe({ onPronto }: { onPronto: () => void }) {
   const shaders = useRef<{ uniforms: Record<string, { value: number }> }[]>([]);
 
   const eixo = useMemo(() => acharCauda(scene), [scene]);
+  const escala = useEscala();
 
   // Deformação da malha na GPU. O modelo não tem esqueleto: girar um bloco rígido
   // parece objeto rodando, não peixe nadando. A onda que percorre o corpo da cabeça
@@ -146,7 +169,7 @@ function Peixe({ onPronto }: { onPronto: () => void }) {
   return (
     <group ref={grupo}>
       <Center>
-        <primitive object={scene} scale={0.012} />
+        <primitive object={scene} scale={escala} />
       </Center>
     </group>
   );
