@@ -132,8 +132,8 @@ extraídos de uma imagem gerada por IA que trazia a arte já pendurada em um
 cenário, em perspectiva — `arte/recortar.py` os endireita por transformação
 projetiva, porque recorte retangular sairia trapezoidal.
 
-O pipeline de otimização (Draco + WebP a 512 px) leva a sala de 3,69 MB para
-94 KB. Vale para qualquer peça nova: exportar do Blender, otimizar, copiar para
+O pipeline de otimização (Draco + WebP a 512 px) leva a sala de 4,37 MB para
+148 KB. Vale para qualquer peça nova: exportar do Blender, otimizar, copiar para
 `public/modelos/`. Rodar sempre o comando do `LEIAME.md`, não o `optimize` padrão:
 sem `--simplify false` o gltf-transform mexe na geometria, e sem `--texture-size
 512` as texturas sobem em 1k e o arquivo triplica.

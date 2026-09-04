@@ -135,6 +135,9 @@ esquadria = material("esquadria", (0.06, 0.07, 0.07), 0.35, metal=0.85)
 parede = material("parede", (0.72, 0.68, 0.62), 0.8)
 # Piso e parede de fundo sao as duas maiores superficies em campo de visao —
 # recebem textura de verdade; o resto segue em cor chapada, que basta.
+# Tabua clara e quase neutra (R/B 1,5) escolhida por medicao, nao por nome: a
+# primeira opcao testada tinha R/B 7,8 e deixava a sala inteira laranja sob o sol
+# baixo. Sem tinta — corrigir dominante no material so mascara madeira errada.
 piso_mat = material_texturizado("piso_madeira", "piso")
 parede_mat = material_texturizado("parede_reboco", "parede")
 rocha = material("rocha", (0.13, 0.12, 0.13), 0.9)
@@ -203,7 +206,7 @@ for i in range(MONTANHAS["quantidade"]):
     m.data.materials.append(rocha)
 
 # ------------------------------------------------------------------ SALA ---
-uv_metrico(caixa("piso", (L, P, 0.12), (0, 0, -0.06), piso_mat), metros=1.6)
+uv_metrico(caixa("piso", (L, P, 0.12), (0, 0, -0.06), piso_mat), metros=2.2)
 caixa("teto", (L, P, 0.10), (0, 0, A), material("teto", (0.58, 0.56, 0.53), 0.9))
 
 # Tres faces em vidro; a quarta (fundo, -Y) e solida e recebe porta e quadros.
