@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass } from "lucide-react";
+import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
 
 const WHATSAPP_NUMBER = "5534992086611";
@@ -188,9 +188,12 @@ function SalaYogaPage() {
   // das pessoas, e numa sala de relaxamento isso é o oposto do objetivo.
   const [giroscopio, setGiroscopio] = useState(false);
   const [temSensor, setTemSensor] = useState(false);
+  const [sentado, setSentado] = useState(false);
   const { volume, setVolume, toggleMute } = useAmbientAudio();
   const containerRef = useRef<HTMLDivElement>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(containerRef);
+
+  const aoMudarPostura = useCallback((s: boolean) => setSentado(s), []);
 
   useEffect(() => {
     setMounted(true);
@@ -212,13 +215,17 @@ function SalaYogaPage() {
 
       {mounted && (
         <Canvas
-          camera={{ position: [0, 1.6, 1.2], fov: 60 }}
+          camera={{ position: [0, 1.6, 2.8], fov: 60 }}
           dpr={[1, 1.75]}
           gl={{ antialias: true }}
         >
           <XR store={xrStore}>
             <Suspense fallback={null}>
-              <CenaSala giroscopio={giroscopio} />
+              <CenaSala
+                giroscopio={giroscopio}
+                sentado={sentado}
+                aoMudarPostura={aoMudarPostura}
+              />
             </Suspense>
           </XR>
         </Canvas>
@@ -300,7 +307,16 @@ function SalaYogaPage() {
             de respiração, embaixo brigava com o título, e à direita esbarraria no
             VLibras e no botão de acessibilidade, que moram lá. */}
         <div className="absolute left-4 top-1/2 -translate-y-1/2 sm:left-6">
-          <Caminhada />
+          {sentado ? (
+            <button
+              onClick={() => setSentado(false)}
+              className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-black/35 px-4 py-3 text-sm font-medium text-white/90 backdrop-blur-sm transition hover:bg-black/55"
+            >
+              <PersonStanding className="h-4 w-4" /> Levantar
+            </button>
+          ) : (
+            <Caminhada />
+          )}
         </div>
 
         <div className="flex flex-col items-center gap-2 text-center">
@@ -308,9 +324,9 @@ function SalaYogaPage() {
             Sala de Yoga &amp; Relaxamento — protótipo Aruanã Digital
           </h1>
           <p className="max-w-md text-xs text-white/60">
-            Arraste para olhar ao redor. Use as setas, W A S D ou os botões ao lado para caminhar
-            pela sala. No celular, a bússola no topo faz a vista seguir o movimento do aparelho.
-            Com headset, é imersão completa.
+            Arraste para olhar ao redor e toque num tapete para sentar. Use as setas, W A S D ou os
+            botões ao lado para caminhar. No celular, a bússola no topo faz a vista seguir o
+            movimento do aparelho. Com headset, é imersão completa.
           </p>
           <a
             href={whatsappHref("Sala de Yoga - protótipo RV")}
