@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding } from "lucide-react";
+import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2 } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
 import {
   ControlesRespiracao,
@@ -203,6 +203,121 @@ function Caminhada() {
   );
 }
 
+/** Ajustes recolhidos num menu. Soltos na barra, o controle de volume é um
+ *  slider deitado que come metade da largura da tela num celular — e nenhum
+ *  deles é usado com frequência que justifique ocupar a vista da sala. */
+function MenuAjustes({
+  volume,
+  setVolume,
+  toggleMute,
+  temSensor,
+  giroscopio,
+  setGiroscopio,
+  isFullscreen,
+  toggleFullscreen,
+}: {
+  volume: number;
+  setVolume: (v: number) => void;
+  toggleMute: () => void;
+  temSensor: boolean;
+  giroscopio: boolean;
+  setGiroscopio: (v: boolean) => void;
+  isFullscreen: boolean;
+  toggleFullscreen: () => void;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const caixa = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!aberto) return;
+    const aoTeclar = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAberto(false);
+    };
+    // Clique fora fecha. `pointerdown` e não `click`: dentro de uma cena 3D o
+    // clique costuma ser engolido pelo canvas antes de borbulhar.
+    const aoApontar = (e: PointerEvent) => {
+      if (!caixa.current?.contains(e.target as Node)) setAberto(false);
+    };
+    document.addEventListener("keydown", aoTeclar);
+    document.addEventListener("pointerdown", aoApontar);
+    return () => {
+      document.removeEventListener("keydown", aoTeclar);
+      document.removeEventListener("pointerdown", aoApontar);
+    };
+  }, [aberto]);
+
+  const linha = "flex w-full items-center justify-between gap-4 rounded-xl px-3 py-2 text-left text-xs text-white/90 transition hover:bg-white/10";
+
+  return (
+    <div ref={caixa} className="relative">
+      <button
+        onClick={() => setAberto((a) => !a)}
+        aria-expanded={aberto}
+        aria-label="Ajustes da experiência"
+        className={`inline-flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition ${
+          aberto ? "bg-white/85 text-[#1a1512]" : "bg-black/30 text-white/90 hover:bg-black/50"
+        }`}
+      >
+        <Settings2 className="h-4 w-4" />
+      </button>
+
+      {aberto && (
+        <div className="absolute right-0 top-11 w-60 rounded-2xl bg-black/70 p-2 shadow-premium backdrop-blur-md">
+          <div className="flex items-center gap-2 px-3 py-2">
+            <button
+              onClick={toggleMute}
+              aria-label={volume > 0 ? "Silenciar som ambiente" : "Ativar som ambiente"}
+              className="text-white/90"
+            >
+              {volume > 0 ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(volume * 100)}
+              onChange={(e) => setVolume(Number(e.target.value) / 100)}
+              aria-label="Volume do som ambiente"
+              className="h-1 flex-1 accent-[#00CCA7]"
+            />
+          </div>
+
+          {temSensor && (
+            <button
+              onClick={async () => {
+                if (giroscopio) {
+                  setGiroscopio(false);
+                  return;
+                }
+                // A permissão do iOS só abre durante o toque; por isso o pedido
+                // mora aqui, e não num efeito.
+                setGiroscopio(await pedirGiroscopio());
+              }}
+              aria-pressed={giroscopio}
+              className={linha}
+            >
+              <span className="inline-flex items-center gap-2">
+                <Compass className="h-4 w-4" /> Seguir o movimento do aparelho
+              </span>
+              <span
+                aria-hidden="true"
+                className={`h-2 w-2 shrink-0 rounded-full ${giroscopio ? "bg-[#00CCA7]" : "bg-white/25"}`}
+              />
+            </button>
+          )}
+
+          <button onClick={toggleFullscreen} className={linha}>
+            <span className="inline-flex items-center gap-2">
+              {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+              {isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+            </span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SalaYogaPage() {
   const [mounted, setMounted] = useState(false);
   const [xrSupported, setXrSupported] = useState(false);
@@ -257,53 +372,16 @@ function SalaYogaPage() {
             <ArrowLeft className="h-3.5 w-3.5" /> Início
           </a>
           <div className="pointer-events-auto flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-full bg-black/30 px-3 py-1.5 backdrop-blur-sm">
-              <button
-                onClick={toggleMute}
-                aria-label={volume > 0 ? "Silenciar som ambiente" : "Ativar som ambiente"}
-                className="text-white/90"
-              >
-                {volume > 0 ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              </button>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={Math.round(volume * 100)}
-                onChange={(e) => setVolume(Number(e.target.value) / 100)}
-                aria-label="Volume do som ambiente"
-                className="h-1 w-20 accent-[#00CCA7]"
-              />
-            </div>
-            {temSensor && (
-              <button
-                onClick={async () => {
-                  if (giroscopio) {
-                    setGiroscopio(false);
-                    return;
-                  }
-                  // A permissão do iOS só abre durante o toque; por isso o
-                  // pedido mora aqui, e não num efeito.
-                  setGiroscopio(await pedirGiroscopio());
-                }}
-                aria-pressed={giroscopio}
-                aria-label="Girar a vista movendo o aparelho"
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition ${
-                  giroscopio
-                    ? "bg-[#00CCA7] text-[#041B33]"
-                    : "bg-black/30 text-white/90 hover:bg-black/50"
-                }`}
-              >
-                <Compass className="h-4 w-4" />
-              </button>
-            )}
-            <button
-              onClick={toggleFullscreen}
-              aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition hover:bg-black/50"
-            >
-              {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-            </button>
+            <MenuAjustes
+              volume={volume}
+              setVolume={setVolume}
+              toggleMute={toggleMute}
+              temSensor={temSensor}
+              giroscopio={giroscopio}
+              setGiroscopio={setGiroscopio}
+              isFullscreen={isFullscreen}
+              toggleFullscreen={toggleFullscreen}
+            />
             {xrSupported && (
               <button
                 onClick={() => xrStore.enterVR()}
@@ -346,8 +424,8 @@ function SalaYogaPage() {
           </h1>
           <p className="max-w-md text-xs text-white/60">
             Arraste para olhar ao redor e toque num tapete para sentar. Use as setas, W A S D ou os
-            botões ao lado para caminhar. No celular, a bússola no topo faz a vista seguir o
-            movimento do aparelho. Com headset, é imersão completa.
+            botões ao lado para caminhar. Som, tela cheia e — no celular — seguir o movimento do
+            aparelho ficam nos ajustes, no canto superior. Com headset, é imersão completa.
           </p>
           <a
             href={whatsappHref("Sala de Yoga - protótipo RV")}
