@@ -16,6 +16,7 @@ export type EventName =
   | "scroll_depth"
   | "time_on_page"
   | "click_whatsapp"
+  | "click_telefone"
   | "open_simulator"
   | "generate_lead"
   | "view_case_study";

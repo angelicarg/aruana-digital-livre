@@ -11,6 +11,7 @@ import {
   MessageCircle,
   Mail,
   MapPin,
+  Phone,
   Rocket,
   ShieldCheck,
 } from "lucide-react";
@@ -18,6 +19,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { AruanaLogo } from "@/components/AruanaLogo";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { trackEvent } from "@/lib/analytics";
+import { irParaAncora } from "@/lib/ancora";
 import mascot from "@/assets/mascot-aru.webp";
 
 const WHATSAPP_NUMBER = "5534992086611";
@@ -74,6 +76,36 @@ function WebsitePmePage() {
 
   return (
     <div className="min-h-dvh bg-background">
+      {/* NAV — sem menu, o visitante precisava rolar 9 telas para achar preço
+          ou telefone. Só âncoras internas: a página recebe tráfego de anúncio
+          e link de saída aqui vazaria a visita. */}
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-navy-deep/95 backdrop-blur">
+        <nav
+          aria-label="Atalhos da página"
+          className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8"
+        >
+          <span className="hidden font-display text-base font-black text-white sm:block">
+            Aruanã Digital
+          </span>
+          <div className="flex w-full items-center justify-between gap-3 text-base sm:w-auto sm:justify-end sm:gap-6">
+            <a href="#preco" onClick={irParaAncora("preco")} className="font-semibold text-white/90 transition hover:text-white">
+              Preço
+            </a>
+            <a href="#demos" onClick={irParaAncora("demos")} className="font-semibold text-white/90 transition hover:text-white">
+              Demos
+            </a>
+            <a
+              href="tel:+5534992086611"
+              onClick={() => trackEvent("click_telefone", { placement: "header", campanha: origem ?? "sem_utm" })}
+              className="inline-flex items-center gap-1.5 font-semibold text-brand-green transition hover:text-white"
+            >
+              <Phone className="h-4 w-4" aria-hidden="true" />
+              (34) 99208-6611
+            </a>
+          </div>
+        </nav>
+      </header>
+
       <main>
       {/* HERO */}
       <section className="relative overflow-hidden bg-hero-gradient text-white">
@@ -102,6 +134,13 @@ function WebsitePmePage() {
                 Falar com Especialista
               </a>
             </div>
+            {/* Preço no hero: antes só existia no FAQ, a 83% da rolagem. Sem
+                valor à vista o visitante cético conclui "vai ser caro" e sai. */}
+            <p className="mt-5 text-base text-white/90">
+              Projetos a partir de{" "}
+              <strong className="font-bold text-white">R$ 1.500</strong>
+              {" "}· Conversa inicial gratuita, sem compromisso
+            </p>
           </div>
           <div className="flex justify-center lg:justify-end">
             <img
@@ -216,7 +255,7 @@ function WebsitePmePage() {
       </section>
 
       {/* PROVA VERIFICÁVEL */}
-      <section className="bg-brand-cloud py-16 sm:py-20 lg:py-24">
+      <section id="demos" className="scroll-mt-16 bg-brand-cloud py-16 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-2xl font-black sm:text-3xl">
             Não Acredite na Nossa Palavra. Teste.
@@ -357,7 +396,7 @@ function WebsitePmePage() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-brand-cloud py-16 sm:py-20 lg:py-24">
+      <section id="preco" className="scroll-mt-16 bg-brand-cloud py-16 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-2xl font-black sm:text-3xl">Perguntas Frequentes</h2>
           <Accordion
@@ -397,7 +436,7 @@ function WebsitePmePage() {
       </section>
 
       {/* CTA FINAL */}
-      <section className="bg-hero-gradient py-16 text-center text-white sm:py-20 lg:py-24">
+      <section id="contato" className="scroll-mt-16 bg-hero-gradient py-16 text-center text-white sm:py-20 lg:py-24">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
           <h2 className="font-display text-2xl font-black sm:text-3xl">
             Pronto para Transformar Seu Negócio?
