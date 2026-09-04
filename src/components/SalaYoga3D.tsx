@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Environment, Lightformer, Sky, useGLTF } from "@react-three/drei";
+import { Environment, Lightformer, useGLTF } from "@react-three/drei";
+import { CeuPorDoSol } from "./CeuPorDoSol";
 import * as THREE from "three";
 
 /** Comandos de andar vindos da interface (botões de toque). O teclado é lido
@@ -120,8 +121,14 @@ function useSala(): Sala {
     raiz.traverse((o) => {
       const malha = o as THREE.Mesh;
       if (!malha.isMesh) return;
-      malha.castShadow = false;
-      malha.receiveShadow = false;
+      // Chao e paredes recebem; o vidro nao projeta, porque o mapa de sombra
+      // ignora transparencia e o pano inteiro viraria uma faixa preta no piso.
+      // O resto — movel, cacto, tapete — projeta.
+      const recebe = /^(piso|parede|teto)/.test(o.name);
+      const vidro = /^vidro/.test(o.name);
+      const cenario = /^(terreno|montanha)/.test(o.name);
+      malha.receiveShadow = recebe;
+      malha.castShadow = !recebe && !vidro && !cenario;
 
       const mat = malha.material as THREE.MeshPhysicalMaterial;
       // O vidro veio com transmissão de verdade, que obriga o three a renderizar
@@ -440,7 +447,7 @@ function Navegacao({ giroscopio, sentado, aoMudarPostura }: Props) {
 export function CenaSala(props: Props) {
   return (
     <>
-      <Sky sunPosition={SOL} turbidity={6} rayleigh={3.4} mieCoefficient={0.005} mieDirectionalG={0.8} />
+      <CeuPorDoSol sol={SOL} />
       {/* A névoa dá profundidade às montanhas, que sem ela ficam recortadas e
           chapadas contra o céu. Começa longe: dentro da sala não deve aparecer. */}
       <fog attach="fog" args={["#c98d5e", 30, 190]} />
@@ -448,7 +455,25 @@ export function CenaSala(props: Props) {
       {/* O sol do Blender não vem no .glb — mundo e luzes ficam fora do formato.
           Estas reproduzem a iluminação do render: sol baixo e quente entrando
           pelo vidro, mais as três luminárias do teto. */}
-      <directionalLight position={SOL} intensity={3.4} color="#ffa860" />
+      {/* O sol projeta. Com ele a 4 graus do horizonte as sombras saem longas e
+          rasantes, que é justamente o desenho do fim de tarde — mas exigem um
+          tronco ortogonal largo, senão elas somem no meio da sala. */}
+      <directionalLight
+        position={SOL}
+        intensity={3.4}
+        color="#ffa860"
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-left={-14}
+        shadow-camera-right={14}
+        shadow-camera-top={14}
+        shadow-camera-bottom={-14}
+        shadow-camera-near={1}
+        shadow-camera-far={90}
+        // normalBias em vez de bias: a geometria é fina (tapete de 5 cm, painel
+        // de 2 cm) e o deslocamento constante a faria vazar a própria sombra.
+        shadow-normalBias={0.04}
+      />
       <hemisphereLight args={["#bcd4f0", "#6b4a2e", 0.7]} />
       <ambientLight intensity={0.35} />
 

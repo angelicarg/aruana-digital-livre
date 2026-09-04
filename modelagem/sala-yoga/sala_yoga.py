@@ -263,33 +263,86 @@ for i in range(TAPETES):
     t.data.materials.append(material(f"tapete_{i}", cores[i % len(cores)], 0.85))
 
 # ---------------------------------------------------------------- PLANTAS ---
-# Espada-de-sao-jorge: laminas verticais que afinam na ponta. O aglomerado de
-# esferas que estava aqui lia como bolha, nao como planta — folha reta e o unico
-# formato vegetal que sobrevive a geometria simples.
+# Cactos. A folha era o unico formato vegetal que sobrevivia a geometria simples;
+# o cacto e melhor ainda, porque a forma dificil vira a facil: um cilindro de
+# poucos lados com sombreamento suave ja le como as costelas do cacto. E a flor
+# da o unico ponto de cor saturada da sala.
 PLANTAS = ((-L / 2 + 0.9, P / 2 - 0.9), (L / 2 - 0.9, P / 2 - 0.9), (L / 2 - 0.9, 0.6))
-LAMINAS = 9
+COSTELAS = 10  # lados do cilindro; poucos de proposito, sao as costelas
+CORES_FLOR = ((0.86, 0.20, 0.42), (0.95, 0.72, 0.18), (0.90, 0.35, 0.25))
 
-for x, y in PLANTAS:
-    bpy.ops.mesh.primitive_cylinder_add(vertices=16, radius=0.24, depth=0.44, location=(x, y, 0.22))
-    bpy.context.object.name = "vaso"
+verde_cacto = material("cacto", (0.20, 0.36, 0.19), 0.75)
+terra_mat = material("terra", (0.10, 0.07, 0.05), 0.95)
+flores_mat = [material(f"flor_{i}", c, 0.55) for i, c in enumerate(CORES_FLOR)]
+
+
+def coluna(nome, base, raio, altura, mat):
+    """Tronco de cacto: cilindro facetado com a ponta arredondada."""
+    bpy.ops.mesh.primitive_cylinder_add(
+        vertices=COSTELAS, radius=raio, depth=altura,
+        location=(base[0], base[1], base[2] + altura / 2),
+    )
+    c = bpy.context.object
+    c.name = nome
+    bpy.ops.object.shade_smooth()
+    c.data.materials.append(mat)
+
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        segments=COSTELAS, ring_count=6, radius=raio,
+        location=(base[0], base[1], base[2] + altura),
+    )
+    t = bpy.context.object
+    t.name = f"{nome}_topo"
+    t.scale = (1, 1, 0.75)
+    bpy.ops.object.shade_smooth()
+    t.data.materials.append(mat)
+    return c
+
+
+def flor(nome, loc, mat):
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=8, ring_count=5, radius=0.075, location=loc)
+    f = bpy.context.object
+    f.name = nome
+    f.scale = (1, 1, 0.55)   # achatada, como flor de cacto assentada no corpo
+    bpy.ops.object.shade_smooth()
+    f.data.materials.append(mat)
+
+
+for i, (x, y) in enumerate(PLANTAS):
+    bpy.ops.mesh.primitive_cylinder_add(vertices=16, radius=0.26, depth=0.44, location=(x, y, 0.22))
+    bpy.context.object.name = f"vaso_{i}"
     bpy.context.object.data.materials.append(vaso_mat)
-    caixa("terra", (0.40, 0.40, 0.04), (x, y, 0.43), material("terra", (0.10, 0.07, 0.05), 0.95))
+    caixa(f"terra_{i}", (0.44, 0.44, 0.04), (x, y, 0.43), terra_mat)
 
-    for k in range(LAMINAS):
-        alt = random.uniform(0.62, 1.00)
-        giro = (k / LAMINAS) * math.tau + random.uniform(-0.2, 0.2)
-        # Cone de 4 lados achatado: base larga, ponta fina — o perfil da folha.
-        bpy.ops.mesh.primitive_cone_add(
-            vertices=4, radius1=0.075, radius2=0.012, depth=alt,
-            location=(x, y, 0.44 + alt / 2),
+    alt = 0.95 + (i % 3) * 0.28
+    coluna(f"cacto_{i}", (x, y, 0.42), 0.17, alt, verde_cacto)
+    flor(f"flor_topo_{i}", (x, y, 0.42 + alt + 0.10), flores_mat[i % len(flores_mat)])
+
+    # Bracos: cotovelo esferico, um trecho horizontal e um vertical. E o desenho
+    # de saguaro que todo mundo reconhece, e sai de tres primitivas.
+    for lado, altura_braco in ((1, 0.52), (-1, 0.40)):
+        if i == 1 and lado == -1:
+            continue  # um dos cactos fica so com um braco, para nao ficarem iguais
+        cot = (x + lado * 0.30, y, 0.42 + alt * (0.45 + 0.1 * lado))
+        bpy.ops.mesh.primitive_cylinder_add(
+            vertices=COSTELAS, radius=0.085, depth=0.34,
+            location=(x + lado * 0.16, y, cot[2]),
+            rotation=(0, math.radians(90), 0),
         )
-        f = bpy.context.object
-        f.name = f"folha_{k}"
-        f.scale = (1.0, 0.22, 1.0)   # achata a lamina
-        # Inclina para fora do vaso; as de fora abrem mais que as do centro.
-        f.rotation_euler = (math.radians(random.uniform(5, 22)), 0, giro)
-        bpy.ops.object.shade_flat()
-        f.data.materials.append(folha)
+        b = bpy.context.object
+        b.name = f"cacto_{i}_ombro_{lado}"
+        bpy.ops.object.shade_smooth()
+        b.data.materials.append(verde_cacto)
+
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=COSTELAS, ring_count=6, radius=0.085, location=cot)
+        bpy.context.object.name = f"cacto_{i}_cotovelo_{lado}"
+        bpy.ops.object.shade_smooth()
+        bpy.context.object.data.materials.append(verde_cacto)
+
+        coluna(f"cacto_{i}_braco_{lado}", (cot[0], cot[1], cot[2]), 0.085, altura_braco, verde_cacto)
+        if lado == 1:
+            flor(f"flor_braco_{i}", (cot[0], cot[1], cot[2] + altura_braco + 0.06),
+                 flores_mat[(i + 1) % len(flores_mat)])
 
 # ------------------------------------------------------------ LUZ INTERNA ---
 for i in range(LUZ_INTERNA["quantidade"]):

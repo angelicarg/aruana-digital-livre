@@ -349,6 +349,10 @@ function SalaYogaPage() {
           camera={{ position: [0, 1.6, 2.8], fov: 60 }}
           dpr={[1, 1.75]}
           gl={{ antialias: true }}
+          // Sombra é o que assenta os objetos no chão; sem ela tudo parece
+          // flutuando um centímetro acima do piso. "soft" suaviza a borda, que
+          // com o sol rasante ficaria serrilhada.
+          shadows="soft"
         >
           <XR store={xrStore}>
             <Suspense fallback={null}>
