@@ -56,8 +56,8 @@ export function LeadCaptureForm() {
 
   const canNext = () => {
     if (step === 0) return formData.nome.trim().length > 0;
-    if (step === 1) return formData.email.trim().includes("@");
-    if (step === 2) return formData.telefone.trim().length >= 10;
+    if (step === 1) return formData.telefone.trim().length >= 10;
+    if (step === 2) return formData.email.trim().includes("@");
     return false;
   };
 
@@ -102,27 +102,6 @@ export function LeadCaptureForm() {
 
       {step === 1 && (
         <div className="space-y-2">
-          <label htmlFor="lead-email" className="text-sm font-semibold text-foreground">Seu e-mail</label>
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
-            <Mail className="h-5 w-5 text-muted-foreground" />
-            <input
-              type="email"
-              placeholder="seu@email.com"
-              value={formData.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-              onFocus={() => trackEvent("form_field_focus", { field: "email" })}
-              id="lead-email"
-              name="email"
-              autoComplete="email"
-              className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
-              autoFocus
-            />
-          </div>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="space-y-2">
           <label htmlFor="lead-telefone" className="text-sm font-semibold text-foreground">Seu WhatsApp</label>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
             <MessageCircle className="h-5 w-5 text-muted-foreground" />
@@ -135,6 +114,27 @@ export function LeadCaptureForm() {
               id="lead-telefone"
               name="telefone"
               autoComplete="tel"
+              className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+              autoFocus
+            />
+          </div>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="space-y-2">
+          <label htmlFor="lead-email" className="text-sm font-semibold text-foreground">Seu e-mail</label>
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
+            <Mail className="h-5 w-5 text-muted-foreground" />
+            <input
+              type="email"
+              placeholder="seu@email.com"
+              value={formData.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              onFocus={() => trackEvent("form_field_focus", { field: "email" })}
+              id="lead-email"
+              name="email"
+              autoComplete="email"
               className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
               autoFocus
             />
@@ -175,8 +175,8 @@ export function LeadCaptureForm() {
 
       <p className="text-xs text-center text-muted-foreground">
         {step === 0 && "Começamos por aqui"}
-        {step === 1 && "Para contato por e-mail"}
-        {step === 2 && "Preferimos WhatsApp 😊"}
+        {step === 1 && "Preferimos WhatsApp 😊"}
+        {step === 2 && "Só para enviar a proposta por escrito"}
       </p>
     </form>
   );
