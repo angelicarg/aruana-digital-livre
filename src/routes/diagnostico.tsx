@@ -21,6 +21,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AruanaLogo } from "@/components/AruanaLogo";
+import { irParaAncora } from "@/lib/ancora";
 import { trackEvent } from "@/lib/analytics";
 
 const WHATSAPP_NUMBER = "5534992086611";
@@ -212,6 +213,7 @@ function DiagnosticoPage() {
     <div className="min-h-dvh bg-background">
       <a
         href="#formulario"
+        onClick={irParaAncora("formulario")}
         className="absolute -left-[9999px] top-0 z-50 rounded-b-lg bg-brand-navy-deep px-5 py-3 font-bold text-white focus:left-0"
       >
         Pular para o formulário de diagnóstico
@@ -261,7 +263,7 @@ function DiagnosticoPage() {
             </p>
           </div>
 
-          <div id="formulario" className="rounded-3xl bg-card p-7 text-foreground shadow-premium">
+          <div id="formulario" tabIndex={-1} className="scroll-mt-20 rounded-3xl bg-card p-7 text-foreground shadow-premium outline-none">
             <h2 className="font-display text-xl font-bold text-brand-navy-deep">
               Solicitar o diagnóstico
             </h2>
@@ -553,6 +555,7 @@ function DiagnosticoPage() {
           <p className="mt-3 text-white/80">Sem custo, sem cadastro e sem proposta comercial junto.</p>
           <a
             href="#formulario"
+            onClick={irParaAncora("formulario")}
             className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-brand-gradient px-8 py-4 text-base font-semibold text-white shadow-glow transition hover:scale-105"
           >
             <Search className="h-5 w-5" />

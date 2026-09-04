@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { irParaAncora } from "@/lib/ancora";
 import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 import { AccessibilityBar } from "./AccessibilityBar";
@@ -10,13 +11,14 @@ export function PageLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-dvh flex-col bg-background">
       <a
         href="#main"
+        onClick={irParaAncora("main")}
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-brand-green focus:px-4 focus:py-2 focus:text-white"
       >
         Pular para o conteúdo
       </a>
       <PromoWidgets />
       <SiteHeader />
-      <main id="main" className="flex-1">
+      <main id="main" tabIndex={-1} className="flex-1 scroll-mt-20 outline-none">
         {children}
       </main>
       <SiteFooter />

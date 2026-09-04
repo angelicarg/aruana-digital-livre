@@ -22,6 +22,12 @@ export function irParaAncora(id: string) {
     const semAnimacao = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     window.scrollTo({ top: topo, behavior: semAnimacao ? "auto" : "smooth" });
 
+    // Rolar não move o foco: sem isto, quem usa teclado ou leitor de tela
+    // continua no link e o atalho "pular para o conteúdo" não pula nada
+    // (WCAG 2.4.1). `preventScroll` evita que o foco brigue com a animação.
+    if (!alvo.hasAttribute("tabindex")) alvo.setAttribute("tabindex", "-1");
+    alvo.focus({ preventScroll: true });
+
     // Mantém a URL compartilhável sem empilhar entrada no histórico a cada clique.
     history.replaceState(null, "", `#${id}`);
   };
