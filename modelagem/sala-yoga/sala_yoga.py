@@ -144,7 +144,7 @@ for i in range(MONTANHAS["quantidade"]):
 
 # ------------------------------------------------------------------ SALA ---
 caixa("piso", (L, P, 0.12), (0, 0, -0.06), madeira)
-caixa("teto", (L, P, 0.10), (0, 0, A), material("teto", (0.30, 0.29, 0.28), 0.85))
+caixa("teto", (L, P, 0.10), (0, 0, A), material("teto", (0.58, 0.56, 0.53), 0.9))
 
 # Tres faces em vidro; a quarta (fundo, -Y) e solida e recebe porta e quadros.
 caixa("vidro_frente", (L, 0.04, A), (0, P / 2, A / 2), vidro)

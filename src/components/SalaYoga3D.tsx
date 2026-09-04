@@ -474,11 +474,28 @@ export function CenaSala(props: Props) {
         // de 2 cm) e o deslocamento constante a faria vazar a própria sombra.
         shadow-normalBias={0.04}
       />
-      <hemisphereLight args={["#bcd4f0", "#6b4a2e", 0.7]} />
+      {/* A cor de baixo da hemisférica pinta toda superfície virada para o chão —
+          e a face inferior do teto é uma delas. Com marrom escuro ali, o teto
+          ficava pintado de marrom escuro de propósito. Agora ela devolve a cor
+          do piso de madeira iluminado, que é o que uma sala real reflete para
+          cima e que o tempo real não calcula sozinho. */}
+      <hemisphereLight args={["#bcd4f0", "#c69a70", 0.95]} />
       <ambientLight intensity={0.35} />
 
       {LUMINARIAS.map((p, i) => (
-        <pointLight key={i} position={p} intensity={9} distance={9} decay={2} color="#ffcc99" />
+        <group key={i}>
+          <pointLight position={p} intensity={9} distance={9} decay={2} color="#ffcc99" />
+          {/* Poça de luz no teto: o corpo da luminária é emissivo, mas emissivo
+              não ilumina o vizinho sem luz indireta. Esta acende a laje logo
+              acima e quebra a faixa chapada. */}
+          <pointLight
+            position={[p[0], p[1] + 0.18, p[2]]}
+            intensity={2.4}
+            distance={2.6}
+            decay={2}
+            color="#ffd9ac"
+          />
+        </group>
       ))}
 
       {/* Iluminação por imagem, gerada em memória. É o que faz a madeira e o
