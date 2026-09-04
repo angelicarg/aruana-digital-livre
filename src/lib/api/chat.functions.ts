@@ -82,7 +82,7 @@ PROCESSO DE TRABALHO:
 
 FORMAS DE CONTATO:
 - WhatsApp: (34) 99208-6611
-- E-mail: aruana@aruanadigital.com
+- E-mail: aruanadigital@aruanadigital.com
 - Site: aruanadigital.com
 
 INSTRUÇÕES DE COMPORTAMENTO:
