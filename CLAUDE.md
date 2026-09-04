@@ -132,9 +132,17 @@ extraídos de uma imagem gerada por IA que trazia a arte já pendurada em um
 cenário, em perspectiva — `arte/recortar.py` os endireita por transformação
 projetiva, porque recorte retangular sairia trapezoidal.
 
-O pipeline de otimização (Draco + WebP a 512 px) leva a sala de 1,74 MB para
-49 KB. Vale para qualquer peça nova: exportar do Blender, otimizar, copiar para
-`public/modelos/`.
+O pipeline de otimização (Draco + WebP a 512 px) leva a sala de 3,69 MB para
+94 KB. Vale para qualquer peça nova: exportar do Blender, otimizar, copiar para
+`public/modelos/`. Rodar sempre o comando do `LEIAME.md`, não o `optimize` padrão:
+sem `--simplify false` o gltf-transform mexe na geometria, e sem `--texture-size
+512` as texturas sobem em 1k e o arquivo triplica.
+
+Piso e parede de fundo usam material PBR de verdade (cor + normal + arm), vindo
+do Poly Haven em CC0 — ver `modelagem/sala-yoga/texturas/CREDITOS.txt`. O resto
+segue em cor chapada de propósito: as duas maiores superfícies em campo de visão
+pagam a textura, o resto não justifica o peso. Superfície texturizada precisa de
+`uv_metrico()`, senão a caixa do Blender estica a imagem inteira em cada face.
 
 ### Supabase project sharing
 

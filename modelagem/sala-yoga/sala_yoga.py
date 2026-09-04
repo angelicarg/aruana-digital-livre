@@ -58,6 +58,62 @@ def material(nome, cor, rugosidade=0.5, metal=0.0, transmissao=0.0, emissao=None
     return m
 
 
+PASTA_TEX = os.path.join(os.path.dirname(os.path.abspath(__file__)), "texturas")
+
+
+def material_texturizado(nome, prefixo):
+    """Material PBR de verdade: cor, relevo e rugosidade vindos de imagem.
+
+    O `material()` acima devolve cor chapada — bom para vidro e metal, ruim para
+    piso e parede, que sao as superficies onde o olho procura textura. As tres
+    imagens (cor/normal/arm) vem do Poly Haven, todas CC0.
+
+    O mapa `arm` traz oclusao, rugosidade e metal empacotados em R/G/B; o
+    exportador glTF reconhece esse padrao e grava as tres num arquivo so.
+    """
+    m = bpy.data.materials.new(nome)
+    m.use_nodes = True
+    nt = m.node_tree
+    p = nt.nodes["Principled BSDF"]
+    base = os.path.join(PASTA_TEX, prefixo)
+
+    cor = nt.nodes.new("ShaderNodeTexImage")
+    cor.image = bpy.data.images.load(f"{base}_cor.jpg")
+    nt.links.new(cor.outputs["Color"], p.inputs["Base Color"])
+
+    nor = nt.nodes.new("ShaderNodeTexImage")
+    nor.image = bpy.data.images.load(f"{base}_normal.jpg")
+    nor.image.colorspace_settings.name = "Non-Color"
+    mapa_n = nt.nodes.new("ShaderNodeNormalMap")
+    nt.links.new(nor.outputs["Color"], mapa_n.inputs["Color"])
+    nt.links.new(mapa_n.outputs["Normal"], p.inputs["Normal"])
+
+    arm = nt.nodes.new("ShaderNodeTexImage")
+    arm.image = bpy.data.images.load(f"{base}_arm.jpg")
+    arm.image.colorspace_settings.name = "Non-Color"
+    sep = nt.nodes.new("ShaderNodeSeparateColor")
+    nt.links.new(arm.outputs["Color"], sep.inputs["Color"])
+    nt.links.new(sep.outputs["Green"], p.inputs["Roughness"])
+    nt.links.new(sep.outputs["Blue"], p.inputs["Metallic"])
+    return m
+
+
+def uv_metrico(obj, metros=1.0):
+    """Reprojeta as UVs em escala de mundo, repetindo a textura a cada N metros.
+
+    O cubo do Blender estica a imagem inteira em cada face: sem isto, um piso de
+    9 m recebe uma unica repeticao e sai borrado. Fica gravado nas UVs, entao nao
+    depende de extensao do glTF para funcionar no navegador.
+    """
+    ativo = bpy.context.view_layer.objects.active
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.cube_project(cube_size=metros)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.context.view_layer.objects.active = ativo
+
+
 def caixa(nome, tam, loc, mat, rot=None):
     """primitive_cube_add(size=1) tem aresta 1, entao a escala E o tamanho final."""
     bpy.ops.mesh.primitive_cube_add(size=1, location=loc)
@@ -77,6 +133,10 @@ madeira_esc = material("madeira_escura", (0.20, 0.13, 0.08), 0.5)
 vidro = material("vidro", (0.80, 0.90, 0.88), 0.06, transmissao=0.92)
 esquadria = material("esquadria", (0.06, 0.07, 0.07), 0.35, metal=0.85)
 parede = material("parede", (0.72, 0.68, 0.62), 0.8)
+# Piso e parede de fundo sao as duas maiores superficies em campo de visao —
+# recebem textura de verdade; o resto segue em cor chapada, que basta.
+piso_mat = material_texturizado("piso_madeira", "piso")
+parede_mat = material_texturizado("parede_reboco", "parede")
 rocha = material("rocha", (0.13, 0.12, 0.13), 0.9)
 grama = material("grama", (0.10, 0.16, 0.09), 0.95)
 folha = material("folha", (0.09, 0.28, 0.12), 0.7)
@@ -143,7 +203,7 @@ for i in range(MONTANHAS["quantidade"]):
     m.data.materials.append(rocha)
 
 # ------------------------------------------------------------------ SALA ---
-caixa("piso", (L, P, 0.12), (0, 0, -0.06), madeira)
+uv_metrico(caixa("piso", (L, P, 0.12), (0, 0, -0.06), piso_mat), metros=1.6)
 caixa("teto", (L, P, 0.10), (0, 0, A), material("teto", (0.58, 0.56, 0.53), 0.9))
 
 # Tres faces em vidro; a quarta (fundo, -Y) e solida e recebe porta e quadros.
@@ -162,9 +222,9 @@ for y in (-P / 2, 0, P / 2):
 pl, pa, px = PORTA["larg"], PORTA["alt"], PORTA["desloc"]
 esq_larg = (px - pl / 2) + L / 2
 dir_larg = L / 2 - (px + pl / 2)
-caixa("parede_fundo_esq", (esq_larg, 0.14, A), (-L / 2 + esq_larg / 2, -P / 2, A / 2), parede)
-caixa("parede_fundo_dir", (dir_larg, 0.14, A), (L / 2 - dir_larg / 2, -P / 2, A / 2), parede)
-caixa("parede_fundo_verga", (pl, 0.14, A - pa), (px, -P / 2, pa + (A - pa) / 2), parede)
+uv_metrico(caixa("parede_fundo_esq", (esq_larg, 0.14, A), (-L / 2 + esq_larg / 2, -P / 2, A / 2), parede_mat), metros=2.4)
+uv_metrico(caixa("parede_fundo_dir", (dir_larg, 0.14, A), (L / 2 - dir_larg / 2, -P / 2, A / 2), parede_mat), metros=2.4)
+uv_metrico(caixa("parede_fundo_verga", (pl, 0.14, A - pa), (px, -P / 2, pa + (A - pa) / 2), parede_mat), metros=2.4)
 
 # Porta entreaberta: parada no batente le como parede pintada.
 # A origem vai para a borda da dobradica antes de girar: assim a porta abre a

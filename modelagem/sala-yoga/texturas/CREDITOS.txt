@@ -1,0 +1,23 @@
+Texturas PBR da sala de yoga
+============================
+
+Fonte: Poly Haven (polyhaven.com)
+Licenca: CC0 1.0 Universal (dominio publico)
+
+CC0 permite uso comercial, modificacao e redistribuicao sem exigir credito.
+Este arquivo existe por rastreabilidade, nao por obrigacao legal — se um dia
+a sala virar entrega de cliente, aqui esta de onde veio cada imagem.
+
+  piso_*.jpg    -> plank_flooring_02  (Plank Flooring 02)
+  parede_*.jpg  -> beige_wall_001     (Beige Wall 001)
+
+Cada material usa tres mapas, todos em 1k/jpg:
+  _cor.jpg     albedo / base color
+  _normal.jpg  normal map, convencao OpenGL (nor_gl)
+  _arm.jpg     oclusao (R) + rugosidade (G) + metal (B) empacotados
+
+Baixados em 04/09/2026 via api.polyhaven.com.
+
+ATENCAO ao trocar de fonte: Poly Haven e a unica ja verificada como CC0 integral.
+Sketchfab varia por modelo (muitos sao CC-BY, que obriga credito visivel, ou
+CC-BY-NC, que proibe uso comercial). Ver public/modelos/CREDITOS.txt.
