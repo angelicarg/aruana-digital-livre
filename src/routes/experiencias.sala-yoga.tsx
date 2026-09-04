@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize } from "lucide-react";
-import { CenaSala, controleSala } from "@/components/SalaYoga3D";
+import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass } from "lucide-react";
+import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
 
 const WHATSAPP_NUMBER = "5534992086611";
 const BREATH_PERIOD = 8; // segundos por ciclo inspira+expira
@@ -184,12 +184,17 @@ function Caminhada() {
 function SalaYogaPage() {
   const [mounted, setMounted] = useState(false);
   const [xrSupported, setXrSupported] = useState(false);
+  // Desligado por padrão de propósito: girar o corpo de olho na tela enjoa parte
+  // das pessoas, e numa sala de relaxamento isso é o oposto do objetivo.
+  const [giroscopio, setGiroscopio] = useState(false);
+  const [temSensor, setTemSensor] = useState(false);
   const { volume, setVolume, toggleMute } = useAmbientAudio();
   const containerRef = useRef<HTMLDivElement>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(containerRef);
 
   useEffect(() => {
     setMounted(true);
+    setTemSensor(temGiroscopio());
     navigator.xr
       ?.isSessionSupported("immersive-vr")
       .then(setXrSupported)
@@ -213,7 +218,7 @@ function SalaYogaPage() {
         >
           <XR store={xrStore}>
             <Suspense fallback={null}>
-              <CenaSala />
+              <CenaSala giroscopio={giroscopio} />
             </Suspense>
           </XR>
         </Canvas>
@@ -247,6 +252,28 @@ function SalaYogaPage() {
                 className="h-1 w-20 accent-[#00CCA7]"
               />
             </div>
+            {temSensor && (
+              <button
+                onClick={async () => {
+                  if (giroscopio) {
+                    setGiroscopio(false);
+                    return;
+                  }
+                  // A permissão do iOS só abre durante o toque; por isso o
+                  // pedido mora aqui, e não num efeito.
+                  setGiroscopio(await pedirGiroscopio());
+                }}
+                aria-pressed={giroscopio}
+                aria-label="Girar a vista movendo o aparelho"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition ${
+                  giroscopio
+                    ? "bg-[#00CCA7] text-[#041B33]"
+                    : "bg-black/30 text-white/90 hover:bg-black/50"
+                }`}
+              >
+                <Compass className="h-4 w-4" />
+              </button>
+            )}
             <button
               onClick={toggleFullscreen}
               aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
@@ -281,8 +308,9 @@ function SalaYogaPage() {
             Sala de Yoga &amp; Relaxamento — protótipo Aruanã Digital
           </h1>
           <p className="max-w-md text-xs text-white/60">
-            Arraste para olhar ao redor. Use as setas, W A S D ou os botões abaixo para caminhar pela
-            sala. Funciona em qualquer aparelho — com headset, é imersão completa.
+            Arraste para olhar ao redor. Use as setas, W A S D ou os botões ao lado para caminhar
+            pela sala. No celular, a bússola no topo faz a vista seguir o movimento do aparelho.
+            Com headset, é imersão completa.
           </p>
           <a
             href={whatsappHref("Sala de Yoga - protótipo RV")}

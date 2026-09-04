@@ -27,6 +27,60 @@ const LUMINARIAS: [number, number, number][] = [
 // O sol está baixo e do lado do vidro (-Z), que é para onde a paisagem aparece.
 const SOL: [number, number, number] = [-26, 3.2, -38];
 
+const CIMA = new THREE.Vector3(0, 1, 0);
+
+type EventoIOS = typeof DeviceOrientationEvent & {
+  requestPermission?: () => Promise<"granted" | "denied">;
+};
+
+/** O aparelho tem sensor de orientação? Chamar só depois de montado: no servidor
+ *  não existe `window`.
+ *
+ *  A presença de `DeviceOrientationEvent` não basta — o Chrome de desktop também
+ *  a expõe, e lá o botão apareceria sem fazer nada. O ponteiro grosso é o que
+ *  separa aparelho de mão de computador com mouse. */
+export function temGiroscopio() {
+  if (typeof window === "undefined") return false;
+  if (!("DeviceOrientationEvent" in window)) return false;
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
+/** Pede acesso ao sensor. Precisa ser chamada de dentro do gesto do usuário:
+ *  desde o iOS 13 o Safari só abre o aviso do sistema durante o toque, e uma
+ *  chamada fora dele é negada sem nada aparecer na tela. */
+export async function pedirGiroscopio(): Promise<boolean> {
+  const Evento = window.DeviceOrientationEvent as EventoIOS | undefined;
+  if (!Evento) return false;
+  if (typeof Evento.requestPermission !== "function") return true; // Android: livre
+  try {
+    return (await Evento.requestPermission()) === "granted";
+  } catch {
+    return false;
+  }
+}
+
+/** Orientação do aparelho para quatérnio, no referencial da cena.
+ *  A conversão é a do antigo DeviceOrientationControls do three: os ângulos do
+ *  sensor têm o zero apontando para o chão, e a tela pode estar girada. */
+const ZEE = new THREE.Vector3(0, 0, 1);
+const EULER = new THREE.Euler();
+const Q0 = new THREE.Quaternion();
+const Q1 = new THREE.Quaternion(-Math.SQRT1_2, 0, 0, Math.SQRT1_2); // -90° em X
+const Q_DESVIO = new THREE.Quaternion();
+
+function orientacaoParaQuaternio(
+  destino: THREE.Quaternion,
+  alfa: number,
+  beta: number,
+  gama: number,
+  tela: number,
+) {
+  EULER.set(beta, alfa, -gama, "YXZ");
+  destino.setFromEuler(EULER);
+  destino.multiply(Q1);
+  destino.multiply(Q0.setFromAxisAngle(ZEE, -tela));
+}
+
 function Sala() {
   const { scene } = useGLTF("/modelos/sala-yoga.glb", "/draco/");
 
@@ -58,11 +112,13 @@ function Sala() {
 
 /** Olhar e andar em primeira pessoa. Controle orbital não serve aqui: ele gira
  *  em torno de um ponto e deixa o visitante sair pela parede. */
-function Navegacao() {
+function Navegacao({ giroscopio }: { giroscopio: boolean }) {
   const { camera, gl } = useThree();
   const giro = useRef({ yaw: 0, pitch: 0 });
   const teclas = useRef(new Set<string>());
   const arrasto = useRef<{ x: number; y: number } | null>(null);
+  const sensor = useRef<{ alfa: number; beta: number; gama: number } | null>(null);
+  const desvioTela = useRef(0);
 
   useEffect(() => {
     camera.position.set(0, ALTURA_OLHOS, 1.2);
@@ -127,6 +183,36 @@ function Navegacao() {
     };
   }, [camera, gl]);
 
+  // Sensor de orientação. Só escuta quando ligado: o evento dispara dezenas de
+  // vezes por segundo e consome bateria mesmo sem ninguém usar.
+  useEffect(() => {
+    if (!giroscopio) {
+      sensor.current = null;
+      return;
+    }
+
+    const aoGirar = (e: DeviceOrientationEvent) => {
+      if (e.alpha === null || e.beta === null || e.gamma === null) return;
+      sensor.current = {
+        alfa: THREE.MathUtils.degToRad(e.alpha),
+        beta: THREE.MathUtils.degToRad(e.beta),
+        gama: THREE.MathUtils.degToRad(e.gamma),
+      };
+    };
+    const aoVirarTela = () => {
+      const ang = window.screen?.orientation?.angle ?? 0;
+      desvioTela.current = THREE.MathUtils.degToRad(ang);
+    };
+
+    aoVirarTela();
+    window.addEventListener("deviceorientation", aoGirar);
+    window.screen?.orientation?.addEventListener("change", aoVirarTela);
+    return () => {
+      window.removeEventListener("deviceorientation", aoGirar);
+      window.screen?.orientation?.removeEventListener("change", aoVirarTela);
+    };
+  }, [giroscopio]);
+
   useFrame((_, delta) => {
     const t = teclas.current;
     const frente =
@@ -138,20 +224,31 @@ function Navegacao() {
       (t.has("a") || t.has("arrowleft") ? 1 : 0) +
       controleSala.lado;
 
-    camera.rotation.set(giro.current.pitch, giro.current.yaw, 0);
+    const s = sensor.current;
+    if (giroscopio && s) {
+      // O sensor manda; o arrasto vira ajuste fino por cima dele. Sem somar o
+      // desvio, quem começa de costas para a paisagem precisaria girar o corpo
+      // para achá-la, e ninguém faz isso sentado.
+      orientacaoParaQuaternio(camera.quaternion, s.alfa, s.beta, s.gama, desvioTela.current);
+      camera.quaternion.premultiply(Q_DESVIO.setFromAxisAngle(CIMA, giro.current.yaw));
+    } else {
+      camera.rotation.set(giro.current.pitch, giro.current.yaw, 0);
+    }
 
     if (frente || lado) {
-      // Anda no plano do chão: sem zerar o Y, olhar para cima faria o visitante
-      // decolar.
+      // Anda no plano do chão, na direção em que a câmera realmente olha —
+      // lida do quatérnio, não do estado do arrasto, porque com o giroscópio
+      // ligado quem define o rumo é o aparelho. Zerar o Y impede decolar
+      // quando se olha para cima.
       const passo = Math.min(delta, 0.05) * VELOCIDADE;
-      const dir = new THREE.Vector3(0, 0, -1)
-        .applyEuler(new THREE.Euler(0, giro.current.yaw, 0))
-        .multiplyScalar(frente);
-      const dirLado = new THREE.Vector3(1, 0, 0)
-        .applyEuler(new THREE.Euler(0, giro.current.yaw, 0))
-        .multiplyScalar(lado);
-      const soma = dir.add(dirLado);
-      if (soma.lengthSq() > 0) camera.position.addScaledVector(soma.normalize(), passo);
+      const paraFrente = camera.getWorldDirection(new THREE.Vector3());
+      paraFrente.y = 0;
+      if (paraFrente.lengthSq() > 1e-6) {
+        paraFrente.normalize();
+        const paraLado = new THREE.Vector3().crossVectors(paraFrente, CIMA).normalize();
+        const soma = paraFrente.multiplyScalar(frente).add(paraLado.multiplyScalar(lado));
+        if (soma.lengthSq() > 0) camera.position.addScaledVector(soma.normalize(), passo);
+      }
 
       camera.position.x = THREE.MathUtils.clamp(camera.position.x, -LIMITE.x, LIMITE.x);
       camera.position.z = THREE.MathUtils.clamp(camera.position.z, -LIMITE.z, LIMITE.z);
@@ -162,7 +259,7 @@ function Navegacao() {
   return null;
 }
 
-export function CenaSala() {
+export function CenaSala({ giroscopio }: { giroscopio: boolean }) {
   return (
     <>
       <Sky sunPosition={SOL} turbidity={6} rayleigh={3.4} mieCoefficient={0.005} mieDirectionalG={0.8} />
@@ -193,7 +290,7 @@ export function CenaSala() {
       </Environment>
 
       <Sala />
-      <Navegacao />
+      <Navegacao giroscopio={giroscopio} />
     </>
   );
 }
