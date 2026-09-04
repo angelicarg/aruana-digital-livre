@@ -4,7 +4,7 @@ import {
   ESCALA,
   TECNICAS,
   TECNICA_PADRAO,
-  type ChaveFase,
+  type Fase,
   type Tecnica,
   faseEm,
 } from "@/lib/respiracao";
@@ -13,7 +13,7 @@ import {
  *  controles na base, onde há largura inteira. Por isso a sessão é um gancho
  *  compartilhado e não um componente só: numa tela de 375 px os botões de
  *  técnica não cabem na mesma faixa do círculo. */
-export function useSessaoRespiracao(aoTrocarFase: (fase: ChaveFase) => void) {
+export function useSessaoRespiracao(aoTrocarFase: (fase: Fase, ciclos: number) => void) {
   const [tecnica, setTecnica] = useState<Tecnica>(TECNICA_PADRAO);
   const [rodando, setRodando] = useState(false);
   // Só o que muda de segundo em segundo entra em estado do React. A escala do
@@ -46,7 +46,7 @@ export function useSessaoRespiracao(aoTrocarFase: (fase: ChaveFase) => void) {
 
       if (e.indice !== faseAnterior.current) {
         faseAnterior.current = e.indice;
-        aoTrocarFase(e.fase.chave);
+        aoTrocarFase(e.fase, e.ciclos);
       }
       setVisor((v) =>
         v.indice === e.indice && v.restante === e.restante

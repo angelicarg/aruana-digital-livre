@@ -2,14 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2 } from "lucide-react";
+import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
 import {
   ControlesRespiracao,
   GuiaRespiracao,
   useSessaoRespiracao,
 } from "@/components/SessaoRespiracao";
-import type { ChaveFase } from "@/lib/respiracao";
+import type { ChaveFase, Fase } from "@/lib/respiracao";
+import { Narrador, SEGUNDOS_PARA_INSTRUCAO, temNarrador } from "@/lib/narrador";
 
 const WHATSAPP_NUMBER = "5534992086611";
 
@@ -207,6 +208,9 @@ function Caminhada() {
  *  slider deitado que come metade da largura da tela num celular — e nenhum
  *  deles é usado com frequência que justifique ocupar a vista da sala. */
 function MenuAjustes({
+  temVoz,
+  narrando,
+  setNarrando,
   volume,
   setVolume,
   toggleMute,
@@ -216,6 +220,9 @@ function MenuAjustes({
   isFullscreen,
   toggleFullscreen,
 }: {
+  temVoz: boolean;
+  narrando: boolean;
+  setNarrando: (v: boolean) => void;
   volume: number;
   setVolume: (v: number) => void;
   toggleMute: () => void;
@@ -282,6 +289,23 @@ function MenuAjustes({
             />
           </div>
 
+          {temVoz && (
+            <button
+              onClick={() => setNarrando(!narrando)}
+              aria-pressed={narrando}
+              className={linha}
+            >
+              <span className="inline-flex items-center gap-2">
+                {narrando ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+                Narrar a sessão em voz
+              </span>
+              <span
+                aria-hidden="true"
+                className={`h-2 w-2 shrink-0 rounded-full ${narrando ? "bg-[#00CCA7]" : "bg-white/25"}`}
+              />
+            </button>
+          )}
+
           {temSensor && (
             <button
               onClick={async () => {
@@ -331,11 +355,37 @@ function SalaYogaPage() {
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(containerRef);
 
   const aoMudarPostura = useCallback((s: boolean) => setSentado(s), []);
-  const sessao = useSessaoRespiracao(tocarSino);
+  const narrador = useRef<Narrador | null>(null);
+  const [narrando, setNarrando] = useState(true);
+  const [temVoz, setTemVoz] = useState(false);
+
+  const aoTrocarFase = useCallback(
+    (fase: Fase, ciclos: number) => {
+      tocarSino(fase.chave);
+      if (!narrando) return;
+      narrador.current ??= new Narrador();
+      // A instrução inteira só na primeira volta, e só em fase longa o bastante
+      // para ela caber falada. Depois disso a voz dá o ritmo e a tela dá o
+      // detalhe — repetir a explicação a cada ciclo vira ruído.
+      const primeira = ciclos === 0 && fase.segundos >= SEGUNDOS_PARA_INSTRUCAO;
+      narrador.current.falar(primeira ? `${fase.nome}. ${fase.instrucao}` : fase.nome);
+    },
+    [tocarSino, narrando],
+  );
+
+  const sessao = useSessaoRespiracao(aoTrocarFase);
+
+  // Cala a voz ao desligar o interruptor, ao sair da página e ao parar a sessão.
+  // Sem isto a última fase continua sendo lida depois do "Parar".
+  useEffect(() => {
+    if (!narrando || !sessao.rodando) narrador.current?.calar();
+  }, [narrando, sessao.rodando]);
+  useEffect(() => () => narrador.current?.calar(), []);
 
   useEffect(() => {
     setMounted(true);
     setTemSensor(temGiroscopio());
+    setTemVoz(temNarrador());
     navigator.xr
       ?.isSessionSupported("immersive-vr")
       .then(setXrSupported)
@@ -377,6 +427,9 @@ function SalaYogaPage() {
           </a>
           <div className="pointer-events-auto flex items-center gap-2">
             <MenuAjustes
+              temVoz={temVoz}
+              narrando={narrando}
+              setNarrando={setNarrando}
               volume={volume}
               setVolume={setVolume}
               toggleMute={toggleMute}
