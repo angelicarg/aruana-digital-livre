@@ -4,9 +4,14 @@ import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
 import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
+import {
+  ControlesRespiracao,
+  GuiaRespiracao,
+  useSessaoRespiracao,
+} from "@/components/SessaoRespiracao";
+import type { ChaveFase } from "@/lib/respiracao";
 
 const WHATSAPP_NUMBER = "5534992086611";
-const BREATH_PERIOD = 8; // segundos por ciclo inspira+expira
 
 function whatsappHref(context: string) {
   const message = `Olá! Testei a Sala de Yoga em RV da Aruanã Digital e quero saber mais. (${context})`;
@@ -99,26 +104,43 @@ function useAmbientAudio() {
 
   const toggleMute = () => setVolume(volume > 0 ? 0 : lastVolumeRef.current || 0.4);
 
-  return { volume, setVolume, toggleMute };
-}
+  // Uma nota por fase, para o ouvido saber que mudou sem precisar olhar a tela.
+  // Não é decoração: sessão guiada por áudio é o que permite fechar os olhos.
+  const NOTAS: Record<ChaveFase, number> = {
+    inspirar: 220.0,
+    segurar: 261.63,
+    expirar: 174.61,
+    pausar: 196.0,
+  };
 
-function BreathingGuide() {
-  const [phase, setPhase] = useState<"in" | "out">("in");
-  useEffect(() => {
-    const id = setInterval(() => setPhase((p) => (p === "in" ? "out" : "in")), (BREATH_PERIOD / 2) * 1000);
-    return () => clearInterval(id);
+  const tocarSino = useCallback((fase: ChaveFase) => {
+    const ctx = ensureContext();
+    if (ctx.state === "suspended") ctx.resume();
+
+    const ganho = ctx.createGain();
+    ganho.gain.setValueAtTime(0, ctx.currentTime);
+    ganho.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 0.015);
+    ganho.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2.6);
+    ganho.connect(ctx.destination);
+
+    // Fundamental mais um parcial desafinado de propósito: é a batida entre os
+    // dois que dá o timbre de tigela, que uma senoide sozinha não tem.
+    for (const [mult, nivel] of [[1, 1], [2.76, 0.35]] as const) {
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = NOTAS[fase] * mult;
+      const g = ctx.createGain();
+      g.gain.value = nivel;
+      osc.connect(g);
+      g.connect(ganho);
+      osc.start();
+      osc.stop(ctx.currentTime + 2.7);
+    }
+    // ensureContext é estável; NOTAS é constante literal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  return (
-    <div className="pointer-events-none flex flex-col items-center gap-3">
-      <div
-        className="h-20 w-20 rounded-full border border-white/40 bg-white/10 backdrop-blur-sm sm:h-24 sm:w-24"
-        style={{ animation: `breathe ${BREATH_PERIOD}s ease-in-out infinite` }}
-      />
-      <span className="text-sm font-medium tracking-wide text-white/80">
-        {phase === "in" ? "Inspire..." : "Expire..."}
-      </span>
-    </div>
-  );
+
+  return { volume, setVolume, toggleMute, tocarSino };
 }
 
 function useFullscreen(ref: React.RefObject<HTMLElement | null>) {
@@ -189,11 +211,12 @@ function SalaYogaPage() {
   const [giroscopio, setGiroscopio] = useState(false);
   const [temSensor, setTemSensor] = useState(false);
   const [sentado, setSentado] = useState(false);
-  const { volume, setVolume, toggleMute } = useAmbientAudio();
+  const { volume, setVolume, toggleMute, tocarSino } = useAmbientAudio();
   const containerRef = useRef<HTMLDivElement>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(containerRef);
 
   const aoMudarPostura = useCallback((s: boolean) => setSentado(s), []);
+  const sessao = useSessaoRespiracao(tocarSino);
 
   useEffect(() => {
     setMounted(true);
@@ -206,13 +229,6 @@ function SalaYogaPage() {
 
   return (
     <div ref={containerRef} className="relative h-dvh w-full overflow-hidden bg-[#1a1512]">
-      <style>{`
-        @keyframes breathe {
-          0%, 100% { transform: scale(0.8); }
-          50% { transform: scale(1.35); }
-        }
-      `}</style>
-
       {mounted && (
         <Canvas
           camera={{ position: [0, 1.6, 2.8], fov: 60 }}
@@ -299,8 +315,12 @@ function SalaYogaPage() {
           </div>
         </div>
 
-        <div className="pointer-events-none flex flex-col items-center gap-4 pb-2">
-          <BreathingGuide />
+        {/* Folga à esquerda para o teclado direcional e à direita para o VLibras
+            e o botão de acessibilidade: sem ela a instrução da fase corre por
+            baixo dos controles em tela estreita. Some no desktop largo, onde
+            sobra espaço e o painel volta ao centro. */}
+        <div className="pointer-events-none flex flex-col items-center gap-4 pb-2 pl-28 pr-16 lg:px-0">
+          <GuiaRespiracao sessao={sessao} />
         </div>
 
         {/* Meia altura, à esquerda: no centro o teclado direcional cobria o guia
@@ -319,7 +339,8 @@ function SalaYogaPage() {
           )}
         </div>
 
-        <div className="flex flex-col items-center gap-2 text-center">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <ControlesRespiracao sessao={sessao} />
           <h1 className="text-sm font-semibold tracking-wide text-white/90 sm:text-base">
             Sala de Yoga &amp; Relaxamento — protótipo Aruanã Digital
           </h1>
