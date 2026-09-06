@@ -15,6 +15,18 @@ Blender portátil: `Documents/blender-portatil/Blender Foundation/Blender 5.2/bl
     npx @gltf-transform/cli optimize sala-yoga.glb sala-yoga-web.glb \
       --texture-compress webp --texture-size 512 --compress draco --simplify false
 
+A árvore sai em `arvore.glb` separado e usa **`--join false`**:
+
+    npx @gltf-transform/cli optimize arvore.glb arvore-web.glb       --texture-compress webp --texture-size 512 --compress draco --simplify false --join false
+
+Os dois detalhes são obrigatórios, não preferência. `join` funde malhas por
+material e apagaria os nós `copa_0..N`, que o balanço ao vento procura pelo nome.
+E se a árvore ficasse dentro do glb da sala, o passo `palette` fundiria a cor da
+copa com montanha e cacto — animar aquele material faria a montanha balançar.
+
+Separada custa 12 KB e mantém as 7 copas. Junto e sem `join` custaria 277 KB com
+90 chamadas de desenho, contra os 203 KB e 12 de hoje.
+
 ## Quadros
 
 `arte/quadro_1.png` e `arte/quadro_2.png` entram automaticamente nas molduras.

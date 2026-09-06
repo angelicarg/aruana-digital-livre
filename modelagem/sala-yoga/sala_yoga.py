@@ -23,6 +23,10 @@ SOL = {"elevacao": 4.0, "rotacao": -35.0, "forca": 2.2}
 LUZ_INTERNA = {"forca": 70.0, "quantidade": 3, "cor": (1.0, 0.80, 0.60)}
 MONTANHAS = {"raio": 42, "altura": 19, "quantidade": 14}
 TAPETES = 3
+# Arvore do lado de fora, perto do vidro. A posicao importa: longe demais ela
+# vira cenario chapado como as montanhas; perto, ela desliza contra o fundo
+# quando a pessoa caminha, e e essa paralaxe que transforma a janela em vista.
+ARVORE = {"x": -3.4, "y": 6.2, "altura": 5.4, "copas": 7}
 QUADROS = 2
 RENDER = {"larg": 900, "alt": 560, "amostras": 48}
 
@@ -197,6 +201,8 @@ rocha = material("rocha", (0.13, 0.12, 0.13), 0.9)
 grama = material("grama", (0.10, 0.16, 0.09), 0.95)
 folha = material("folha", (0.09, 0.28, 0.12), 0.7)
 vaso_mat = material("vaso", (0.35, 0.28, 0.23), 0.8)
+tronco_mat = material("tronco", (0.19, 0.13, 0.09), 0.85)
+copa_mat = material("copa", (0.11, 0.24, 0.13), 0.75)
 metal_fosco = material("metal_fosco", (0.35, 0.35, 0.37), 0.35, metal=0.9)
 tela = material("tela", (0.015, 0.02, 0.03), 0.08, emissao=((0.06, 0.11, 0.15), 0.35))
 
@@ -257,6 +263,45 @@ for i in range(MONTANHAS["quantidade"]):
     m.scale = (random.uniform(0.8, 1.4), random.uniform(0.8, 1.4), 1.0)
     bpy.ops.object.shade_flat()
     m.data.materials.append(rocha)
+
+# ----------------------------------------------------------------- ARVORE ---
+# Copas nomeadas copa_0..N de proposito: o balanco ao vento e feito no navegador,
+# em SalaYoga3D.tsx, procurando por esse prefixo. Animar no glb exigiria exportar
+# esqueleto e mais peso; deslocar grupos por codigo custa nada e le igual.
+AX, AY, AH = ARVORE["x"], ARVORE["y"], ARVORE["altura"]
+
+bpy.ops.mesh.primitive_cone_add(vertices=8, radius1=0.26, radius2=0.14, depth=AH,
+                                location=(AX, AY, AH / 2 - 0.1))
+tr = bpy.context.object
+tr.name = "tronco"
+tr.data.materials.append(tronco_mat)
+tr.rotation_euler = (math.radians(2.5), math.radians(-2), 0)  # nenhuma arvore e prumada
+
+for i in range(3):  # galhos que sustentam a copa visualmente
+    ang = i * math.tau / 3 + 0.4
+    bpy.ops.mesh.primitive_cone_add(
+        vertices=6, radius1=0.10, radius2=0.045, depth=1.5,
+        location=(AX + math.cos(ang) * 0.42, AY + math.sin(ang) * 0.42, AH * 0.74),
+        rotation=(math.radians(58) * math.sin(ang), math.radians(58) * math.cos(ang), 0),
+    )
+    g = bpy.context.object
+    g.name = f"galho_{i}"
+    g.data.materials.append(tronco_mat)
+
+for i in range(ARVORE["copas"]):
+    ang = (i / ARVORE["copas"]) * math.tau + random.uniform(-0.3, 0.3)
+    raio = random.uniform(0.5, 1.25)
+    alt = AH * random.uniform(0.80, 1.06)
+    bpy.ops.mesh.primitive_ico_sphere_add(
+        subdivisions=2,
+        radius=random.uniform(0.72, 1.15),
+        location=(AX + math.cos(ang) * raio, AY + math.sin(ang) * raio, alt),
+    )
+    c = bpy.context.object
+    c.name = f"copa_{i}"
+    c.scale = (1.0, 1.0, random.uniform(0.62, 0.82))  # copa achatada, nao bola
+    bpy.ops.object.transform_apply(scale=True)
+    c.data.materials.append(copa_mat)
 
 # ------------------------------------------------------------------ SALA ---
 uv_metrico(caixa("piso", (L, P, 0.12), (0, 0, -0.06), piso_mat), metros=2.2)
@@ -524,8 +569,28 @@ for nome, pos, alvo in ([] if "--exportar" in sys.argv else VISTAS):
     print(f"VISTA_OK {nome}")
 
 if "--exportar" in sys.argv:
+    # A arvore sai num arquivo proprio, e nao por capricho de organizacao: o
+    # pipeline junta malhas por material e funde as cores chapadas numa paleta
+    # unica, entao dentro do glb da sala as copas perdem os nos individuais e
+    # passam a dividir material com montanha e cacto. Animar aquilo faria a
+    # montanha balancar. Separada, ela mantem copa_0..N e ainda serve de peca
+    # para o jardim.
+    NOMES_ARVORE = ("tronco", "galho_", "copa_")
+
+    def e_arvore(o):
+        return any(o.name == n or o.name.startswith(n) for n in NOMES_ARVORE)
+
     for o in bpy.data.objects:
-        o.select_set(o.type == "MESH")
+        o.select_set(o.type == "MESH" and e_arvore(o))
+    bpy.ops.export_scene.gltf(
+        filepath=os.path.join(BASE, "arvore.glb"),
+        export_format="GLB",
+        use_selection=True,
+    )
+    print("GLB_ARVORE_OK")
+
+    for o in bpy.data.objects:
+        o.select_set(o.type == "MESH" and not e_arvore(o))
     bpy.ops.export_scene.gltf(
         filepath=os.path.join(BASE, "sala-yoga.glb"),
         export_format="GLB",

@@ -109,6 +109,75 @@ type Sala = {
  *  Colisão e tapetes saem do próprio modelo, não de números repetidos aqui: a
  *  sala é gerada por um script do Blender que muda, e duplicar as posições
  *  garantiria que um dia elas divergissem sem ninguém perceber. */
+/**
+ * Arvore do lado de fora, com balanco ao vento.
+ *
+ * Vem em arquivo proprio porque o pipeline de otimizacao junta malhas por
+ * material e funde as cores chapadas numa paleta unica: dentro do glb da sala
+ * as copas perderiam os nos individuais e passariam a dividir material com
+ * montanha e cacto — animar aquilo faria a montanha balancar.
+ *
+ * O balanco nao e animacao exportada, e deslocamento por codigo. Cada copa
+ * recebe fase propria a partir da posicao original, entao elas nunca se movem
+ * em bloco; e amplitude proporcional a altura, porque o topo de uma arvore
+ * balanca mais que a base. Sem essas duas coisas a copa le como bloco de
+ * gelatina, nao como folhagem.
+ */
+function Arvore() {
+  const { scene } = useGLTF("/modelos/arvore.glb", "/draco/");
+
+  const { raiz, copas } = useMemo(() => {
+    const raiz = scene.clone(true);
+    raiz.updateWorldMatrix(true, true);
+    const copas: { obj: THREE.Object3D; base: THREE.Vector3; fase: number; amp: number }[] = [];
+    const caixa = new THREE.Box3();
+    const centro = new THREE.Vector3();
+
+    raiz.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) {
+        m.castShadow = true;
+        m.receiveShadow = false; // folhagem recebendo sombra de si mesma fica suja
+      }
+      if (!o.name.startsWith("copa_")) return;
+
+      // Fase e amplitude saem do CENTRO DA CAIXA, nao de o.position: o
+      // exportador assa a transformacao nos vertices e todos os nos chegam em
+      // (0,0,0). Tirando dali, as sete copas recebiam fase e amplitude
+      // identicas e balancavam em bloco, que e o oposto de folhagem.
+      caixa.setFromObject(o).getCenter(centro);
+      copas.push({
+        obj: o,
+        base: o.position.clone(),
+        fase: centro.x * 1.7 + centro.z * 2.3,
+        amp: 0.035 + Math.max(0, centro.y - 3.4) * 0.045,
+      });
+    });
+    return { raiz, copas };
+  }, [scene]);
+
+  useFrame((estado) => {
+    const t = estado.clock.elapsedTime;
+    for (const c of copas) {
+      // Duas senoides de periodo diferente: uma so soa mecanica, e vento nao
+      // tem periodo unico. A lenta faz a arvore inteira ceder, a rapida agita
+      // a folha.
+      const lento = Math.sin(t * 0.42 + c.fase);
+      const rapido = Math.sin(t * 1.35 + c.fase * 2.1);
+      // 1,4 e nao 2,2: com 2,2 a ponta da copa varria 30 cm, que le como vento
+      // firme. Aqui a folhagem so respira. Subir este numero e o caminho se um
+      // dia a cena pedir tempestade.
+      c.obj.position.x = c.base.x + (lento * 0.75 + rapido * 0.25) * c.amp * 1.4;
+      c.obj.position.z = c.base.z + Math.sin(t * 0.31 + c.fase * 0.7) * c.amp * 1.4;
+      c.obj.position.y = c.base.y + rapido * c.amp * 0.35; // vertical e Y aqui
+    }
+  });
+
+  return <primitive object={raiz} />;
+}
+
+useGLTF.preload("/modelos/arvore.glb", "/draco/");
+
 function useSala(): Sala {
   const { scene } = useGLTF("/modelos/sala-yoga.glb", "/draco/");
 
@@ -441,7 +510,12 @@ function Navegacao({ giroscopio, sentado, aoMudarPostura }: Props) {
     camera.position.y = ALTURA_OLHOS;
   });
 
-  return <primitive object={sala.raiz} />;
+  return (
+    <>
+      <primitive object={sala.raiz} />
+      <Arvore />
+    </>
+  );
 }
 
 export function CenaSala(props: Props) {
