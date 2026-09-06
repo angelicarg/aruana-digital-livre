@@ -253,14 +253,17 @@ function MenuAjustes({
     };
   }, [aberto]);
 
-  const linha = "flex w-full items-center justify-between gap-4 rounded-xl px-3 py-2 text-left text-xs text-white/90 transition hover:bg-white/10";
+  // min-h-11: 44 px e o alvo de toque recomendado por Apple e Google. Com py-2
+  // os itens ficavam em 32, e o botao de silenciar em 16x16 — abaixo ate dos
+  // 24x24 que o WCAG 2.2 AA exige.
+  const linha = "flex min-h-11 w-full items-center justify-between gap-4 rounded-xl px-3 py-2 text-left text-xs text-white/90 transition hover:bg-white/10";
 
   return (
     <div ref={caixa} className="relative">
       <button
         onClick={() => setAberto((a) => !a)}
         aria-expanded={aberto}
-        aria-label="Ajustes da experiência"
+        aria-label="Ajustes e instruções da experiência"
         className={`inline-flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-sm transition ${
           aberto ? "bg-white/85 text-[#1a1512]" : "bg-black/30 text-white/90 hover:bg-black/50"
         }`}
@@ -269,12 +272,27 @@ function MenuAjustes({
       </button>
 
       {aberto && (
-        <div className="absolute right-0 top-11 w-60 rounded-2xl bg-black/70 p-2 shadow-premium backdrop-blur-md">
-          <div className="flex items-center gap-2 px-3 py-2">
+        <div className="absolute right-0 top-11 w-72 rounded-2xl bg-black/70 p-2 shadow-premium backdrop-blur-md">
+          {/* As instrucoes moram aqui, nao na tela: elas se leem uma vez e
+              depois so cobrem a sala, que e o produto da experiencia. Por isso
+              o aria-label do botao anuncia "instrucoes" — escondido sem aviso
+              seria pior que ocupando espaco. */}
+          <div className="px-3 pb-2 pt-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Como usar
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-white/85">
+              Arraste para olhar ao redor e toque num tapete para sentar. Use as setas, W A S D ou
+              os botões ao lado para caminhar. Com headset, é imersão completa.
+            </p>
+          </div>
+          <div className="mx-3 mb-1 h-px bg-white/10" />
+
+          <div className="flex items-center gap-2 px-3">
             <button
               onClick={toggleMute}
               aria-label={volume > 0 ? "Silenciar som ambiente" : "Ativar som ambiente"}
-              className="text-white/90"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white/90 transition hover:bg-white/10"
             >
               {volume > 0 ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </button>
@@ -285,7 +303,7 @@ function MenuAjustes({
               value={Math.round(volume * 100)}
               onChange={(e) => setVolume(Number(e.target.value) / 100)}
               aria-label="Volume do som ambiente"
-              className="h-1 flex-1 accent-[#00CCA7]"
+              className="h-11 flex-1 accent-[#00CCA7]"
             />
           </div>
 
@@ -486,15 +504,10 @@ function SalaYogaPage() {
               0,60 nao e estetica: com 0,45 o pior caso (ceu claro atras) dava
               2,88, abaixo dos 4,5 do WCAG AA. Com 0,60 e texto branco cheio da
               5,74. Nao clarear sem refazer a conta. */}
-          <div className="max-w-md rounded-2xl bg-black/60 px-4 py-3 backdrop-blur-sm lg:max-w-sm">
-          <h1 className="text-sm font-semibold tracking-wide text-white sm:text-base">
-            Sala de Yoga &amp; Relaxamento — protótipo Aruanã Digital
-          </h1>
-          <p className="mt-1.5 text-sm text-white">
-            Arraste para olhar ao redor e toque num tapete para sentar. Use as setas, W A S D ou os
-            botões ao lado para caminhar. Som, tela cheia e — no celular — seguir o movimento do
-            aparelho ficam nos ajustes, no canto superior. Com headset, é imersão completa.
-          </p>
+          <div className="max-w-md rounded-2xl bg-black/60 px-4 py-2 backdrop-blur-sm">
+            <h1 className="text-sm font-semibold tracking-wide text-white sm:text-base">
+              Sala de Yoga &amp; Relaxamento — protótipo Aruanã Digital
+            </h1>
           </div>
           <a
             href={whatsappHref("Sala de Yoga - protótipo RV")}
