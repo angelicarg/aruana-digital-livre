@@ -42,7 +42,7 @@ export type Ambiente = "harmonia" | "agua";
 
 export const AMBIENTES: { id: Ambiente; nome: string; descricao: string }[] = [
   { id: "harmonia", nome: "Harmonia", descricao: "acorde suave e contínuo" },
-  { id: "agua", nome: "Água", descricao: "riacho e vento" },
+  { id: "agua", nome: "Água", descricao: "riacho com pássaros ao longe" },
 ];
 
 function useAmbientAudio() {
@@ -52,6 +52,7 @@ function useAmbientAudio() {
   const lastVolumeRef = useRef(0.4);
   const [ambiente, setAmbiente] = useState<Ambiente>("harmonia");
   const ambienteRef = useRef<Ambiente>("harmonia");
+  const passaroRef = useRef<number | null>(null);
 
   const ensureContext = () => {
     if (ctxRef.current) return ctxRef.current;
@@ -64,6 +65,7 @@ function useAmbientAudio() {
 
   useEffect(() => {
     return () => {
+      if (passaroRef.current) clearTimeout(passaroRef.current);
       ctxRef.current?.close().catch(() => {});
     };
   }, []);
@@ -121,18 +123,20 @@ function useAmbientAudio() {
     fonte.buffer = buffer;
     fonte.loop = true;
 
+    // Niveis pela metade do primeiro corte: a agua sozinha dominava a cena em
+    // vez de ficar atras dela. Som de fundo que se nota e som de frente.
     const grave = ctx.createBiquadFilter();
     grave.type = "lowpass";
-    grave.frequency.value = 420;
+    grave.frequency.value = 380;
     const gGrave = ctx.createGain();
-    gGrave.gain.value = 0.5;
+    gGrave.gain.value = 0.24;
 
     const agudo = ctx.createBiquadFilter();
     agudo.type = "bandpass";
-    agudo.frequency.value = 2200;
-    agudo.Q.value = 0.8;
+    agudo.frequency.value = 1900;
+    agudo.Q.value = 0.9;
     const gAgudo = ctx.createGain();
-    gAgudo.gain.value = 0.18;
+    gAgudo.gain.value = 0.08;
 
     fonte.connect(grave);
     grave.connect(gGrave);
@@ -149,6 +153,53 @@ function useAmbientAudio() {
     vagar.connect(vagarGain);
     vagarGain.connect(agudo.frequency);
     vagar.start();
+
+    agendarPassaros(ctx, destino);
+  };
+
+  // Um canto de passaro e uma varredura rapida de frequencia, nao uma nota. Por
+  // isso oscilador com rampa em vez de tom fixo: sem a varredura sai apito.
+  const cantar = (ctx: AudioContext, destino: GainNode) => {
+    const agora = ctx.currentTime;
+    const notas = 2 + Math.floor(Math.random() * 3); // frases de 2 a 4 silabas
+    const base = 1800 + Math.random() * 1500;
+    const pan = ctx.createStereoPanner();
+    pan.pan.value = Math.random() * 1.6 - 0.8; // espalhados, nunca no centro
+    pan.connect(destino);
+
+    for (let n = 0; n < notas; n++) {
+      const t = agora + n * (0.09 + Math.random() * 0.07);
+      const dur = 0.05 + Math.random() * 0.05;
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      const f0 = base * (0.9 + Math.random() * 0.3);
+      osc.frequency.setValueAtTime(f0, t);
+      osc.frequency.exponentialRampToValueAtTime(f0 * (1.2 + Math.random() * 0.5), t + dur * 0.6);
+      osc.frequency.exponentialRampToValueAtTime(f0 * 0.95, t + dur);
+
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.05, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+      osc.connect(g);
+      g.connect(pan);
+      osc.start(t);
+      osc.stop(t + dur + 0.02);
+    }
+  };
+
+  // Intervalo irregular de proposito: passaro em cadencia fixa vira metronomo e
+  // denuncia que e sintetico.
+  const agendarPassaros = (ctx: AudioContext, destino: GainNode) => {
+    const proximo = () => {
+      passaroRef.current = window.setTimeout(() => {
+        if (ambienteRef.current !== "agua") return;
+        cantar(ctx, destino);
+        proximo();
+      }, 4000 + Math.random() * 11000);
+    };
+    proximo();
   };
 
   const ensureDrone = () => {
@@ -173,6 +224,7 @@ function useAmbientAudio() {
     if (novo === ambiente) return;
     const ctx = ctxRef.current;
     const antigo = droneGainRef.current;
+    if (passaroRef.current) clearTimeout(passaroRef.current);
     ambienteRef.current = novo;
     setAmbiente(novo);
     if (!ctx || !antigo) return;
