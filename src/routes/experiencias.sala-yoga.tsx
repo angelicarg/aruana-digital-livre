@@ -38,11 +38,20 @@ const xrStore = createXRStore();
 
 const DRONE_MAX_GAIN = 0.7; // ganho real quando o slider está em 100%
 
+export type Ambiente = "harmonia" | "agua";
+
+export const AMBIENTES: { id: Ambiente; nome: string; descricao: string }[] = [
+  { id: "harmonia", nome: "Harmonia", descricao: "acorde suave e contínuo" },
+  { id: "agua", nome: "Água", descricao: "riacho e vento" },
+];
+
 function useAmbientAudio() {
   const ctxRef = useRef<AudioContext | null>(null);
   const droneGainRef = useRef<GainNode | null>(null);
   const [volume, setVolumeState] = useState(0.4);
   const lastVolumeRef = useRef(0.4);
+  const [ambiente, setAmbiente] = useState<Ambiente>("harmonia");
+  const ambienteRef = useRef<Ambiente>("harmonia");
 
   const ensureContext = () => {
     if (ctxRef.current) return ctxRef.current;
@@ -59,40 +68,122 @@ function useAmbientAudio() {
     };
   }, []);
 
+  // Harmonia: um acorde de nove vozes em vez das duas senoides de antes.
+  // Duas senoides puras nao soam como musica — soam como zumbido, porque e
+  // literalmente isso que sao. O que da corpo aqui sao tres coisas: mais notas
+  // (uma quinta suspensa, sem terca, que nao puxa nem para alegre nem para
+  // triste), tres vozes por nota levemente desafinadas entre si (a batida lenta
+  // entre elas e o que o ouvido le como "quente"), e um filtro que respira.
+  const montarHarmonia = (ctx: AudioContext, destino: GainNode) => {
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = "lowpass";
+    filtro.frequency.value = 700;
+    filtro.Q.value = 0.7;
+    filtro.connect(destino);
+
+    // Lá2 + Mi3 + Lá3: quinta aberta, o intervalo mais estavel que existe.
+    for (const base of [110, 164.81, 220]) {
+      for (const cents of [-6, 0, 7]) {
+        const osc = ctx.createOscillator();
+        osc.type = "triangle"; // tem harmonicos, ao contrario da senoide
+        osc.frequency.value = base * Math.pow(2, cents / 1200);
+        const g = ctx.createGain();
+        g.gain.value = base > 200 ? 0.05 : 0.09; // agudo entra mais baixo
+        const pan = ctx.createStereoPanner();
+        pan.pan.value = cents / 12; // abre a imagem sem separar demais
+        osc.connect(g);
+        g.connect(pan);
+        pan.connect(filtro);
+        osc.start();
+      }
+    }
+
+    // O filtro abrindo e fechando devagar e o que impede o som de virar parede.
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.05; // um ciclo a cada 20 s
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 260;
+    lfo.connect(lfoGain);
+    lfoGain.connect(filtro.frequency);
+    lfo.start();
+  };
+
+  // Agua: ruido filtrado, que e o que agua e do ponto de vista acustico. Duas
+  // camadas — o corpo grave do fluxo e o borbulhar agudo — com o filtro do agudo
+  // vagando devagar, senao vira chiado de radio fora de estacao.
+  const montarAgua = (ctx: AudioContext, destino: GainNode) => {
+    const segundos = 4;
+    const buffer = ctx.createBuffer(1, ctx.sampleRate * segundos, ctx.sampleRate);
+    const dados = buffer.getChannelData(0);
+    for (let i = 0; i < dados.length; i++) dados[i] = Math.random() * 2 - 1;
+
+    const fonte = ctx.createBufferSource();
+    fonte.buffer = buffer;
+    fonte.loop = true;
+
+    const grave = ctx.createBiquadFilter();
+    grave.type = "lowpass";
+    grave.frequency.value = 420;
+    const gGrave = ctx.createGain();
+    gGrave.gain.value = 0.5;
+
+    const agudo = ctx.createBiquadFilter();
+    agudo.type = "bandpass";
+    agudo.frequency.value = 2200;
+    agudo.Q.value = 0.8;
+    const gAgudo = ctx.createGain();
+    gAgudo.gain.value = 0.18;
+
+    fonte.connect(grave);
+    grave.connect(gGrave);
+    gGrave.connect(destino);
+    fonte.connect(agudo);
+    agudo.connect(gAgudo);
+    gAgudo.connect(destino);
+    fonte.start();
+
+    const vagar = ctx.createOscillator();
+    vagar.frequency.value = 0.07;
+    const vagarGain = ctx.createGain();
+    vagarGain.gain.value = 900;
+    vagar.connect(vagarGain);
+    vagarGain.connect(agudo.frequency);
+    vagar.start();
+  };
+
   const ensureDrone = () => {
     const ctx = ensureContext();
     if (droneGainRef.current) return { ctx, gain: droneGainRef.current };
 
     const gain = ctx.createGain();
     gain.gain.value = 0;
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.value = 900;
-
-    const osc1 = ctx.createOscillator();
-    osc1.type = "sine";
-    osc1.frequency.value = 110;
-    const osc2 = ctx.createOscillator();
-    osc2.type = "sine";
-    osc2.frequency.value = 110 * 1.5;
-
-    osc1.connect(filter);
-    osc2.connect(filter);
-    filter.connect(gain);
     gain.connect(ctx.destination);
-    osc1.start();
-    osc2.start();
 
-    const lfo = ctx.createOscillator();
-    lfo.frequency.value = 0.08;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.015;
-    lfo.connect(lfoGain);
-    lfoGain.connect(gain.gain);
-    lfo.start();
+    if (ambienteRef.current === "agua") montarAgua(ctx, gain);
+    else montarHarmonia(ctx, gain);
 
     droneGainRef.current = gain;
     return { ctx, gain };
+  };
+
+  // Trocar de ambiente derruba o grafo inteiro e remonta: os osciladores e o
+  // buffer nao sao reconfiguraveis depois de start(), e tentar reaproveitar
+  // deixaria vozes penduradas tocando por baixo.
+  const trocarAmbiente = (novo: Ambiente) => {
+    if (novo === ambiente) return;
+    const ctx = ctxRef.current;
+    const antigo = droneGainRef.current;
+    ambienteRef.current = novo;
+    setAmbiente(novo);
+    if (!ctx || !antigo) return;
+    antigo.gain.setTargetAtTime(0, ctx.currentTime, 0.12);
+    setTimeout(() => antigo.disconnect(), 600);
+    droneGainRef.current = null;
+    if (volume > 0) {
+      const { ctx: c2, gain } = ensureDrone();
+      gain.gain.setValueAtTime(0, c2.currentTime);
+      gain.gain.setTargetAtTime(volume * DRONE_MAX_GAIN, c2.currentTime, 0.25);
+    }
   };
 
   const setVolume = (v: number) => {
@@ -141,7 +232,7 @@ function useAmbientAudio() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { volume, setVolume, toggleMute, tocarSino };
+  return { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente };
 }
 
 function useFullscreen(ref: React.RefObject<HTMLElement | null>) {
@@ -214,6 +305,8 @@ function MenuAjustes({
   volume,
   setVolume,
   toggleMute,
+  ambiente,
+  trocarAmbiente,
   temSensor,
   giroscopio,
   setGiroscopio,
@@ -226,6 +319,8 @@ function MenuAjustes({
   volume: number;
   setVolume: (v: number) => void;
   toggleMute: () => void;
+  ambiente: Ambiente;
+  trocarAmbiente: (a: Ambiente) => void;
   temSensor: boolean;
   giroscopio: boolean;
   setGiroscopio: (v: boolean) => void;
@@ -305,6 +400,29 @@ function MenuAjustes({
               aria-label="Volume do som ambiente"
               className="h-11 flex-1 accent-[#00CCA7]"
             />
+          </div>
+
+          <div className="px-3 pb-1 pt-2">
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Som ambiente
+            </p>
+            <div className="flex gap-1.5">
+              {AMBIENTES.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => trocarAmbiente(a.id)}
+                  aria-pressed={a.id === ambiente}
+                  title={a.descricao}
+                  className={`min-h-11 flex-1 rounded-xl px-2 text-xs font-medium transition ${
+                    a.id === ambiente
+                      ? "bg-white/85 text-[#1a1512]"
+                      : "bg-white/10 text-white/85 hover:bg-white/20"
+                  }`}
+                >
+                  {a.nome}
+                </button>
+              ))}
+            </div>
           </div>
 
           {temVoz && (
@@ -407,7 +525,7 @@ function SalaYogaPage() {
   const [giroscopio, setGiroscopio] = useState(false);
   const [temSensor, setTemSensor] = useState(false);
   const [sentado, setSentado] = useState(false);
-  const { volume, setVolume, toggleMute, tocarSino } = useAmbientAudio();
+  const { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente } = useAmbientAudio();
   const containerRef = useRef<HTMLDivElement>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(containerRef);
 
@@ -490,6 +608,8 @@ function SalaYogaPage() {
               volume={volume}
               setVolume={setVolume}
               toggleMute={toggleMute}
+              ambiente={ambiente}
+              trocarAmbiente={trocarAmbiente}
               temSensor={temSensor}
               giroscopio={giroscopio}
               setGiroscopio={setGiroscopio}
