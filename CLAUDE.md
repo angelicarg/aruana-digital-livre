@@ -144,6 +144,29 @@ segue em cor chapada de propósito: as duas maiores superfícies em campo de vis
 pagam a textura, o resto não justifica o peso. Superfície texturizada precisa de
 `uv_metrico()`, senão a caixa do Blender estica a imagem inteira em cada face.
 
+### Deploy e `vercel.json`
+
+O `vercel.json` é **deliberadamente mínimo**: só `buildCommand`, `framework` e
+`headers`. Não voltar a declarar `outputDirectory` nem `rewrites`.
+
+O nitro detecta a Vercel no build e emite no formato Build Output API v3
+(`.vercel/output/`), que tem precedência sobre `outputDirectory` — localmente o
+preset é `node-server` e a saída vai para `.output/`. O `dist/client` que estava
+declarado ali nunca existiu em build nenhum. Pior era o `rewrites` mandando
+`/(.*)` para `/index.html`: configuração de SPA que destruiria o SSR se chegasse
+a valer.
+
+Os cabeçalhos de segurança cobrem clickjacking (`X-Frame-Options`), MIME sniffing
+(`X-Content-Type-Options`), vazamento de referrer e permissões de dispositivo.
+O `Permissions-Policy` **precisa liberar** `accelerometer`, `gyroscope`,
+`magnetometer`, `xr-spatial-tracking` e `fullscreen` — a sala de yoga usa
+`DeviceOrientationEvent`, `navigator.xr` e `requestFullscreen`, e uma política
+restritiva padrão quebraria a experiência inteira.
+
+Não há `Content-Security-Policy`, e isso é escolha, não esquecimento: a página
+carrega VLibras do gov.br, gtag do Google e Contentsquare, e um CSP incompleto
+quebra o site sem avisar. Se um dia for adicionado, começar em `report-only`.
+
 ### Supabase project sharing
 
 This repo's Supabase project is shared with other properties (Dente Vivo, PortLibras, Patas Nobres) — not dedicated to this site alone. Keep that in mind before assuming a schema change here is isolated.
