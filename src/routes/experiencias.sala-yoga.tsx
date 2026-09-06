@@ -424,7 +424,10 @@ function MenuAjustes({
         // "Entrar em RV" aparece ele empurra a engrenagem para a esquerda, e um
         // menu de largura fixa ancorado nela saia pela borda. max-h + scroll
         // porque com giroscopio e RV a lista cresce e nao cabe em tela baixa.
-        <div className="fixed inset-x-3 top-16 max-h-[70vh] overflow-y-auto rounded-2xl bg-black/70 p-2 shadow-premium backdrop-blur-md sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-72">
+        // z-50: a rota inteira nao declarava camada nenhuma, entao a ordem no DOM
+        // decidia — e os controles de caminhada vem 400 linhas depois do menu,
+        // logo pintavam por cima dele. Ninguem caminha com o menu aberto.
+        <div className="fixed inset-x-3 top-16 z-50 max-h-[70vh] overflow-y-auto rounded-2xl bg-black/70 p-2 shadow-premium backdrop-blur-md sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-72">
           {/* As instrucoes moram aqui, nao na tela: elas se leem uma vez e
               depois so cobrem a sala, que e o produto da experiencia. Por isso
               o aria-label do botao anuncia "instrucoes" — escondido sem aviso
@@ -555,7 +558,7 @@ function BoasVindas() {
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-auto absolute left-1/2 top-20 w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl bg-black/75 p-4 shadow-premium backdrop-blur-md sm:left-auto sm:right-6 sm:translate-x-0"
+      className="pointer-events-auto absolute left-1/2 top-20 z-40 w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl bg-black/75 p-4 shadow-premium backdrop-blur-md sm:left-auto sm:right-6 sm:translate-x-0"
     >
       <button
         onClick={() => setVisivel(false)}
