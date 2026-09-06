@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff } from "lucide-react";
+import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, X } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
 import {
   ControlesRespiracao,
@@ -360,6 +360,45 @@ function MenuAjustes({
   );
 }
 
+function BoasVindas() {
+  const [visivel, setVisivel] = useState(true);
+
+  useEffect(() => {
+    // 12 s: leitura confortavel para as ~25 palavras do aviso, com folga.
+    // Some sozinho porque cobrir a sala e exatamente o que se quer evitar.
+    const t = setTimeout(() => setVisivel(false), 12000);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!visivel) return null;
+
+  return (
+    // role="status" e nao "alert": o leitor de tela anuncia quando terminar o
+    // que esta lendo, em vez de interromper. Sumir sozinho e aceitavel aqui
+    // porque o mesmo conteudo fica permanente no menu de ajustes — nada se
+    // perde para quem ler devagar, e ainda ha o botao de fechar.
+    <div
+      role="status"
+      aria-live="polite"
+      className="pointer-events-auto absolute left-1/2 top-20 w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl bg-black/75 p-4 shadow-premium backdrop-blur-md sm:left-auto sm:right-6 sm:translate-x-0"
+    >
+      <button
+        onClick={() => setVisivel(false)}
+        aria-label="Fechar aviso de boas-vindas"
+        className="absolute right-1 top-1 inline-flex h-11 w-11 items-center justify-center rounded-xl text-white/70 transition hover:bg-white/10 hover:text-white"
+      >
+        <X className="h-4 w-4" />
+      </button>
+      <p className="pr-10 text-sm leading-relaxed text-white">
+        Para começar, escolha um ritmo de respiração e toque em <strong>Iniciar</strong>.
+      </p>
+      <p className="mt-2 pr-10 text-xs leading-relaxed text-white/80">
+        Som, tela cheia e as instruções ficam no menu de ajustes, no canto superior direito.
+      </p>
+    </div>
+  );
+}
+
 function SalaYogaPage() {
   const [mounted, setMounted] = useState(false);
   const [xrSupported, setXrSupported] = useState(false);
@@ -467,6 +506,8 @@ function SalaYogaPage() {
             )}
           </div>
         </div>
+
+        <BoasVindas />
 
         {/* Folga à esquerda para o teclado direcional e à direita para o VLibras
             e o botão de acessibilidade: sem ela a instrução da fase corre por
