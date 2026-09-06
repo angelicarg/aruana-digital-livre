@@ -150,7 +150,11 @@ function Arvore() {
         obj: o,
         base: o.position.clone(),
         fase: centro.x * 1.7 + centro.z * 2.3,
-        amp: 0.035 + Math.max(0, centro.y - 3.4) * 0.045,
+        // Limiar em 2,9 porque as copas ficam entre 2,99 e 3,74 m — medido no
+        // Blender pela caixa, ja que transform_apply zera a localizacao. Com o
+        // 3,4 de antes so duas das sete passavam do corte e a variacao de
+        // altura sumia.
+        amp: 0.035 + Math.max(0, centro.y - 2.9) * 0.045,
       });
     });
     return { raiz, copas };

@@ -26,7 +26,9 @@ TAPETES = 3
 # Arvore do lado de fora, perto do vidro. A posicao importa: longe demais ela
 # vira cenario chapado como as montanhas; perto, ela desliza contra o fundo
 # quando a pessoa caminha, e e essa paralaxe que transforma a janela em vista.
-ARVORE = {"x": -3.4, "y": 6.2, "altura": 5.4, "copas": 7}
+# Altura 3,6 contra os 3,2 m do vidro: com 5,4 a copa passava do teto e de
+# dentro so se via tronco. A folhagem tem que cair na faixa da janela.
+ARVORE = {"x": -3.4, "y": 6.2, "altura": 3.6, "copas": 7}
 QUADROS = 2
 RENDER = {"larg": 900, "alt": 560, "amostras": 48}
 
