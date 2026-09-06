@@ -123,20 +123,21 @@ function useAmbientAudio() {
     fonte.buffer = buffer;
     fonte.loop = true;
 
-    // Niveis pela metade do primeiro corte: a agua sozinha dominava a cena em
-    // vez de ficar atras dela. Som de fundo que se nota e som de frente.
+    // Segundo corte, depois de ouvir: -7,3 dB nao bastou. Agua e ruido de banda
+    // larga e mascara o resto mesmo em nivel baixo, entao ela precisa ficar mais
+    // baixa do que a intuicao sugere para soar como fundo.
     const grave = ctx.createBiquadFilter();
     grave.type = "lowpass";
     grave.frequency.value = 380;
     const gGrave = ctx.createGain();
-    gGrave.gain.value = 0.24;
+    gGrave.gain.value = 0.13;
 
     const agudo = ctx.createBiquadFilter();
     agudo.type = "bandpass";
     agudo.frequency.value = 1900;
     agudo.Q.value = 0.9;
     const gAgudo = ctx.createGain();
-    gAgudo.gain.value = 0.08;
+    gAgudo.gain.value = 0.045;
 
     fonte.connect(grave);
     grave.connect(gGrave);
@@ -419,7 +420,11 @@ function MenuAjustes({
       </button>
 
       {aberto && (
-        <div className="absolute right-0 top-11 w-72 rounded-2xl bg-black/70 p-2 shadow-premium backdrop-blur-md">
+        // Em tela estreita o menu se ancora na viewport, nao no botao: quando o
+        // "Entrar em RV" aparece ele empurra a engrenagem para a esquerda, e um
+        // menu de largura fixa ancorado nela saia pela borda. max-h + scroll
+        // porque com giroscopio e RV a lista cresce e nao cabe em tela baixa.
+        <div className="fixed inset-x-3 top-16 max-h-[70vh] overflow-y-auto rounded-2xl bg-black/70 p-2 shadow-premium backdrop-blur-md sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-72">
           {/* As instrucoes moram aqui, nao na tela: elas se leem uma vez e
               depois so cobrem a sala, que e o produto da experiencia. Por isso
               o aria-label do botao anuncia "instrucoes" — escondido sem aviso
