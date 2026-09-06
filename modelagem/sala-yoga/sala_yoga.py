@@ -30,6 +30,11 @@ RENDER = {"larg": 900, "alt": 560, "amostras": 48}
 # olhos de quem esta em pe, porque e assim que a sala sera percorrida.
 OLHOS = 1.6
 VISTAS = [
+    # Unica vista na altura de quem esta sentado. As outras quatro sao de pe, a
+    # 3-4 m: nessa distancia tapete e piso ocupam poucos pixels e textura fina
+    # nao aparece — foi olhando so para elas que eu dei o tapete por texturizado
+    # quando ele ainda estava liso.
+    ("perto_tapete", (0.0, -0.5, 0.95), (0.0, 0.9, 0.0)),
     ("paisagem", (-2.2, -2.6, OLHOS), (0.6, 4.0, 1.2)),
     ("porta", (1.8, 1.6, OLHOS), (-2.4, -3.7, 1.3)),
     ("canto_servico", (-2.8, 1.2, OLHOS), (3.2, -3.5, 1.2)),
@@ -95,6 +100,54 @@ def material_texturizado(nome, prefixo):
     nt.links.new(arm.outputs["Color"], sep.inputs["Color"])
     nt.links.new(sep.outputs["Green"], p.inputs["Roughness"])
     nt.links.new(sep.outputs["Blue"], p.inputs["Metallic"])
+    return m
+
+
+def material_com_relevo(nome, cor, prefixo, rugosidade=0.85, forca_relevo=1.0):
+    """Cor chapada escolhida a mao + relevo e rugosidade vindos de textura.
+
+    O mapa de cor aqui e um MODULADOR em tons de cinza oscilando perto do branco
+    (linear ~0,55 a 1,0): ele so escurece o vao entre os fios, e a cor de cada
+    tapete entra multiplicando por cima. Assim a trama aparece sem que um
+    baseColorTexture colorido passe por cima da direcao de arte.
+
+    Por que nao so relevo: mapa de normais em superficie de rugosidade 0,85 sob
+    luz difusa quase nao produz sombreado — medido, o tapete so com normal dava
+    a mesma variacao de pixel que o vidro liso. O que faz uma superficie ler como
+    texturizada e variacao de albedo, nao relevo.
+
+    `forca_relevo` compensa o pipeline reduzir a textura para 512 px.
+    """
+    m = bpy.data.materials.new(nome)
+    m.use_nodes = True
+    nt = m.node_tree
+    p = nt.nodes["Principled BSDF"]
+    base = os.path.join(PASTA_TEX, prefixo)
+
+    modulador = nt.nodes.new("ShaderNodeTexImage")
+    modulador.image = bpy.data.images.load(f"{base}_cor.jpg")
+    mult = nt.nodes.new("ShaderNodeMix")
+    mult.data_type = "RGBA"
+    mult.blend_type = "MULTIPLY"
+    mult.inputs["Factor"].default_value = 1.0
+    nt.links.new(modulador.outputs["Color"], mult.inputs[6])
+    mult.inputs[7].default_value = (*cor, 1)
+    nt.links.new(mult.outputs[2], p.inputs["Base Color"])
+
+    nor = nt.nodes.new("ShaderNodeTexImage")
+    nor.image = bpy.data.images.load(f"{base}_normal.jpg")
+    nor.image.colorspace_settings.name = "Non-Color"
+    mapa_n = nt.nodes.new("ShaderNodeNormalMap")
+    mapa_n.inputs["Strength"].default_value = forca_relevo
+    nt.links.new(nor.outputs["Color"], mapa_n.inputs["Color"])
+    nt.links.new(mapa_n.outputs["Normal"], p.inputs["Normal"])
+
+    arm = nt.nodes.new("ShaderNodeTexImage")
+    arm.image = bpy.data.images.load(f"{base}_arm.jpg")
+    arm.image.colorspace_settings.name = "Non-Color"
+    sep = nt.nodes.new("ShaderNodeSeparateColor")
+    nt.links.new(arm.outputs["Color"], sep.inputs["Color"])
+    nt.links.new(sep.outputs["Green"], p.inputs["Roughness"])
     return m
 
 
@@ -312,7 +365,9 @@ for k in range(3):
     bpy.context.object.data.materials.append(parede)
 
 # ---------------------------------------------------------------- TAPETES ---
-cores = [(0.15, 0.42, 0.35), (0.55, 0.34, 0.22), (0.28, 0.30, 0.38)]
+# Divididas por 0,76 — a media linear do modulador de trama — para o tapete
+# renderizar no mesmo tom de antes, agora com a trama por cima.
+cores = [(0.20, 0.55, 0.46), (0.72, 0.45, 0.29), (0.37, 0.39, 0.50)]
 for i in range(TAPETES):
     x = (i - (TAPETES - 1) / 2) * 1.35
     bpy.ops.mesh.primitive_cube_add(size=1, location=(x, 0.6, 0.025))
@@ -323,7 +378,12 @@ for i in range(TAPETES):
     bpy.ops.object.modifier_add(type="BEVEL")
     t.modifiers["Bevel"].width = 0.02
     t.modifiers["Bevel"].segments = 3
-    t.data.materials.append(material(f"tapete_{i}", cores[i % len(cores)], 0.85))
+    # Linho: da trama e variacao de brilho sem tocar na cor de cada tapete.
+    # Relevo em 2.0 porque o pipeline reduz a textura para 512 px e come a trama.
+    t.data.materials.append(
+        material_com_relevo(f"tapete_{i}", cores[i % len(cores)], "tapete", forca_relevo=2.0)
+    )
+    uv_metrico(t, metros=1.2)    # trama grossa: a 0,55 os fios davam ~2 mm e sumiam
 
 # ---------------------------------------------------------------- PLANTAS ---
 # Cactos. A folha era o unico formato vegetal que sobrevivia a geometria simples;

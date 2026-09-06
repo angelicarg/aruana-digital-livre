@@ -132,11 +132,18 @@ extraídos de uma imagem gerada por IA que trazia a arte já pendurada em um
 cenário, em perspectiva — `arte/recortar.py` os endireita por transformação
 projetiva, porque recorte retangular sairia trapezoidal.
 
-O pipeline de otimização (Draco + WebP a 512 px) leva a sala de 4,37 MB para
-148 KB. Vale para qualquer peça nova: exportar do Blender, otimizar, copiar para
+O pipeline de otimização (Draco + WebP a 512 px) leva a sala de 6,92 MB para
+203 KB. Vale para qualquer peça nova: exportar do Blender, otimizar, copiar para
 `public/modelos/`. Rodar sempre o comando do `LEIAME.md`, não o `optimize` padrão:
 sem `--simplify false` o gltf-transform mexe na geometria, e sem `--texture-size
 512` as texturas sobem em 1k e o arquivo triplica.
+
+Os tapetes usam `material_com_relevo()`, que é outro caso: a cor de cada um é
+decisão de arte, então o mapa de cor ali é um **modulador em tons de cinza**
+oscilando perto do branco (linear ~0,55 a 1,0), multiplicado pela cor do tapete.
+Só relevo não resolve — mapa de normais em superfície de rugosidade 0,85 sob luz
+difusa rende quase nada, e medido dava a mesma variação de pixel que o vidro
+liso. O que faz uma superfície ler como texturizada é variação de albedo.
 
 Piso e parede de fundo usam material PBR de verdade (cor + normal + arm), vindo
 do Poly Haven em CC0 — ver `modelagem/sala-yoga/texturas/CREDITOS.txt`. O resto

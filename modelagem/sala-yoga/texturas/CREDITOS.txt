@@ -8,8 +8,16 @@ CC0 permite uso comercial, modificacao e redistribuicao sem exigir credito.
 Este arquivo existe por rastreabilidade, nao por obrigacao legal — se um dia
 a sala virar entrega de cliente, aqui esta de onde veio cada imagem.
 
-  piso_*.jpg    -> plank_flooring_02  (Plank Flooring 02)
+  piso_*.jpg    -> plank_flooring_03  (Plank Flooring 03)
   parede_*.jpg  -> beige_wall_001     (Beige Wall 001)
+  tapete_*.jpg  -> rough_linen        (Rough Linen)
+
+O `plank_flooring_02` foi testado antes e descartado: R/B de 7,8 na origem
+deixava a sala inteira laranja sob o sol baixo. O 03 tem R/B 1,5.
+
+`tapete_cor.jpg` NAO e a textura original: e a luminancia do linho remapeada
+para a faixa 198-255, para servir de modulador de trama multiplicado pela cor
+de cada tapete. Regerar com o mesmo remapeamento se trocar de tecido.
 
 Cada material usa tres mapas, todos em 1k/jpg:
   _cor.jpg     albedo / base color
