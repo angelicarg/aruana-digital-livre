@@ -474,7 +474,11 @@ function SalaYogaPage() {
           )}
         </div>
 
-        <div className="flex flex-col items-center gap-3 text-center">
+        {/* Em tela larga o bloco encosta na esquerda: centralizado ele cobria os
+            tapetes e a vista, que sao o produto da experiencia. No celular
+            continua centralizado — la nao existe lateral sobrando. A direita
+            nao serve: e onde flutua o widget do VLibras. */}
+        <div className="flex flex-col items-center gap-3 text-center lg:items-start lg:text-left">
           <ControlesRespiracao sessao={sessao} />
           {/* Fundo proprio: o texto fica sobre a cena 3D, que muda conforme a
               pessoa caminha. Sem ele o contraste nao e baixo — e indefinido,
@@ -482,7 +486,7 @@ function SalaYogaPage() {
               0,60 nao e estetica: com 0,45 o pior caso (ceu claro atras) dava
               2,88, abaixo dos 4,5 do WCAG AA. Com 0,60 e texto branco cheio da
               5,74. Nao clarear sem refazer a conta. */}
-          <div className="max-w-md rounded-2xl bg-black/60 px-4 py-3 backdrop-blur-sm">
+          <div className="max-w-md rounded-2xl bg-black/60 px-4 py-3 backdrop-blur-sm lg:max-w-sm">
           <h1 className="text-sm font-semibold tracking-wide text-white sm:text-base">
             Sala de Yoga &amp; Relaxamento — protótipo Aruanã Digital
           </h1>
