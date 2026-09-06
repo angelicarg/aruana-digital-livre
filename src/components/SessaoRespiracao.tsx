@@ -127,7 +127,7 @@ export function ControlesRespiracao({ sessao }: { sessao: Sessao }) {
           key={t.id}
           onClick={() => escolher(t)}
           aria-pressed={t.id === tecnica.id}
-          className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-sm transition ${
+          className={`inline-flex min-h-11 items-center whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-medium backdrop-blur-sm transition ${
             t.id === tecnica.id
               ? "bg-white/85 text-[#1a1512]"
               : "bg-black/35 text-white/85 hover:bg-black/55"
@@ -139,7 +139,7 @@ export function ControlesRespiracao({ sessao }: { sessao: Sessao }) {
       <button
         onClick={alternar}
         aria-label={rodando ? "Parar a sessão de respiração" : "Iniciar a sessão de respiração"}
-        className="ml-1 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#00CCA7] px-4 py-1.5 text-xs font-semibold text-[#041B33] transition hover:brightness-105"
+        className="ml-1 inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#00CCA7] px-5 py-2.5 text-xs font-semibold text-[#041B33] transition hover:brightness-105"
       >
         {rodando ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
         {rodando ? "Parar" : "Iniciar"}

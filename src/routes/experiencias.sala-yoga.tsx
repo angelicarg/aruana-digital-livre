@@ -261,7 +261,7 @@ function MenuAjustes({
         onClick={() => setAberto((a) => !a)}
         aria-expanded={aberto}
         aria-label="Ajustes da experiência"
-        className={`inline-flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition ${
+        className={`inline-flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-sm transition ${
           aberto ? "bg-white/85 text-[#1a1512]" : "bg-black/30 text-white/90 hover:bg-black/50"
         }`}
       >
@@ -421,7 +421,7 @@ function SalaYogaPage() {
         <div className="flex items-start justify-between gap-3">
           <a
             href="/"
-            className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-black/30 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm transition hover:bg-black/50"
+            className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full bg-black/30 px-4 py-2.5 text-xs font-medium text-white/90 backdrop-blur-sm transition hover:bg-black/50"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Início
           </a>
@@ -476,19 +476,27 @@ function SalaYogaPage() {
 
         <div className="flex flex-col items-center gap-3 text-center">
           <ControlesRespiracao sessao={sessao} />
-          <h1 className="text-sm font-semibold tracking-wide text-white/90 sm:text-base">
+          {/* Fundo proprio: o texto fica sobre a cena 3D, que muda conforme a
+              pessoa caminha. Sem ele o contraste nao e baixo — e indefinido,
+              legivel sobre o piso escuro e invisivel contra o ceu do por do sol.
+              0,60 nao e estetica: com 0,45 o pior caso (ceu claro atras) dava
+              2,88, abaixo dos 4,5 do WCAG AA. Com 0,60 e texto branco cheio da
+              5,74. Nao clarear sem refazer a conta. */}
+          <div className="max-w-md rounded-2xl bg-black/60 px-4 py-3 backdrop-blur-sm">
+          <h1 className="text-sm font-semibold tracking-wide text-white sm:text-base">
             Sala de Yoga &amp; Relaxamento — protótipo Aruanã Digital
           </h1>
-          <p className="max-w-md text-xs text-white/60">
+          <p className="mt-1.5 text-sm text-white">
             Arraste para olhar ao redor e toque num tapete para sentar. Use as setas, W A S D ou os
             botões ao lado para caminhar. Som, tela cheia e — no celular — seguir o movimento do
             aparelho ficam nos ajustes, no canto superior. Com headset, é imersão completa.
           </p>
+          </div>
           <a
             href={whatsappHref("Sala de Yoga - protótipo RV")}
             target="_blank"
             rel="noopener noreferrer"
-            className="pointer-events-auto mt-1 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-white/20"
+            className="pointer-events-auto mt-1 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white/10 px-5 py-3 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-white/20"
           >
             <MessageCircle className="h-3.5 w-3.5" /> Quero isso para minha empresa
           </a>
