@@ -151,6 +151,31 @@ segue em cor chapada de propósito: as duas maiores superfícies em campo de vis
 pagam a textura, o resto não justifica o peso. Superfície texturizada precisa de
 `uv_metrico()`, senão a caixa do Blender estica a imagem inteira em cada face.
 
+### Movimento na sala de yoga
+
+Três coisas se mexem do lado de fora do vidro, e nenhuma é animação exportada
+do Blender — todas são deslocamento calculado por quadro, porque o `.glb` já
+pesa o que pode pesar:
+
+- **nuvens**, no shader do `CeuPorDoSol` (fbm somando quatro oitavas);
+- **copas da árvore**, em `SalaYoga3D.tsx`, cada uma com fase própria;
+- **revoada**, em `src/lib/revoada.ts` + `Passaros.tsx`.
+
+A revoada segue o padrão de `respiracao.ts` e `estadoPeixe.ts`: **estado é função
+pura do tempo**, então o voo inteiro tem teste. É o que garante o que captura de
+tela não garante — que a ave nunca entra na sala, que a formação continua
+simétrica na décima volta, que as nove não batem asa no mesmo quadro.
+
+No render, o bando é **uma asa só** instanciada 18 vezes (nove aves × dois
+lados, o esquerdo espelhado por escala negativa em x, daí o `DoubleSide`).
+`InstancedMesh` não deforma vértice, então a asa é a instância e não a ave:
+bater asa vira girar a instância em torno do eixo do corpo, que cabe em matriz.
+
+⚠️ Ao mexer nas constantes de `REVOADA`, lembrar do **celular em pé**: o campo de
+visão horizontal ali é estreito, e um percurso largo demais deixa o bando fora
+do enquadramento a maior parte da travessia. Foi por isso que `alcance` caiu de
+74 para 52.
+
 ### Deploy e `vercel.json`
 
 O `vercel.json` é **deliberadamente mínimo**: só `buildCommand`, `framework` e

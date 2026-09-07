@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, useGLTF } from "@react-three/drei";
 import { CeuPorDoSol } from "./CeuPorDoSol";
+import { Passaros } from "./Passaros";
 import * as THREE from "three";
 
 /** Comandos de andar vindos da interface (botões de toque). O teclado é lido
@@ -526,6 +527,7 @@ export function CenaSala(props: Props) {
   return (
     <>
       <CeuPorDoSol sol={SOL} />
+      <Passaros />
       {/* A névoa dá profundidade às montanhas, que sem ela ficam recortadas e
           chapadas contra o céu. Começa longe: dentro da sala não deve aparecer. */}
       <fog attach="fog" args={["#c98d5e", 30, 190]} />
