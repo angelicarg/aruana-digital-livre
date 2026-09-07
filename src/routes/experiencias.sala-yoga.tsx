@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
 import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, X } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
+import { atrasoDoTrovao, type Clima, type Raio } from "@/lib/clima";
 import {
   ControlesRespiracao,
   GuiaRespiracao,
@@ -38,11 +39,23 @@ const xrStore = createXRStore();
 
 const DRONE_MAX_GAIN = 0.7; // ganho real quando o slider está em 100%
 
-export type Ambiente = "harmonia" | "agua";
+export type Ambiente = "harmonia" | "natureza";
 
-export const AMBIENTES: { id: Ambiente; nome: string; descricao: string }[] = [
+/** O segundo ambiente é o som do lado de fora, então ele muda com o clima: sob
+ *  sol é riacho com pássaros, sob chuva é a própria chuva. Um rótulo fixo
+ *  mentiria para quem lesse o menu depois de trocar o tempo. */
+export const ambientesDe = (
+  clima: Clima,
+): { id: Ambiente; nome: string; descricao: string }[] => [
   { id: "harmonia", nome: "Harmonia", descricao: "acorde suave e contínuo" },
-  { id: "agua", nome: "Água", descricao: "riacho com pássaros ao longe" },
+  clima === "chuva"
+    ? { id: "natureza", nome: "Chuva", descricao: "chuva com trovão ao longe" }
+    : { id: "natureza", nome: "Água", descricao: "riacho com pássaros ao longe" },
+];
+
+export const CLIMAS: { id: Clima; nome: string; descricao: string }[] = [
+  { id: "por_do_sol", nome: "Pôr do sol", descricao: "céu aberto, sol baixo e pássaros" },
+  { id: "chuva", nome: "Chuva", descricao: "céu fechado, vento forte e trovão ao longe" },
 ];
 
 function useAmbientAudio() {
@@ -53,6 +66,8 @@ function useAmbientAudio() {
   const [ambiente, setAmbiente] = useState<Ambiente>("harmonia");
   const ambienteRef = useRef<Ambiente>("harmonia");
   const passaroRef = useRef<number | null>(null);
+  const climaRef = useRef<Clima>("por_do_sol");
+  const trovaoRef = useRef<number[]>([]);
 
   const ensureContext = () => {
     if (ctxRef.current) return ctxRef.current;
@@ -66,6 +81,7 @@ function useAmbientAudio() {
   useEffect(() => {
     return () => {
       if (passaroRef.current) clearTimeout(passaroRef.current);
+      for (const id of trovaoRef.current) clearTimeout(id);
       ctxRef.current?.close().catch(() => {});
     };
   }, []);
@@ -113,14 +129,16 @@ function useAmbientAudio() {
   // Agua: ruido filtrado, que e o que agua e do ponto de vista acustico. Duas
   // camadas — o corpo grave do fluxo e o borbulhar agudo — com o filtro do agudo
   // vagando devagar, senao vira chiado de radio fora de estacao.
-  const montarAgua = (ctx: AudioContext, destino: GainNode) => {
-    const segundos = 4;
-    const buffer = ctx.createBuffer(1, ctx.sampleRate * segundos, ctx.sampleRate);
+  const bufferDeRuido = (ctx: AudioContext, segundos: number) => {
+    const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * segundos), ctx.sampleRate);
     const dados = buffer.getChannelData(0);
     for (let i = 0; i < dados.length; i++) dados[i] = Math.random() * 2 - 1;
+    return buffer;
+  };
 
+  const montarAgua = (ctx: AudioContext, destino: GainNode) => {
     const fonte = ctx.createBufferSource();
-    fonte.buffer = buffer;
+    fonte.buffer = bufferDeRuido(ctx, 4);
     fonte.loop = true;
 
     // Segundo corte, depois de ouvir: -7,3 dB nao bastou. Agua e ruido de banda
@@ -195,13 +213,108 @@ function useAmbientAudio() {
   const agendarPassaros = (ctx: AudioContext, destino: GainNode) => {
     const proximo = () => {
       passaroRef.current = window.setTimeout(() => {
-        if (ambienteRef.current !== "agua") return;
+        if (ambienteRef.current !== "natureza" || climaRef.current !== "por_do_sol") return;
         cantar(ctx, destino);
         proximo();
       }, 4000 + Math.random() * 11000);
     };
     proximo();
   };
+
+  // Chuva e o mesmo ruido filtrado da agua com o equilibrio invertido: agua tem
+  // corpo grave de fluxo e borbulho pontual; chuva e chiado largo com pouco
+  // grave. Duas bandas bastam — a do sibilo na folhagem e a do baque no telhado.
+  const montarChuva = (ctx: AudioContext, destino: GainNode) => {
+    const fonte = ctx.createBufferSource();
+    fonte.buffer = bufferDeRuido(ctx, 4);
+    fonte.loop = true;
+
+    const telhado = ctx.createBiquadFilter();
+    telhado.type = "lowpass";
+    telhado.frequency.value = 900;
+    const gTelhado = ctx.createGain();
+    // Mesma ordem de grandeza da agua depois dos dois cortes: ruido de banda
+    // larga mascara o resto mesmo em nivel baixo.
+    gTelhado.gain.value = 0.1;
+
+    const sibilo = ctx.createBiquadFilter();
+    sibilo.type = "bandpass";
+    sibilo.frequency.value = 4200;
+    sibilo.Q.value = 0.6;
+    const gSibilo = ctx.createGain();
+    gSibilo.gain.value = 0.05;
+
+    fonte.connect(telhado);
+    telhado.connect(gTelhado);
+    gTelhado.connect(destino);
+    fonte.connect(sibilo);
+    sibilo.connect(gSibilo);
+    gSibilo.connect(destino);
+    fonte.start();
+
+    // A intensidade vai e volta devagar: chuva de nivel constante vira chiado
+    // de radio fora de estacao, que foi o problema da agua na primeira versao.
+    const rajada = ctx.createOscillator();
+    rajada.frequency.value = 0.045;
+    const gRajada = ctx.createGain();
+    gRajada.gain.value = 0.03;
+    rajada.connect(gRajada);
+    gRajada.connect(gSibilo.gain);
+    rajada.start();
+  };
+
+  /** Trovao: estouro de ruido grave com o filtro descendo.
+   *
+   *  `forca` vem do raio (0 a 1). Perto e um estalo curto e brilhante; longe e
+   *  um rolar longo e abafado — a diferenca esta no ataque e no corte do
+   *  filtro, nao so no volume. */
+  const trovao = (forca: number, lado: number) => {
+    const ctx = ctxRef.current;
+    const destino = droneGainRef.current;
+    if (!ctx || !destino || ctx.state === "closed") return;
+
+    const agora = ctx.currentTime;
+    const dur = 2.4 + (1 - forca) * 4.2;
+
+    const fonte = ctx.createBufferSource();
+    fonte.buffer = bufferDeRuido(ctx, dur);
+
+    const corte = ctx.createBiquadFilter();
+    corte.type = "lowpass";
+    corte.frequency.setValueAtTime(280 + forca * 900, agora);
+    corte.frequency.exponentialRampToValueAtTime(60, agora + dur);
+    corte.Q.value = 0.7;
+
+    const pan = ctx.createStereoPanner();
+    pan.pan.value = Math.max(-0.85, Math.min(0.85, lado));
+
+    const g = ctx.createGain();
+    const ataque = 0.015 + (1 - forca) * 0.55;
+    g.gain.setValueAtTime(0.0001, agora);
+    g.gain.exponentialRampToValueAtTime(0.08 + forca * 0.3, agora + ataque);
+    g.gain.exponentialRampToValueAtTime(0.0001, agora + dur);
+
+    fonte.connect(corte);
+    corte.connect(g);
+    g.connect(pan);
+    pan.connect(destino);
+    fonte.start(agora);
+    fonte.stop(agora + dur + 0.05);
+  };
+
+  /** Chamado pela cena no instante do clarao. O trovao chega depois, pelo tempo
+   *  que o som leva para vencer a distancia — e esse atraso e a coisa que faz o
+   *  raio parecer estar num lugar do mundo em vez de na tela. */
+  const aoRaio = useCallback((raio: Raio) => {
+    const id = window.setTimeout(
+      () => trovao(raio.forca, raio.lado),
+      atrasoDoTrovao(raio) * 1000,
+    );
+    trovaoRef.current.push(id);
+    if (trovaoRef.current.length > 8) trovaoRef.current.shift();
+    // trovao lê tudo por ref; recriar o callback derrubaria o agendamento.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const ensureDrone = () => {
     const ctx = ensureContext();
@@ -211,8 +324,9 @@ function useAmbientAudio() {
     gain.gain.value = 0;
     gain.connect(ctx.destination);
 
-    if (ambienteRef.current === "agua") montarAgua(ctx, gain);
-    else montarHarmonia(ctx, gain);
+    if (ambienteRef.current !== "natureza") montarHarmonia(ctx, gain);
+    else if (climaRef.current === "chuva") montarChuva(ctx, gain);
+    else montarAgua(ctx, gain);
 
     droneGainRef.current = gain;
     return { ctx, gain };
@@ -221,13 +335,10 @@ function useAmbientAudio() {
   // Trocar de ambiente derruba o grafo inteiro e remonta: os osciladores e o
   // buffer nao sao reconfiguraveis depois de start(), e tentar reaproveitar
   // deixaria vozes penduradas tocando por baixo.
-  const trocarAmbiente = (novo: Ambiente) => {
-    if (novo === ambiente) return;
+  const remontarDrone = () => {
     const ctx = ctxRef.current;
     const antigo = droneGainRef.current;
     if (passaroRef.current) clearTimeout(passaroRef.current);
-    ambienteRef.current = novo;
-    setAmbiente(novo);
     if (!ctx || !antigo) return;
     antigo.gain.setTargetAtTime(0, ctx.currentTime, 0.12);
     setTimeout(() => antigo.disconnect(), 600);
@@ -237,6 +348,24 @@ function useAmbientAudio() {
       gain.gain.setValueAtTime(0, c2.currentTime);
       gain.gain.setTargetAtTime(volume * DRONE_MAX_GAIN, c2.currentTime, 0.25);
     }
+  };
+
+  const trocarAmbiente = (novo: Ambiente) => {
+    if (novo === ambiente) return;
+    ambienteRef.current = novo;
+    setAmbiente(novo);
+    remontarDrone();
+  };
+
+  /** O clima troca o som de fora: agua com passaros vira chuva com trovao. */
+  const avisarClima = (novo: Clima) => {
+    if (climaRef.current === novo) return;
+    climaRef.current = novo;
+    // Trovao ja agendado de um raio que aconteceu antes da troca estouraria com
+    // o ceu limpo — mais estranho que nao ter trovao nenhum.
+    for (const id of trovaoRef.current) clearTimeout(id);
+    trovaoRef.current = [];
+    if (ambienteRef.current === "natureza") remontarDrone();
   };
 
   const setVolume = (v: number) => {
@@ -285,7 +414,7 @@ function useAmbientAudio() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente };
+  return { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente, aoRaio, avisarClima };
 }
 
 function useFullscreen(ref: React.RefObject<HTMLElement | null>) {
@@ -360,6 +489,8 @@ function MenuAjustes({
   toggleMute,
   ambiente,
   trocarAmbiente,
+  clima,
+  trocarClima,
   temSensor,
   giroscopio,
   setGiroscopio,
@@ -374,6 +505,8 @@ function MenuAjustes({
   toggleMute: () => void;
   ambiente: Ambiente;
   trocarAmbiente: (a: Ambiente) => void;
+  clima: Clima;
+  trocarClima: (c: Clima) => void;
   temSensor: boolean;
   giroscopio: boolean;
   setGiroscopio: (v: boolean) => void;
@@ -382,6 +515,7 @@ function MenuAjustes({
 }) {
   const [aberto, setAberto] = useState(false);
   const caixa = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     if (!aberto) return;
@@ -427,7 +561,16 @@ function MenuAjustes({
         // z-50: a rota inteira nao declarava camada nenhuma, entao a ordem no DOM
         // decidia — e os controles de caminhada vem 400 linhas depois do menu,
         // logo pintavam por cima dele. Ninguem caminha com o menu aberto.
-        <div className="fixed inset-x-3 top-16 z-50 max-h-[70vh] overflow-y-auto rounded-2xl bg-black/70 p-2 shadow-premium backdrop-blur-md sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-72">
+        <div
+          /* `pr-16` no celular reserva a coluna do VLibras. O widget é
+             `position: fixed` com z-index 2147483639 — o máximo de 32 bits,
+             dentro de um shadow root que não dá para estilizar daqui — então
+             nenhum z-index nosso sobe acima dele. Ele fica por cima de
+             propósito (é o atalho de acessibilidade, tem que estar sempre à
+             mão); quem sai de baixo é o nosso conteúdo. No `sm:` o menu já é
+             estreito e ancorado, e a folga não é necessária. */
+          className="fixed inset-x-3 top-16 z-50 max-h-[70vh] overflow-y-auto rounded-2xl bg-black/70 p-2 pr-16 shadow-premium backdrop-blur-md sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-72 sm:pr-2"
+        >
           {/* As instrucoes moram aqui, nao na tela: elas se leem uma vez e
               depois so cobrem a sala, que e o produto da experiencia. Por isso
               o aria-label do botao anuncia "instrucoes" — escondido sem aviso
@@ -464,10 +607,33 @@ function MenuAjustes({
 
           <div className="px-3 pb-1 pt-2">
             <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Clima
+            </p>
+            <div className="flex gap-1.5">
+              {CLIMAS.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => trocarClima(c.id)}
+                  aria-pressed={c.id === clima}
+                  title={c.descricao}
+                  className={`min-h-11 flex-1 rounded-xl px-2 text-xs font-medium transition ${
+                    c.id === clima
+                      ? "bg-white/85 text-[#1a1512]"
+                      : "bg-white/10 text-white/85 hover:bg-white/20"
+                  }`}
+                >
+                  {c.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="px-3 pb-1 pt-2">
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/50">
               Som ambiente
             </p>
             <div className="flex gap-1.5">
-              {AMBIENTES.map((a) => (
+              {ambientesDe(clima).map((a) => (
                 <button
                   key={a.id}
                   onClick={() => trocarAmbiente(a.id)}
@@ -585,7 +751,16 @@ function SalaYogaPage() {
   const [giroscopio, setGiroscopio] = useState(false);
   const [temSensor, setTemSensor] = useState(false);
   const [sentado, setSentado] = useState(false);
-  const { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente } = useAmbientAudio();
+  const { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente, aoRaio, avisarClima } =
+    useAmbientAudio();
+  const [clima, setClima] = useState<Clima>("por_do_sol");
+
+  // O som do lado de fora é parte do clima, não um ajuste separado: trocar um
+  // sem o outro produz chuva com canto de pássaro.
+  const trocarClima = (novo: Clima) => {
+    setClima(novo);
+    avisarClima(novo);
+  };
   const containerRef = useRef<HTMLDivElement>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(containerRef);
 
@@ -645,6 +820,8 @@ function SalaYogaPage() {
                 giroscopio={giroscopio}
                 sentado={sentado}
                 aoMudarPostura={aoMudarPostura}
+                clima={clima}
+                aoRaio={aoRaio}
               />
             </Suspense>
           </XR>
@@ -670,6 +847,8 @@ function SalaYogaPage() {
               toggleMute={toggleMute}
               ambiente={ambiente}
               trocarAmbiente={trocarAmbiente}
+              clima={clima}
+              trocarClima={trocarClima}
               temSensor={temSensor}
               giroscopio={giroscopio}
               setGiroscopio={setGiroscopio}

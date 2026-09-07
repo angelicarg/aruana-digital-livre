@@ -3,6 +3,8 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, useGLTF } from "@react-three/drei";
 import { CeuPorDoSol } from "./CeuPorDoSol";
 import { Passaros } from "./Passaros";
+import { Chuva } from "./Chuva";
+import { PALETAS, RELAMPAGO, raioDaFatia, relampagoEm, type Clima, type Raio } from "@/lib/clima";
 import * as THREE from "three";
 
 /** Comandos de andar vindos da interface (botões de toque). O teclado é lido
@@ -124,8 +126,11 @@ type Sala = {
  * balanca mais que a base. Sem essas duas coisas a copa le como bloco de
  * gelatina, nao como folhagem.
  */
-function Arvore() {
+function Arvore({ vento }: { vento: number }) {
   const { scene } = useGLTF("/modelos/arvore.glb", "/draco/");
+  // O vento nao salta de brisa para tempestade num quadro: ele sobe junto com
+  // o resto do clima.
+  const ventoAtual = useRef(1);
 
   const { raiz, copas } = useMemo(() => {
     const raiz = scene.clone(true);
@@ -161,8 +166,10 @@ function Arvore() {
     return { raiz, copas };
   }, [scene]);
 
-  useFrame((estado) => {
+  useFrame((estado, delta) => {
     const t = estado.clock.elapsedTime;
+    ventoAtual.current += (vento - ventoAtual.current) * (1 - Math.exp(-delta / 1.4));
+    const forca = ventoAtual.current;
     for (const c of copas) {
       // Duas senoides de periodo diferente: uma so soa mecanica, e vento nao
       // tem periodo unico. A lenta faz a arvore inteira ceder, a rapida agita
@@ -172,9 +179,9 @@ function Arvore() {
       // 1,4 e nao 2,2: com 2,2 a ponta da copa varria 30 cm, que le como vento
       // firme. Aqui a folhagem so respira. Subir este numero e o caminho se um
       // dia a cena pedir tempestade.
-      c.obj.position.x = c.base.x + (lento * 0.75 + rapido * 0.25) * c.amp * 1.4;
-      c.obj.position.z = c.base.z + Math.sin(t * 0.31 + c.fase * 0.7) * c.amp * 1.4;
-      c.obj.position.y = c.base.y + rapido * c.amp * 0.35; // vertical e Y aqui
+      c.obj.position.x = c.base.x + (lento * 0.75 + rapido * 0.25) * c.amp * 1.4 * forca;
+      c.obj.position.z = c.base.z + Math.sin(t * 0.31 + c.fase * 0.7) * c.amp * 1.4 * forca;
+      c.obj.position.y = c.base.y + rapido * c.amp * 0.35 * forca; // vertical e Y aqui
     }
   });
 
@@ -261,11 +268,14 @@ type Props = {
   sentado: boolean;
   /** Avisa a interface para trocar o botão de caminhar pelo de levantar. */
   aoMudarPostura: (sentado: boolean) => void;
+  clima: Clima;
+  /** Chamado no instante do clarão, para a interface agendar o trovão. */
+  aoRaio: (raio: Raio) => void;
 };
 
 /** Olhar, andar e sentar em primeira pessoa. Controle orbital não serve aqui:
  *  ele gira em torno de um ponto e deixa o visitante sair pela parede. */
-function Navegacao({ giroscopio, sentado, aoMudarPostura }: Props) {
+function Navegacao({ giroscopio, sentado, aoMudarPostura, vento }: Props & { vento: number }) {
   const { camera, gl } = useThree();
   const sala = useSala();
 
@@ -518,16 +528,109 @@ function Navegacao({ giroscopio, sentado, aoMudarPostura }: Props) {
   return (
     <>
       <primitive object={sala.raiz} />
-      <Arvore />
+      <Arvore vento={vento} />
     </>
   );
 }
 
-export function CenaSala(props: Props) {
+/**
+ * O clima manda em cinco coisas ao mesmo tempo — ceu, sol, nevoa, vento e
+ * chuva — e todas atravessam devagar de uma paleta para a outra. Virar
+ * tempestade num quadro le como falha de carregamento, nao como tempo mudando.
+ *
+ * A interpolacao mora aqui, num unico `useFrame`, porque cor de luz e distancia
+ * de nevoa nao sao estado do React: mexer nelas por `setState` redesenharia a
+ * arvore de componentes sessenta vezes por segundo.
+ */
+export function CenaSala({ clima, aoRaio, ...props }: Props) {
+  const paleta = PALETAS[clima];
+  const cena = useThree((estado) => estado.scene);
+
+  const sol = useRef<THREE.DirectionalLight>(null);
+  const hemisferio = useRef<THREE.HemisphereLight>(null);
+  const ambiente = useRef<THREE.AmbientLight>(null);
+  const luzDoRaio = useRef<THREE.DirectionalLight>(null);
+  const relampago = useRef(0);
+  const ultimaFatia = useRef(-1);
+
+  // ⚠️ Criterio de acessibilidade, nao preferencia visual: quem pediu menos
+  // movimento nao recebe clarao nenhum. Ver o comentario de CLAROES_POR_RAIO.
+  const semMovimento = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
+
+  const alvo = useMemo(
+    () => ({
+      sol: new THREE.Color(paleta.sol.cor),
+      ceu: new THREE.Color(paleta.hemisferio.ceu),
+      chao: new THREE.Color(paleta.hemisferio.chao),
+      neblina: new THREE.Color(paleta.neblina.cor),
+    }),
+    [paleta],
+  );
+
+  useFrame((estado, delta) => {
+    const k = 1 - Math.exp(-delta / 1.2);
+
+    if (sol.current) {
+      sol.current.intensity += (paleta.sol.intensidade - sol.current.intensity) * k;
+      sol.current.color.lerp(alvo.sol, k);
+    }
+    if (hemisferio.current) {
+      hemisferio.current.intensity +=
+        (paleta.hemisferio.intensidade - hemisferio.current.intensity) * k;
+      hemisferio.current.color.lerp(alvo.ceu, k);
+      hemisferio.current.groundColor.lerp(alvo.chao, k);
+    }
+    if (ambiente.current) {
+      ambiente.current.intensity += (paleta.ambiente - ambiente.current.intensity) * k;
+    }
+
+    cena.environmentIntensity +=
+      (paleta.envIntensidade - cena.environmentIntensity) * k;
+
+    const neblina = cena.fog as THREE.Fog | null;
+    if (neblina) {
+      neblina.color.lerp(alvo.neblina, k);
+      neblina.near += (paleta.neblina.perto - neblina.near) * k;
+      neblina.far += (paleta.neblina.longe - neblina.far) * k;
+    }
+
+    const t = estado.clock.elapsedTime;
+    const trovoada = clima === "chuva" && !semMovimento;
+    relampago.current = trovoada ? relampagoEm(t) : 0;
+    // 3,5 e nao 7: medido com o clarao fixo em 0,8, o interior inteiro estourava
+    // para quase branco. Clarao de tela cheia e justamente o caso de risco do
+    // WCAG 2.3.1 — o brilho forte fica no ceu, que ocupa so o recorte do vidro,
+    // e a sala recebe o suficiente para o olho entender de onde veio.
+    if (luzDoRaio.current) luzDoRaio.current.intensity = relampago.current * 3.5;
+
+    // Borda de subida do raio: avisa a interface uma vez por fatia, para ela
+    // agendar o trovao com o atraso da distancia.
+    if (trovoada) {
+      const fatia = Math.floor(t / RELAMPAGO.fatia);
+      const raio = raioDaFatia(fatia);
+      if (t >= raio.inicio && ultimaFatia.current !== fatia) {
+        ultimaFatia.current = fatia;
+        aoRaio(raio);
+      }
+    }
+  });
+
   return (
     <>
-      <CeuPorDoSol sol={SOL} />
+      <CeuPorDoSol sol={SOL} paleta={paleta} relampagoRef={relampago} />
       <Passaros />
+      <Chuva
+        intensidade={paleta.chuva}
+        neblina={[paleta.neblina.perto, paleta.neblina.longe]}
+      />
+      {/* O clarao entra pelo alto e sem sombra: raio ilumina a nuvem inteira,
+          entao a luz chega difusa, sem uma direcao que projete recorte. */}
+      <directionalLight ref={luzDoRaio} position={[8, 40, -30]} intensity={0} color="#cfe2ff" />
       {/* A névoa dá profundidade às montanhas, que sem ela ficam recortadas e
           chapadas contra o céu. Começa longe: dentro da sala não deve aparecer. */}
       <fog attach="fog" args={["#c98d5e", 30, 190]} />
@@ -539,6 +642,7 @@ export function CenaSala(props: Props) {
           rasantes, que é justamente o desenho do fim de tarde — mas exigem um
           tronco ortogonal largo, senão elas somem no meio da sala. */}
       <directionalLight
+        ref={sol}
         position={SOL}
         intensity={3.4}
         color="#ffa860"
@@ -559,8 +663,8 @@ export function CenaSala(props: Props) {
           ficava pintado de marrom escuro de propósito. Agora ela devolve a cor
           do piso de madeira iluminado, que é o que uma sala real reflete para
           cima e que o tempo real não calcula sozinho. */}
-      <hemisphereLight args={["#bcd4f0", "#c69a70", 0.95]} />
-      <ambientLight intensity={0.35} />
+      <hemisphereLight ref={hemisferio} args={["#bcd4f0", "#c69a70", 0.95]} />
+      <ambientLight ref={ambiente} intensity={0.35} />
 
       {LUMINARIAS.map((p, i) => (
         <group key={i}>
@@ -589,7 +693,7 @@ export function CenaSala(props: Props) {
         <Lightformer intensity={0.7} position={[7, 1.5, 4]} scale={[8, 4, 1]} color="#8fa9c4" />
       </Environment>
 
-      <Navegacao {...props} />
+      <Navegacao {...props} clima={clima} aoRaio={aoRaio} vento={paleta.vento} />
     </>
   );
 }

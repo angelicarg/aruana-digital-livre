@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import type { Paleta } from "@/lib/clima";
 
 /**
  * Céu do pôr do sol, escrito à mão.
@@ -27,6 +28,8 @@ const FRAGMENTO = /* glsl */ `
   uniform vec3 uSol;
   uniform vec3 uNuvem;
   uniform float uTempo;
+  uniform float uCobertura;
+  uniform float uRelampago;
   varying vec3 vDir;
 
   // Ruido de valor: barato e suficiente. Nuvem nao precisa de detalhe fino —
@@ -83,17 +86,40 @@ const FRAGMENTO = /* glsl */ `
     // media 0,5, a massa fica com mediana 0,41 e teto 0,57 — nunca chega perto
     // de 1. Limiar acima disso deixa o ceu limpo e parece que nao funcionou.
     float alturaOk = smoothstep(0.52, 0.78, alt);
-    float cobertura = smoothstep(0.37, 0.59, massa) * alturaOk * 0.72;
+    // uCobertura passa de 1 no ceu limpo para bem acima disso na chuva: o
+    // limiar acima e calibrado para nuvem esparsa, e sem empurrar a tempestade
+    // sairia com as mesmas nuvenzinhas espalhadas do fim de tarde.
+    float cobertura = clamp(smoothstep(0.37, 0.59, massa) * uCobertura, 0.0, 1.0) * alturaOk * 0.72;
 
     // As de baixo pegam a luz do sol; as do alto ficam frias.
     vec3 corNuvem = mix(uNuvem, uBrilho, pow(perto, 2.0) * 0.5 * (1.0 - alturaOk * 0.6));
     cor = mix(cor, corNuvem, cobertura);
 
+    // Relampago: a nuvem acende muito mais que o ceu aberto, porque a luz vem
+    // de dentro dela. Sem essa diferenca o clarao lava a tela inteira e parece
+    // corte de video, nao raio.
+    cor += vec3(uRelampago) * (0.22 + cobertura * 0.85);
+
     gl_FragColor = vec4(cor, 1.0);
   }
 `;
 
-export function CeuPorDoSol({ sol }: { sol: [number, number, number] }) {
+type Props = {
+  sol: [number, number, number];
+  paleta: Paleta;
+  /** Brilho do clarao, 0 a 1.
+   *
+   *  Chega por referencia e nao por propriedade: o clarao muda de valor a cada
+   *  quadro, e passa-lo por estado do React redesenharia a arvore inteira
+   *  sessenta vezes por segundo para mexer num uniform. */
+  relampagoRef: RefObject<number>;
+};
+
+/** Segundos para o ceu inteiro virar de um clima para o outro. Trocar de uma
+ *  vez le como falha de carregamento; o tempo mudando devagar le como tempo. */
+const TRANSICAO = 3.5;
+
+export function CeuPorDoSol({ sol, paleta, relampagoRef }: Props) {
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -112,15 +138,44 @@ export function CeuPorDoSol({ sol }: { sol: [number, number, number] }) {
           uSol: { value: new THREE.Vector3(...sol) },
           uNuvem: { value: new THREE.Color("#cbd3dc") },
           uTempo: { value: 0 },
+          uCobertura: { value: 1 },
+          uRelampago: { value: 0 },
         },
       }),
     [sol],
   );
 
+  const alvo = useMemo(
+    () => ({
+      horizonte: new THREE.Color(paleta.horizonte),
+      meio: new THREE.Color(paleta.meio),
+      zenite: new THREE.Color(paleta.zenite),
+      brilho: new THREE.Color(paleta.brilho),
+      nuvem: new THREE.Color(paleta.nuvem),
+    }),
+    [paleta],
+  );
+
   // Nuvem parada denuncia cenario. O deslocamento e deliberadamente lento —
   // nuvem que corre vira time-lapse e tira a calma, que aqui e o produto.
   useFrame((_, delta) => {
-    material.uniforms.uTempo.value += delta;
+    const u = material.uniforms;
+    u.uTempo.value += delta;
+
+    // Suavizacao exponencial, independente da taxa de quadros — o mesmo motivo
+    // da aceleracao do passo: somar fracao fixa por quadro faria a transicao
+    // durar metade num monitor de 144 Hz.
+    const k = 1 - Math.exp(-delta / (TRANSICAO / 3));
+    (u.uHorizonte.value as THREE.Color).lerp(alvo.horizonte, k);
+    (u.uMeio.value as THREE.Color).lerp(alvo.meio, k);
+    (u.uZenite.value as THREE.Color).lerp(alvo.zenite, k);
+    (u.uBrilho.value as THREE.Color).lerp(alvo.brilho, k);
+    (u.uNuvem.value as THREE.Color).lerp(alvo.nuvem, k);
+    u.uCobertura.value += (paleta.cobertura - u.uCobertura.value) * k;
+
+    // O clarao nao e interpolado: ele e o unico valor da cena que precisa
+    // chegar inteiro no quadro em que acontece.
+    u.uRelampago.value = relampagoRef.current;
   });
 
   // Raio bem abaixo do plano distante padrão da câmera (2000), e acima das

@@ -176,6 +176,40 @@ visão horizontal ali é estreito, e um percurso largo demais deixa o bando fora
 do enquadramento a maior parte da travessia. Foi por isso que `alcance` caiu de
 74 para 52.
 
+### Clima da sala de yoga
+
+`src/lib/clima.ts` guarda as duas paletas (pôr do sol e chuva) e o relâmpago.
+Um controle só muda **céu, sol, névoa, vento, chuva e som** de uma vez: separar
+em botões independentes deixaria alguém montar chuva com céu alaranjado, que é
+a combinação que denuncia o cenário na hora. Tudo atravessa por interpolação
+exponencial — virar tempestade num quadro lê como falha de carregamento.
+
+Dois números não óbvios: `cobertura` da chuva é **2,6 e não 1**, porque o
+limiar de nuvem do shader é calibrado para céu limpo; e `envIntensidade` cai
+para 0,45, porque a iluminação por imagem é montada com refletores quentes do
+pôr do sol e não pode ser regerada na troca (regerar o cubo trava a cena bem na
+frente de quem olha).
+
+⚠️ **`CLAROES_POR_RAIO` é critério de acessibilidade, não efeito visual.** WCAG
+2.3.1 (nível A) veta piscar mais de três vezes por segundo; o relâmpago dá dois
+clarões e o teste em `clima.test.ts` falha se algum dia der três. O clarão
+também não acende sob `prefers-reduced-motion`, e a luz interna é 3,5 e não 7:
+medido com o clarão fixo, a 7 o interior inteiro estourava para quase branco —
+e clarão de tela cheia é justamente o caso de risco.
+
+A chuva (`Chuva.tsx`) é o oposto da revoada: **nada é calculado na CPU**. São
+2600 gotas numa coroa em volta da sala — raio interno maior que a meia-diagonal
+do piso, então nenhuma chove dentro sem precisar de colisão — e a queda inteira
+mora no vertex shader.
+
+⚠️ **O botão do VLibras é `position: fixed` com z-index 2147483639** (o máximo
+de 32 bits) dentro de um shadow root que não dá para estilizar. Nenhum z-index
+nosso sobe acima dele, e `visibility: hidden` no host não adianta: a folha de
+estilo do widget declara `visibility: visible` no descendente e quebra a
+herança. Ele fica por cima de propósito — é o atalho de acessibilidade, tem que
+estar sempre à mão. Quem sai de baixo é o nosso conteúdo: daí o `pr-16` no menu
+de ajustes.
+
 ### Deploy e `vercel.json`
 
 O `vercel.json` é **deliberadamente mínimo**: só `buildCommand`, `framework` e
