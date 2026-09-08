@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   anuncioDeMudanca,
+  ENVIO,
   deveEnviarPostura,
   inicioLocalDaSessao,
   resolverEspera,
@@ -130,10 +131,17 @@ describe("deveEnviarPostura", () => {
     expect(deveEnviarPostura(null, p(0, 0), 0)).toBe(true);
   });
 
-  it("respeita o teto de 10 por segundo", () => {
+  /** O teto existe para o canal nao morrer, nao para economizar bonito: o
+   *  cliente do Supabase corta em 10 eventos por segundo, e ficar em 10 fazia a
+   *  conexao cair quando duas pessoas andavam juntas. */
+  it("respeita o teto de 5 por segundo", () => {
     const ultima = { postura: p(0, 0), emMs: 1000 };
-    expect(deveEnviarPostura(ultima, p(9, 9), 1050)).toBe(false);
-    expect(deveEnviarPostura(ultima, p(9, 9), 1100)).toBe(true);
+    expect(deveEnviarPostura(ultima, p(9, 9), 1150)).toBe(false);
+    expect(deveEnviarPostura(ultima, p(9, 9), 1200)).toBe(true);
+  });
+
+  it("fica com folga sob o limite de 10 eventos por segundo do cliente", () => {
+    expect(1000 / ENVIO.intervaloMs).toBeLessThanOrEqual(5);
   });
 
   /** O caso comum numa sala de yoga: gente quieta. Parado não pode gastar
@@ -145,7 +153,7 @@ describe("deveEnviarPostura", () => {
 
   it("manda quando andou o bastante para se ver", () => {
     const ultima = { postura: p(1, 1), emMs: 1000 };
-    expect(deveEnviarPostura(ultima, p(1.06, 1), 1200)).toBe(true);
+    expect(deveEnviarPostura(ultima, p(1.06, 1), 1300)).toBe(true);
   });
 
   /** Quem chega numa sala de gente imóvel não recebe nenhuma atualização e
@@ -160,8 +168,8 @@ describe("deveEnviarPostura", () => {
    *  sintoma seria custo de rede, não erro visível. */
   it("mede giro pelo caminho curto ao cruzar o ±180°", () => {
     const ultima = { postura: p(0, 0, -Math.PI + 0.01), emMs: 1000 };
-    expect(deveEnviarPostura(ultima, p(0, 0, Math.PI - 0.01), 1200)).toBe(false);
-    expect(deveEnviarPostura(ultima, p(0, 0, Math.PI - 0.3), 1200)).toBe(true);
+    expect(deveEnviarPostura(ultima, p(0, 0, Math.PI - 0.01), 1300)).toBe(false);
+    expect(deveEnviarPostura(ultima, p(0, 0, Math.PI - 0.3), 1300)).toBe(true);
   });
 });
 

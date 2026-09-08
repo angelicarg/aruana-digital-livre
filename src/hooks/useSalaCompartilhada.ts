@@ -105,13 +105,19 @@ export function useSalaCompartilhada(
   useEffect(() => {
     if (!ativo || typeof window === "undefined") return;
     let vivo = true;
-    // ⚠️ Guardar o canal numa variavel do escopo, e nao so numa funcao de
-    // limpeza criada no fim do IIFE: navegar rapido fazia a limpeza rodar antes
-    // do `await import` terminar, e ai `limpar` ainda era `undefined` — o canal
-    // ficava inscrito para sempre. Cada ida e volta na rota deixava um fantasma.
     let canalAberto: { unsubscribe: () => void } | null = null;
+    let tentativa = 0;
+    let reagendado: number | undefined;
+    let esvaziar: number | undefined;
 
-    (async () => {
+    /**
+     * Conecta, e **reconecta**. O canal cai — por cota estourada, por rede que
+     * oscila, por aba que dormiu. Antes disso ficar aqui, cair uma vez era
+     * definitivo: a sala continuava desenhando os corpos da última sincronia,
+     * parados para sempre, enquanto o aviso dizia "indisponível". Mostrar dado
+     * velho com cara de atual é pior que mostrar sala vazia.
+     */
+    const conectar = async () => {
       let canal: any;
       try {
         const { supabase } = await import("@/integrations/supabase/client");
@@ -129,7 +135,10 @@ export function useSalaCompartilhada(
       canal
         .on("presence", { event: "sync" }, () => {
           if (!vivo) return;
-          const estado = canal.presenceState() as Record<string, { tapete?: number | null }[]>;
+          const estado = canal.presenceState() as Record<
+            string,
+            { tapete?: number | null }[]
+          >;
           // Quem saiu leva a postura junto: sem esta limpeza o corpo de quem
           // fechou a aba ficaria guardado e voltaria a aparecer se um id fosse
           // reaproveitado.
@@ -180,8 +189,37 @@ export function useSalaCompartilhada(
         })
         .subscribe((status: string) => {
           if (!vivo) return;
-          setConectado(status === "SUBSCRIBED");
-          if (status === "SUBSCRIBED") canal.track({ tapete: tapetePedido, pos: null });
+          const ligado = status === "SUBSCRIBED";
+          setConectado(ligado);
+
+          if (ligado) {
+            tentativa = 0;
+            window.clearTimeout(esvaziar);
+            canal.track({ tapete: tapetePedido, pos: minhaPostura.current });
+            return;
+          }
+
+          // Queda. Nao esvazia na hora: oscilacao de rede de poucos segundos
+          // faria a sala inteira sumir e voltar, que assusta mais do que
+          // ajuda. Passando disso, o que esta na tela e mentira.
+          console.warn("[sala] canal caiu:", status, "— reconectando");
+          window.clearTimeout(esvaziar);
+          esvaziar = window.setTimeout(() => {
+            if (!vivo) return;
+            setReivindicacoes([]);
+            posturas.current.clear();
+            setSessao(null);
+          }, 6000);
+
+          canal.unsubscribe();
+          if (canalRef.current === canal) canalRef.current = null;
+          // Espera crescente ate 15 s: insistir de segundo em segundo depois de
+          // estourar cota e a melhor forma de continuar estourando.
+          const espera = Math.min(1000 * 2 ** tentativa++, 15000);
+          window.clearTimeout(reagendado);
+          reagendado = window.setTimeout(() => {
+            if (vivo) void conectar();
+          }, espera);
         });
 
       canalRef.current = canal;
@@ -192,10 +230,14 @@ export function useSalaCompartilhada(
         canalRef.current = null;
         canal.unsubscribe();
       }
-    })();
+    };
+
+    void conectar();
 
     return () => {
       vivo = false;
+      window.clearTimeout(reagendado);
+      window.clearTimeout(esvaziar);
       canalRef.current = null;
       canalAberto?.unsubscribe();
     };

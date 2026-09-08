@@ -130,8 +130,12 @@ export type Postura = { x: number; z: number; yaw: number };
  * regra — mandar todo quadro seriam 60 mensagens por segundo por pessoa, e o
  * projeto do Supabase é compartilhado com outros três sites.
  *
- * - `intervaloMs` é o teto: no máximo 10 por segundo, e 10 Hz basta porque quem
- *   recebe interpola entre as amostras.
+ * - `intervaloMs` é o teto: no máximo **5 por segundo**. O número não é de
+ *   conforto visual, é de sobrevivência do canal — o cliente do Supabase vem
+ *   com limite padrão de **10 eventos por segundo**, e eu estava exatamente em
+ *   10, sem contar presença e batimento. Duas pessoas andando ao mesmo tempo
+ *   estouravam a cota e **o canal caía**, deixando os corpos congelados na
+ *   última posição. 5 Hz basta porque quem recebe interpola entre as amostras.
  * - `distancia` e `giro` são o piso: parado não gasta mensagem nenhuma. Numa
  *   sala de yoga esse é o caso comum — as pessoas ficam quietas.
  * - `pulsoMs` é a exceção que salva quem chegou depois: mesmo parada, a posição
@@ -139,7 +143,7 @@ export type Postura = { x: number; z: number; yaw: number };
  *   não descobre onde ninguém está, e todos aparecem na origem.
  */
 export const ENVIO = {
-  intervaloMs: 100,
+  intervaloMs: 200,
   /** 5 cm: abaixo disso o movimento não se vê a distância de uma sala. */
   distancia: 0.05,
   /** ~5 graus. */
