@@ -45,6 +45,15 @@ export type Perfil = {
   /** Multiplica as gotas que escorrem no vidro. Zero deixa só a condensação
    *  parada — o vidro segue molhado, nada se desloca. */
   escorrimento: number;
+  /** Multiplica o quanto o corpo dos outros se move ao respirar.
+   *
+   *  **Não vai a zero, e isso é deliberado.** O WCAG trata de movimento *não
+   *  essencial*; numa sala cujo produto é ver a equipe respirar junta, o peito
+   *  subindo é o conteúdo, não enfeite. Some com ele e a pessoa que pediu menos
+   *  movimento passa a ver três manequins. Um peito subindo 2 cm a três metros
+   *  também não é fonte de desconforto vestibular — o risco ali é campo largo e
+   *  câmera, não gesto pequeno e distante. Então: reduzido, não removido. */
+  amplitudeAvatar: number;
 };
 
 export const PERFIS: Record<Movimento, Perfil> = {
@@ -59,6 +68,7 @@ export const PERFIS: Record<Movimento, Perfil> = {
     transicaoMs: 950,
     tauPasso: 0.19,
     escorrimento: 1,
+    amplitudeAvatar: 1,
   },
   reduzido: {
     chuva: 0,
@@ -69,6 +79,7 @@ export const PERFIS: Record<Movimento, Perfil> = {
     transicaoMs: 0,
     tauPasso: 0,
     escorrimento: 0,
+    amplitudeAvatar: 0.45,
   },
 };
 

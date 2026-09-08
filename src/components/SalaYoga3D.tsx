@@ -7,6 +7,8 @@ import { Chuva } from "./Chuva";
 import { PALETAS, RELAMPAGO, raioDaFatia, relampagoEm, type Clima, type Raio } from "@/lib/clima";
 import { PERFIS, type Movimento, type Perfil } from "@/lib/movimento";
 import { vidroComGotas, type UniformesGota } from "@/lib/gotas";
+import { Avatares } from "./Avatares";
+import type { OutraPessoa, SessaoCompartilhada } from "@/hooks/useSalaCompartilhada";
 import * as THREE from "three";
 
 /** Comandos de andar vindos da interface (botões de toque). O teclado é lido
@@ -282,8 +284,17 @@ const suavizar = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t +
 type Props = {
   giroscopio: boolean;
   sentado: boolean;
-  /** Avisa a interface para trocar o botão de caminhar pelo de levantar. */
-  aoMudarPostura: (sentado: boolean) => void;
+  /** Avisa a interface para trocar o botão de caminhar pelo de levantar. O
+   *  índice do tapete sobe junto porque a presença precisa dele: é o que a sala
+   *  compartilhada publica para os outros. */
+  aoMudarPostura: (sentado: boolean, tapete: number | null) => void;
+  /** Quantos tapetes o modelo trouxe. Sobe do `.glb` em vez de ser constante na
+   *  interface: aumentar a turma passa a ser mexer no script do Blender. */
+  aoMedirSala: (totalTapetes: number) => void;
+  /** Quem mais está na sala, já com o tapete resolvido. */
+  outras: OutraPessoa[];
+  /** Sessão de respiração em curso, para os corpos respirarem em fase. */
+  sessao: SessaoCompartilhada | null;
   clima: Clima;
   /** Chamado no instante do clarão, para a interface agendar o trovão. */
   aoRaio: (raio: Raio) => void;
@@ -297,12 +308,20 @@ function Navegacao({
   giroscopio,
   sentado,
   aoMudarPostura,
+  aoMedirSala,
+  outras,
+  sessao,
   clima,
   vento,
   perfil,
 }: Props & { vento: number; perfil: Perfil }) {
   const { camera, gl } = useThree();
   const sala = useSala();
+
+  // A interface precisa do total para resolver quem senta onde, e so o modelo
+  // sabe. Um efeito e nao uma leitura direta porque isso e estado do React
+  // subindo de dentro do Canvas.
+  useEffect(() => aoMedirSala(sala.tapetes.length), [sala, aoMedirSala]);
 
   const giro = useRef({ yaw: 0, pitch: 0 });
   const teclas = useRef(new Set<string>());
@@ -415,7 +434,7 @@ function Navegacao({
       const destino = tapete.centro.clone();
       destino.y = ALTURA_SENTADO;
       viajar(destino, 0);
-      aoMudarPostura(true);
+      aoMudarPostura(true, sala.tapetes.indexOf(tapete));
     };
 
     // Setas rolariam a página e W/A/S/D digitariam em qualquer campo. Como a
@@ -575,6 +594,12 @@ function Navegacao({
     <>
       <primitive object={sala.raiz} />
       <Arvore vento={vento} />
+      <Avatares
+        outras={outras}
+        tapetes={sala.tapetes}
+        sessao={sessao}
+        amplitude={perfil.amplitudeAvatar}
+      />
     </>
   );
 }

@@ -2,10 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, Waves, X } from "lucide-react";
+import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, Waves, Users, X } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
 import { atrasoDoTrovao, type Clima, type Raio } from "@/lib/clima";
 import { movimentoDoSistema, type Movimento } from "@/lib/movimento";
+import { useSalaCompartilhada } from "@/hooks/useSalaCompartilhada";
+import { anuncioDeMudanca } from "@/lib/presenca";
 import {
   ControlesRespiracao,
   GuiaRespiracao,
@@ -774,6 +776,10 @@ function SalaYogaPage() {
   const [giroscopio, setGiroscopio] = useState(false);
   const [temSensor, setTemSensor] = useState(false);
   const [sentado, setSentado] = useState(false);
+  // Qual tapete eu pedi, e quantos existem. Os dois sobem da cena: o modelo e
+  // quem sabe quantos tapetes tem a sala.
+  const [tapetePedido, setTapetePedido] = useState<number | null>(null);
+  const [totalTapetes, setTotalTapetes] = useState(0);
   const { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente, aoRaio, avisarClima } =
     useAmbientAudio();
   const [clima, setClima] = useState<Clima>("por_do_sol");
@@ -793,7 +799,37 @@ function SalaYogaPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(containerRef);
 
-  const aoMudarPostura = useCallback((s: boolean) => setSentado(s), []);
+  const aoMudarPostura = useCallback((s: boolean, tapete: number | null) => {
+    setSentado(s);
+    setTapetePedido(s ? tapete : null);
+  }, []);
+  const aoMedirSala = useCallback((n: number) => setTotalTapetes(n), []);
+
+  const {
+    outras,
+    meuTapete,
+    sessao: sessaoCompartilhada,
+    anunciarSessao,
+  } = useSalaCompartilhada(tapetePedido, totalTapetes, mounted);
+
+  // O desempate pode me mover de tapete: se alguem com id menor pediu o mesmo,
+  // eu vou para outro. Refletir isso no pedido mantem as duas maquinas
+  // contando a mesma historia — sem isto eu publicaria para sempre um tapete
+  // que nao e o meu.
+  useEffect(() => {
+    if (sentado && meuTapete !== null && meuTapete !== tapetePedido) setTapetePedido(meuTapete);
+  }, [sentado, meuTapete, tapetePedido]);
+
+  // Leitor de tela nao ve canvas. Numa sala cujo produto e "estamos juntos",
+  // saber que alguem chegou nao e detalhe — e a informacao principal.
+  const [anuncio, setAnuncio] = useState("");
+  const quantasAntes = useRef(0);
+  useEffect(() => {
+    const agora = outras.length + 1;
+    const texto = anuncioDeMudanca(quantasAntes.current, agora);
+    quantasAntes.current = agora;
+    if (texto) setAnuncio(texto);
+  }, [outras.length]);
   const narrador = useRef<Narrador | null>(null);
   const [narrando, setNarrando] = useState(true);
   const [temVoz, setTemVoz] = useState(false);
@@ -813,6 +849,22 @@ function SalaYogaPage() {
   );
 
   const sessao = useSessaoRespiracao(aoTrocarFase);
+
+  // Publica a sessao para a sala. Reanuncia a cada 5 s porque quem chega no
+  // meio nao recebeu o comeco: em ate 5 s o corpo dele entra na mesma fase que
+  // o resto. Custa 0,2 mensagem por segundo — o preco de nao precisar de
+  // servidor guardando estado de sessao.
+  useEffect(() => {
+    if (!sessao.rodando) {
+      anunciarSessao("", 0);
+      return;
+    }
+    const inicio = Date.now();
+    const publicar = () => anunciarSessao(sessao.tecnica.id, (Date.now() - inicio) / 1000);
+    publicar();
+    const id = window.setInterval(publicar, 5000);
+    return () => window.clearInterval(id);
+  }, [sessao.rodando, sessao.tecnica, anunciarSessao]);
 
   // Cala a voz ao desligar o interruptor, ao sair da página e ao parar a sessão.
   // Sem isto a última fase continua sendo lida depois do "Parar".
@@ -852,11 +904,20 @@ function SalaYogaPage() {
                 clima={clima}
                 aoRaio={aoRaio}
                 movimento={movimento}
+                aoMedirSala={aoMedirSala}
+                outras={outras}
+                sessao={sessaoCompartilhada}
               />
             </Suspense>
           </XR>
         </Canvas>
       )}
+
+      {/* Quem chegou e quem saiu, para quem nao ve o canvas. Fora do fluxo
+          visual e sem `alert`: e informacao de ambiente, nao urgencia. */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {anuncio}
+      </div>
 
       {/* Overlay UI */}
       <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 sm:p-6">
@@ -912,9 +973,15 @@ function SalaYogaPage() {
             de respiração, embaixo brigava com o título, e à direita esbarraria no
             VLibras e no botão de acessibilidade, que moram lá. */}
         <div className="absolute left-4 top-1/2 -translate-y-1/2 sm:left-6">
+          {outras.length > 0 && (
+            <span className="pointer-events-none inline-flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm">
+              <Users className="h-3.5 w-3.5" aria-hidden="true" />
+              {outras.length + 1} pessoas na sala
+            </span>
+          )}
           {sentado ? (
             <button
-              onClick={() => setSentado(false)}
+              onClick={() => aoMudarPostura(false, null)}
               className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-black/35 px-4 py-3 text-sm font-medium text-white/90 backdrop-blur-sm transition hover:bg-black/55"
             >
               <PersonStanding className="h-4 w-4" /> Levantar

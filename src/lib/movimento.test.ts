@@ -79,6 +79,7 @@ describe("perfil de movimento", () => {
       transicaoMs: 950,
       tauPasso: 0.19,
       escorrimento: 1,
+      amplitudeAvatar: 1,
     });
   });
 });
