@@ -9,6 +9,10 @@ const NAV = [
   { to: "/servicos", label: "Serviços" },
   { to: "/sobre", label: "Sobre" },
   { to: "/cases", label: "Cases" },
+  // Aponta direto para a sala porque hoje ela e a unica experiencia divulgada.
+  // Quando /experiencias/produto-3d tambem sair do escuro, o certo e trocar por
+  // um item "Experiencias" com pagina indice — nao empilhar uma sala por linha.
+  { to: "/experiencias/sala-yoga", label: "Sala de Yoga" },
   { to: "/blog", label: "Blog" },
   { to: "/contato", label: "Contato" },
 ];
