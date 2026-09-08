@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
 import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, Waves, Users, X } from "lucide-react";
@@ -13,7 +13,7 @@ import {
   GuiaRespiracao,
   useSessaoRespiracao,
 } from "@/components/SessaoRespiracao";
-import type { ChaveFase, Fase } from "@/lib/respiracao";
+import { TECNICAS, type ChaveFase, type Fase } from "@/lib/respiracao";
 import { Narrador, SEGUNDOS_PARA_INSTRUCAO, temNarrador } from "@/lib/narrador";
 
 const WHATSAPP_NUMBER = "5534992086611";
@@ -861,12 +861,38 @@ function SalaYogaPage() {
       anunciarSessao("", 0);
       return;
     }
-    const inicio = Date.now();
-    const publicar = () => anunciarSessao(sessao.tecnica.id, (Date.now() - inicio) / 1000);
+    // `inicioMs` zero significa que a sessao ainda nao foi marcada: ele e
+    // gravado dentro do efeito da propria sessao, que roda depois deste na
+    // primeira vez. Publicar nessa janela manda `Date.now() - 0`, ou seja
+    // **1,79 bilhao de segundos de decorrido** — e quem recebe entra numa fase
+    // sorteada em vez da fase em curso. O sintoma engana: parece que a entrada
+    // no meio nao funciona, quando o que esta errado e o numero enviado.
+    if (!sessao.inicioMs) return;
+    // O decorrido sai de `inicioMs`, e nao de um relogio local aberto aqui:
+    // quem entrou no meio de uma sessao ja comecou com 12 s no relogio, e medir
+    // a partir da propria entrada faria essa pessoa republicar a sessao do
+    // zero — arrastando a sala inteira de volta para o comeco.
+    const publicar = () =>
+      anunciarSessao(sessao.tecnica.id, (Date.now() - sessao.inicioMs) / 1000);
     publicar();
     const id = window.setInterval(publicar, 5000);
     return () => window.clearInterval(id);
-  }, [sessao.rodando, sessao.tecnica, anunciarSessao]);
+  }, [sessao.rodando, sessao.tecnica, sessao.inicioMs, anunciarSessao]);
+
+  /** A sessao de outra pessoa, so enquanto eu nao estou na minha. Quem esta
+   *  respirando ja tem ritmo; convidar por cima seria interromper. */
+  const convite = sessao.rodando ? null : sessaoCompartilhada;
+  const tecnicaConvidada = useMemo(
+    () => TECNICAS.find((t) => t.id === convite?.tecnica) ?? null,
+    [convite?.tecnica],
+  );
+
+  /** Os avatares respiram na minha sessao quando eu tenho uma, e na sessao da
+   *  sala quando nao tenho. Sem isso, quem inicia veria os outros respirando
+   *  pelo relogio que voltou pela rede, com a latencia embutida. */
+  const respiracaoDaSala = sessao.rodando
+    ? { tecnica: sessao.tecnica.id, inicioLocalMs: sessao.inicioMs }
+    : sessaoCompartilhada;
 
   // Cala a voz ao desligar o interruptor, ao sair da página e ao parar a sessão.
   // Sem isto a última fase continua sendo lida depois do "Parar".
@@ -908,7 +934,7 @@ function SalaYogaPage() {
                 movimento={movimento}
                 aoMedirSala={aoMedirSala}
                 outras={outras}
-                sessao={sessaoCompartilhada}
+                sessao={respiracaoDaSala}
                 posturas={posturas}
                 anunciarPostura={anunciarPostura}
               />
@@ -1000,6 +1026,32 @@ function SalaYogaPage() {
             continua centralizado — la nao existe lateral sobrando. A direita
             nao serve: e onde flutua o widget do VLibras. */}
         <div className="flex flex-col items-center gap-3 text-center lg:items-start lg:text-left">
+          {/* Convite para entrar na sessao de outra pessoa. Fica colado nos
+              controles de respiracao porque e deles que ele fala — no topo da
+              tela viraria mais um aviso, e a pessoa ja recebeu um na entrada.
+              `status` e nao `alert`: e convite, nao urgencia. */}
+          {convite && tecnicaConvidada && (
+            <div
+              role="status"
+              aria-live="polite"
+              className="pointer-events-auto flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-black/60 px-3 py-2 backdrop-blur-md"
+            >
+              <span className="text-xs text-white/90">
+                Alguém começou <strong className="font-semibold">{tecnicaConvidada.nome}</strong>
+              </span>
+              <button
+                onClick={() =>
+                  sessao.entrarEm(
+                    tecnicaConvidada,
+                    (Date.now() - convite.inicioLocalMs) / 1000,
+                  )
+                }
+                className="inline-flex min-h-11 items-center rounded-full bg-[#00CCA7] px-4 py-2 text-xs font-semibold text-[#041B33] transition hover:brightness-105"
+              >
+                Respirar junto
+              </button>
+            </div>
+          )}
           <ControlesRespiracao sessao={sessao} />
           {/* Fundo proprio: o texto fica sobre a cena 3D, que muda conforme a
               pessoa caminha. Sem ele o contraste nao e baixo — e indefinido,

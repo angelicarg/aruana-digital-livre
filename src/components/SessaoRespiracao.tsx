@@ -23,6 +23,14 @@ export function useSessaoRespiracao(aoTrocarFase: (fase: Fase, ciclos: number) =
 
   const circulo = useRef<HTMLDivElement>(null);
   const faseAnterior = useRef(-1);
+  /** Segundos que a sessão já tinha quando esta máquina entrou. Zero quando
+   *  quem começa é você; maior que zero ao entrar numa sessão que já corria em
+   *  outra sala. É o que permite pegar o ritmo no meio em vez de recomeçar —
+   *  recomeçar seria justamente ficar fora de fase de propósito. */
+  const entradaRef = useRef(0);
+  /** Instante local (ms) em que a sessão teria começado, já descontada a
+   *  entrada. Quem publica para a sala mede o decorrido a partir daqui. */
+  const [inicioMs, setInicioMs] = useState(0);
 
   useEffect(() => {
     const aplicar = (escala: number) => {
@@ -36,7 +44,9 @@ export function useSessaoRespiracao(aoTrocarFase: (fase: Fase, ciclos: number) =
       return;
     }
 
-    const inicio = performance.now();
+    const entrada = entradaRef.current * 1000;
+    const inicio = performance.now() - entrada;
+    setInicioMs(Date.now() - entrada);
     let vivo = true;
 
     const quadro = () => {
@@ -64,15 +74,29 @@ export function useSessaoRespiracao(aoTrocarFase: (fase: Fase, ciclos: number) =
   }, [rodando, tecnica, aoTrocarFase]);
 
   const escolher = useCallback((t: Tecnica) => {
+    entradaRef.current = 0;
     setTecnica(t);
     setRodando(false);
+  }, []);
+
+  /** Entra numa sessão que já está correndo, no ponto em que ela está. */
+  const entrarEm = useCallback((t: Tecnica, decorridoSegundos: number) => {
+    entradaRef.current = decorridoSegundos;
+    setTecnica(t);
+    setRodando(true);
   }, []);
 
   return {
     tecnica,
     rodando,
+    inicioMs,
     escolher,
-    alternar: useCallback(() => setRodando((r) => !r), []),
+    entrarEm,
+    alternar: useCallback(() => {
+      // Começar do zero é sempre do zero: só `entrarEm` herda ponto de partida.
+      entradaRef.current = 0;
+      setRodando((r) => !r);
+    }, []),
     fase: tecnica.fases[visor.indice] ?? tecnica.fases[0],
     restante: visor.restante,
     circulo,
