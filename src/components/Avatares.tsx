@@ -180,17 +180,20 @@ export function Avatares({
 
   return (
     <>
-      {outras.map((p, i) => {
+      {outras.map((p) => {
         // Sentado, a posição é o tapete. De pé, ela vem pela rede e o corpo a
-        // persegue por quadro. O ponto do fundo é só onde o corpo nasce até a
-        // primeira mensagem chegar — quem entra numa sala de gente parada
-        // recebe o pulso em até 2 s.
+        // persegue por quadro.
+        //
+        // ⚠️ O lugar de espera vem de `p.espera`, calculado do conjunto de ids —
+        // **nunca do índice desta lista**. A ordem que o Presence devolve difere
+        // entre máquinas, e usar o índice fazia a mesma pessoa aparecer na
+        // frente da sala para um e no fundo para o outro.
         const emPe = p.tapete === null;
         const centro = emPe ? null : tapetes[p.tapete!]?.centro;
         if (!emPe && !centro) return null;
         const inicial = emPe ? posturas.current?.get(p.id) : null;
         const posicao: [number, number, number] = emPe
-          ? [inicial?.x ?? -2.4 + (i % 5) * 1.2, 0, inicial?.z ?? -2.6]
+          ? [inicial?.x ?? p.espera.x, 0, inicial?.z ?? p.espera.z]
           : [centro!.x, 0, centro!.z];
 
         const alvoEscala = (agora: number) => {

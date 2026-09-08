@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { resolverTapetes, type Postura, type Reivindicacao } from "@/lib/presenca";
+import {
+  resolverEspera,
+  resolverTapetes,
+  type Postura,
+  type Reivindicacao,
+} from "@/lib/presenca";
 
 /**
  * Liga a sala de yoga à sala das outras pessoas.
@@ -25,7 +30,17 @@ import { resolverTapetes, type Postura, type Reivindicacao } from "@/lib/presenc
  * página cai por falta de credencial de terceiro.
  */
 
-export type OutraPessoa = { id: string; tapete: number | null };
+/** Fundo da sala: so vale se o mapa de espera nao tiver a pessoa, o que nao
+ *  deve acontecer. */
+const ESPERA_PADRAO = -2.6;
+
+export type OutraPessoa = {
+  id: string;
+  tapete: number | null;
+  /** Onde desenhar enquanto não se sabe a posição real. Calculado do conjunto
+   *  de ids, então todas as máquinas concordam. */
+  espera: { x: number; z: number };
+};
 
 export type SessaoCompartilhada = {
   /** Id da técnica de respiração em curso. */
@@ -79,6 +94,13 @@ export function useSalaCompartilhada(
     send: (p: object) => unknown;
   } | null>(null);
   const posturas = useRef(new Map<string, Postura>());
+  /** A última posição que eu publiquei. Vai junto na presença para sobreviver à
+   *  aba oculta: o navegador congela o laço de desenho, que é de onde sai o
+   *  envio de posição — sem isto, quem trocou de janela some do mapa dos
+   *  outros, e quem chega depois nunca fica sabendo onde ela parou. */
+  const minhaPostura = useRef<Postura | null>(null);
+  const meuTapetePedido = useRef(tapetePedido);
+  meuTapetePedido.current = tapetePedido;
 
   useEffect(() => {
     if (!ativo || typeof window === "undefined") return;
@@ -110,6 +132,15 @@ export function useSalaCompartilhada(
           const presentes = new Set(Object.keys(estado));
           for (const id of posturas.current.keys()) {
             if (!presentes.has(id)) posturas.current.delete(id);
+          }
+          // A posição que vem pela presença é a de partida, não a corrente: quem
+          // já mandou por transmissão tem valor mais fresco, e sobrescrever aqui
+          // faria a pessoa voltar no tempo a cada sincronia.
+          for (const [id, metas] of Object.entries(estado)) {
+            const pos = (metas[metas.length - 1] as { pos?: Postura })?.pos;
+            if (pos && id !== meuId && !posturas.current.has(id)) {
+              posturas.current.set(id, pos);
+            }
           }
           setReivindicacoes(
             Object.entries(estado).map(([id, metas]) => ({
@@ -146,7 +177,7 @@ export function useSalaCompartilhada(
         .subscribe((status: string) => {
           if (!vivo) return;
           setConectado(status === "SUBSCRIBED");
-          if (status === "SUBSCRIBED") canal.track({ tapete: tapetePedido });
+          if (status === "SUBSCRIBED") canal.track({ tapete: tapetePedido, pos: null });
         });
 
       canalRef.current = canal;
@@ -167,8 +198,24 @@ export function useSalaCompartilhada(
   }, [ativo, meuId]);
 
   useEffect(() => {
-    canalRef.current?.track({ tapete: tapetePedido });
+    canalRef.current?.track({ tapete: tapetePedido, pos: minhaPostura.current });
   }, [tapetePedido]);
+
+  // Republica a presença devagar enquanto de pé. `setInterval` continua rodando
+  // com a aba oculta (estrangulado, e aqui isso basta) — ao contrário do laço de
+  // desenho, que para. É o que garante que a última posição conhecida chegue a
+  // quem entrar depois.
+  useEffect(() => {
+    if (!ativo) return;
+    const id = window.setInterval(() => {
+      if (!minhaPostura.current) return;
+      canalRef.current?.track({
+        tapete: meuTapetePedido.current,
+        pos: minhaPostura.current,
+      });
+    }, 5000);
+    return () => window.clearInterval(id);
+  }, [ativo]);
 
   const anunciarSessao = useCallback((tecnica: string, decorridoSegundos: number) => {
     canalRef.current?.send({
@@ -180,6 +227,7 @@ export function useSalaCompartilhada(
 
   const anunciarPostura = useCallback(
     (postura: Postura) => {
+      minhaPostura.current = postura;
       canalRef.current?.send({
         type: "broadcast",
         event: "postura",
@@ -193,6 +241,13 @@ export function useSalaCompartilhada(
     () => resolverTapetes(reivindicacoes, totalTapetes),
     [reivindicacoes, totalTapetes],
   );
+  // Sobre TODOS os ids, inclusive o meu: cada máquina enxerga uma lista
+  // diferente de "os outros", e resolver sobre essa lista devolveria lugares
+  // discordantes — que foi o defeito relatado.
+  const espera = useMemo(
+    () => resolverEspera(reivindicacoes.map((r) => r.id)),
+    [reivindicacoes],
+  );
 
   return {
     // Enquanto o modelo nao carregou nao ha como resolver tapete nenhum, e
@@ -200,7 +255,11 @@ export function useSalaCompartilhada(
     // sentada aparece em pe e depois senta, que le como falha.
     outras: (totalTapetes === 0 ? [] : reivindicacoes)
       .filter((r) => r.id !== meuId)
-      .map((r) => ({ id: r.id, tapete: lugares.get(r.id) ?? null })),
+      .map((r) => ({
+        id: r.id,
+        tapete: lugares.get(r.id) ?? null,
+        espera: espera.get(r.id) ?? { x: 0, z: ESPERA_PADRAO },
+      })),
     // Enquanto ninguém mais está na sala o desempate não tem o que decidir, e o
     // pedido vale como está — senão sentar teria um atraso de ida e volta.
     meuTapete: lugares.has(meuId) ? (lugares.get(meuId) ?? null) : tapetePedido,

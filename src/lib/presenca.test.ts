@@ -3,6 +3,7 @@ import {
   anuncioDeMudanca,
   deveEnviarPostura,
   inicioLocalDaSessao,
+  resolverEspera,
   resolverTapetes,
 } from "./presenca";
 import { TECNICAS, faseEm } from "./respiracao";
@@ -161,5 +162,32 @@ describe("deveEnviarPostura", () => {
     const ultima = { postura: p(0, 0, -Math.PI + 0.01), emMs: 1000 };
     expect(deveEnviarPostura(ultima, p(0, 0, Math.PI - 0.01), 1200)).toBe(false);
     expect(deveEnviarPostura(ultima, p(0, 0, Math.PI - 0.3), 1200)).toBe(true);
+  });
+});
+
+describe("resolverEspera", () => {
+  /** A invariante que faltou e produziu o defeito: cada máquina recebe a lista
+   *  do Presence numa ordem própria. Se o lugar dependesse dessa ordem, a mesma
+   *  pessoa apareceria na frente da sala para um e no fundo para o outro — que
+   *  foi exatamente o relato. */
+  it("dá o mesmo lugar em qualquer ordem de entrada", () => {
+    const ids = ["ana", "bruno", "carol", "davi"];
+    const base = resolverEspera(ids);
+    for (const ordem of [[...ids].reverse(), ["carol", "ana", "davi", "bruno"]]) {
+      const outro = resolverEspera(ordem);
+      for (const id of ids) expect(outro.get(id)).toEqual(base.get(id));
+    }
+  });
+
+  it("não põe duas pessoas no mesmo lugar", () => {
+    const ids = Array.from({ length: 12 }, (_, i) => `p${i}`);
+    const chaves = [...resolverEspera(ids).values()].map((p) => `${p.x},${p.z}`);
+    expect(new Set(chaves).size).toBe(chaves.length);
+  });
+
+  it("recua para uma segunda fila quando a primeira enche", () => {
+    const ids = Array.from({ length: 7 }, (_, i) => `p${i}`);
+    const zs = [...resolverEspera(ids).values()].map((p) => p.z);
+    expect(new Set(zs).size).toBe(2);
   });
 });

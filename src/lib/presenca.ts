@@ -166,3 +166,36 @@ export function deveEnviarPostura(
   const bruto = Math.abs(atual.yaw - ultima.postura.yaw) % (Math.PI * 2);
   return Math.min(bruto, Math.PI * 2 - bruto) >= ENVIO.giro;
 }
+
+/**
+ * Onde fica quem está de pé e ainda não mandou posição.
+ *
+ * Acontece com quem acabou de entrar e com quem está em outra aba — o navegador
+ * congela o laço de desenho de aba oculta, e é de lá que sai o envio de
+ * posição. Então "de pé sem posição conhecida" não é caso raro: é o caso de
+ * qualquer pessoa que trocou de janela.
+ *
+ * ⚠️ **O lugar tem que sair do conjunto de ids, nunca do índice na lista.** A
+ * ordem que o Presence devolve não é a mesma nas duas máquinas, e usar o índice
+ * fazia a mesma pessoa aparecer na frente da sala para um e no fundo para o
+ * outro. Mesmo princípio de `resolverTapetes`, e o mesmo erro cometido duas
+ * vezes.
+ *
+ * Recebe **todos** os ids, inclusive o de quem chama: cada máquina enxerga uma
+ * lista diferente de "os outros", e resolver sobre essa lista traria de volta a
+ * divergência por outro caminho.
+ */
+export const ESPERA = { z: -2.6, primeiroX: -2.4, passo: 1.2, porFila: 5, recuoFila: 0.9 };
+
+export function resolverEspera(ids: string[]): Map<string, { x: number; z: number }> {
+  const ordenados = [...ids].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  const lugares = new Map<string, { x: number; z: number }>();
+  ordenados.forEach((id, i) => {
+    const fila = Math.floor(i / ESPERA.porFila);
+    lugares.set(id, {
+      x: ESPERA.primeiroX + (i % ESPERA.porFila) * ESPERA.passo,
+      z: ESPERA.z - fila * ESPERA.recuoFila,
+    });
+  });
+  return lugares;
+}
