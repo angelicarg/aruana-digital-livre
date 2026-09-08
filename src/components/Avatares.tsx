@@ -1,8 +1,9 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { ESCALA, TECNICAS, faseEm } from "@/lib/respiracao";
 import type { OutraPessoa, SessaoCompartilhada } from "@/hooks/useSalaCompartilhada";
+import type { Postura } from "@/lib/presenca";
 
 /**
  * As outras pessoas na sala.
@@ -76,26 +77,47 @@ function Corpo({
   pessoa,
   posicao,
   sentado,
+  alvo,
   alvoEscala,
   amplitude,
 }: {
   pessoa: OutraPessoa;
   posicao: [number, number, number];
   sentado: boolean;
+  /** Para quem está de pé: onde a rede diz que a pessoa está agora. */
+  alvo: RefObject<Map<string, Postura>> | null;
   alvoEscala: (t: number) => number;
   amplitude: number;
 }) {
   const p = sentado ? POSTURA.sentado : POSTURA.emPe;
+  const corpo = useRef<THREE.Group>(null);
   const tronco = useRef<THREE.Mesh>(null);
   const cabeca = useRef<THREE.Mesh>(null);
   const suave = useRef(ESCALA.minima);
   const cor = useMemo(() => corDoId(pessoa.id), [pessoa.id]);
 
   useFrame((estado, delta) => {
-    const alvo = alvoEscala(estado.clock.elapsedTime);
+    // A posicao chega a 10 Hz e a tela desenha a 60: perseguir o alvo por
+    // suavizacao exponencial e o que transforma dez saltos por segundo em
+    // caminhada. Tau curto (0,12 s) porque longo demais vira patinacao — o
+    // corpo segue deslizando depois que a pessoa ja parou.
+    const g = corpo.current;
+    const destino = alvo?.current?.get(pessoa.id);
+    if (g && destino) {
+      const k = 1 - Math.exp(-delta / 0.12);
+      g.position.x += (destino.x - g.position.x) * k;
+      g.position.z += (destino.z - g.position.z) * k;
+      // Angulo pelo caminho curto: sem isto, cruzar o ±180° faz o corpo girar
+      // quase uma volta inteira para chegar a um vizinho.
+      let d = destino.yaw - g.rotation.y;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      g.rotation.y += d * k;
+    }
+
+    const alvoE = alvoEscala(estado.clock.elapsedTime);
     // Suavização exponencial na escala, não na fase: entrar em sessão vira uma
     // transição contínua sem ninguém dar um salto no peito.
-    suave.current += (alvo - suave.current) * (1 - Math.exp(-delta / 0.45));
+    suave.current += (alvoE - suave.current) * (1 - Math.exp(-delta / 0.45));
 
     // A escala da respiração vai de 0,32 a 1. Aqui ela vira 5% de largura de
     // tronco — mais que isso e o corpo infla como balão em vez de respirar.
@@ -107,7 +129,7 @@ function Corpo({
   });
 
   return (
-    <group position={posicao}>
+    <group ref={corpo} position={posicao}>
       {/* Sentado, a base é o disco achatado das pernas cruzadas — a forma real
           de quem senta assim já é essa, então geometria simples não é
           concessão. Em pé, o mesmo volume vira as duas pernas juntas. */}
@@ -140,11 +162,14 @@ export function Avatares({
   outras,
   tapetes,
   sessao,
+  posturas,
   amplitude,
 }: {
   outras: OutraPessoa[];
   tapetes: { centro: THREE.Vector3 }[];
   sessao: SessaoCompartilhada | null;
+  /** Onde está quem não sentou. Lida por quadro, fora do React. */
+  posturas: RefObject<Map<string, Postura>>;
   /** Multiplica o quanto o corpo se move ao respirar. */
   amplitude: number;
 }) {
@@ -156,13 +181,16 @@ export function Avatares({
   return (
     <>
       {outras.map((p, i) => {
-        // Quem não pegou tapete fica em pé no fundo, encostado na parede. Sumir
-        // com a pessoa seria pior: a sala anuncia que ela está aqui.
+        // Sentado, a posição é o tapete. De pé, ela vem pela rede e o corpo a
+        // persegue por quadro. O ponto do fundo é só onde o corpo nasce até a
+        // primeira mensagem chegar — quem entra numa sala de gente parada
+        // recebe o pulso em até 2 s.
         const emPe = p.tapete === null;
         const centro = emPe ? null : tapetes[p.tapete!]?.centro;
         if (!emPe && !centro) return null;
+        const inicial = emPe ? posturas.current?.get(p.id) : null;
         const posicao: [number, number, number] = emPe
-          ? [-2.4 + (i % 5) * 1.2, 0, -2.6]
+          ? [inicial?.x ?? -2.4 + (i % 5) * 1.2, 0, inicial?.z ?? -2.6]
           : [centro!.x, 0, centro!.z];
 
         const alvoEscala = (agora: number) => {
@@ -181,6 +209,7 @@ export function Avatares({
             pessoa={p}
             sentado={!emPe}
             posicao={posicao}
+            alvo={emPe ? posturas : null}
             alvoEscala={alvoEscala}
             amplitude={amplitude}
           />

@@ -809,7 +809,9 @@ function SalaYogaPage() {
     outras,
     meuTapete,
     sessao: sessaoCompartilhada,
+    posturas,
     anunciarSessao,
+    anunciarPostura,
   } = useSalaCompartilhada(tapetePedido, totalTapetes, mounted);
 
   // O desempate pode me mover de tapete: se alguem com id menor pediu o mesmo,
@@ -907,6 +909,8 @@ function SalaYogaPage() {
                 aoMedirSala={aoMedirSala}
                 outras={outras}
                 sessao={sessaoCompartilhada}
+                posturas={posturas}
+                anunciarPostura={anunciarPostura}
               />
             </Suspense>
           </XR>

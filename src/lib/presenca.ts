@@ -117,3 +117,52 @@ export function anuncioDeMudanca(antes: number, depois: number): string | null {
     ? "A sala ficou vazia."
     : `Alguém saiu da sala. Agora ${depois === 1 ? "há" : "são"} ${pessoas(depois)}.`;
 }
+
+/** Onde alguém está e para onde olha. Só faz sentido de pé: sentado, o índice
+ *  do tapete já carrega a posição inteira. */
+export type Postura = { x: number; z: number; yaw: number };
+
+/**
+ * Quando vale a pena mandar a posição.
+ *
+ * Posição é o oposto da respiração: **não dá para deduzir do relógio**, então
+ * ela é a única coisa nesta sala que precisa de fluxo. Como precisa, precisa de
+ * regra — mandar todo quadro seriam 60 mensagens por segundo por pessoa, e o
+ * projeto do Supabase é compartilhado com outros três sites.
+ *
+ * - `intervaloMs` é o teto: no máximo 10 por segundo, e 10 Hz basta porque quem
+ *   recebe interpola entre as amostras.
+ * - `distancia` e `giro` são o piso: parado não gasta mensagem nenhuma. Numa
+ *   sala de yoga esse é o caso comum — as pessoas ficam quietas.
+ * - `pulsoMs` é a exceção que salva quem chegou depois: mesmo parada, a posição
+ *   se repete a cada 2 s. Sem isso alguém que entra numa sala de gente imóvel
+ *   não descobre onde ninguém está, e todos aparecem na origem.
+ */
+export const ENVIO = {
+  intervaloMs: 100,
+  /** 5 cm: abaixo disso o movimento não se vê a distância de uma sala. */
+  distancia: 0.05,
+  /** ~5 graus. */
+  giro: 0.09,
+  pulsoMs: 2000,
+};
+
+export function deveEnviarPostura(
+  ultima: { postura: Postura; emMs: number } | null,
+  atual: Postura,
+  agoraMs: number,
+): boolean {
+  if (!ultima) return true;
+  const desde = agoraMs - ultima.emMs;
+  if (desde < ENVIO.intervaloMs) return false;
+  if (desde >= ENVIO.pulsoMs) return true;
+
+  const dx = atual.x - ultima.postura.x;
+  const dz = atual.z - ultima.postura.z;
+  if (Math.hypot(dx, dz) >= ENVIO.distancia) return true;
+
+  // Diferença angular pelo caminho curto: sem isso, cruzar de -179° para 179°
+  // parece um giro de 358 graus e dispara envio a cada quadro.
+  const bruto = Math.abs(atual.yaw - ultima.postura.yaw) % (Math.PI * 2);
+  return Math.min(bruto, Math.PI * 2 - bruto) >= ENVIO.giro;
+}

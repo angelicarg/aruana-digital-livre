@@ -1,23 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { resolverTapetes, type Reivindicacao } from "@/lib/presenca";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { resolverTapetes, type Postura, type Reivindicacao } from "@/lib/presenca";
 
 /**
  * Liga a sala de yoga à sala das outras pessoas.
  *
- * ## Nada trafega por quadro
+ * ## O que é função do tempo não trafega; o que não é, trafega
  *
- * A decisão que define este arquivo: **não existe transmissão contínua de
- * posição**. O que vai pela rede é só quem está na sala, em que tapete, e o
- * instante em que a sessão de respiração começou — mensagens raras, disparadas
- * por evento.
+ * A **respiração** custa uma mensagem por sessão: ela é função pura do tempo
+ * decorrido, então basta acertar o relógio e cada máquina calcula o resto
+ * sozinha. Mesmo princípio da revoada e da chuva, agora atravessando a rede.
  *
- * A sala parece viva porque a respiração de todos os avatares é calculada da
- * *mesma função pura do tempo* em cada máquina, não porque alguém está
- * mandando o peito de cada um subir sessenta vezes por segundo. Sincronizar um
- * relógio custa uma mensagem; sincronizar um corpo custaria um fluxo.
- *
- * É o mesmo princípio que já governa a revoada e a chuva — estado é função do
- * tempo — só que agora atravessando a rede.
+ * A **posição de quem está de pé** é o oposto, e a primeira versão errou nisso:
+ * onde alguém está não se deduz do relógio. Sem envio contínuo, quem levantava
+ * e andava aparecia parado num canto para os outros — sentado ia bem porque o
+ * índice do tapete carrega a posição inteira, e essa exceção escondeu o
+ * problema. Então posição vai por fluxo, mas com freio: no máximo 10 por
+ * segundo, nada enquanto a pessoa está parada, e um pulso a cada 2 s para quem
+ * chega depois. Ver `deveEnviarPostura` em lib/presenca.
  *
  * ## Degrada para sozinho
  *
@@ -36,6 +35,12 @@ export type SessaoCompartilhada = {
 };
 
 type Estado = {
+  /** Posição de quem está de pé, atualizada fora do React.
+   *
+   *  Ref e não estado de propósito: a 10 Hz por pessoa, guardar isto em estado
+   *  re-renderizaria a página inteira dez vezes por segundo para mover um
+   *  corpo. Quem desenha lê a ref dentro do `useFrame` e interpola. */
+  posturas: RefObject<Map<string, Postura>>;
   /** Todo mundo menos você, já com o tapete resolvido. */
   outras: OutraPessoa[];
   /** Seu tapete depois do desempate — pode diferir do que você pediu. */
@@ -58,7 +63,10 @@ export function useSalaCompartilhada(
   tapetePedido: number | null,
   totalTapetes: number,
   ativo: boolean,
-): Estado & { anunciarSessao: (tecnica: string, decorridoSegundos: number) => void } {
+): Estado & {
+  anunciarSessao: (tecnica: string, decorridoSegundos: number) => void;
+  anunciarPostura: (postura: Postura) => void;
+} {
   const meuId = useMemo(
     () => (typeof crypto !== "undefined" ? crypto.randomUUID() : `p${Math.random()}`),
     [],
@@ -70,6 +78,7 @@ export function useSalaCompartilhada(
     track: (p: object) => unknown;
     send: (p: object) => unknown;
   } | null>(null);
+  const posturas = useRef(new Map<string, Postura>());
 
   useEffect(() => {
     if (!ativo || typeof window === "undefined") return;
@@ -95,6 +104,13 @@ export function useSalaCompartilhada(
         .on("presence", { event: "sync" }, () => {
           if (!vivo) return;
           const estado = canal.presenceState() as Record<string, { tapete?: number | null }[]>;
+          // Quem saiu leva a postura junto: sem esta limpeza o corpo de quem
+          // fechou a aba ficaria guardado e voltaria a aparecer se um id fosse
+          // reaproveitado.
+          const presentes = new Set(Object.keys(estado));
+          for (const id of posturas.current.keys()) {
+            if (!presentes.has(id)) posturas.current.delete(id);
+          }
           setReivindicacoes(
             Object.entries(estado).map(([id, metas]) => ({
               id,
@@ -107,6 +123,15 @@ export function useSalaCompartilhada(
               tapete: metas[metas.length - 1]?.tapete ?? null,
             })),
           );
+        })
+        .on("broadcast", { event: "postura" }, ({ payload }: any) => {
+          // Fora do React de propósito — ver o comentário de `posturas`.
+          if (!vivo || !payload?.id || payload.id === meuId) return;
+          posturas.current.set(String(payload.id), {
+            x: Number(payload.x) || 0,
+            z: Number(payload.z) || 0,
+            yaw: Number(payload.yaw) || 0,
+          });
         })
         .on("broadcast", { event: "sessao" }, ({ payload }: any) => {
           if (!vivo) return;
@@ -153,6 +178,17 @@ export function useSalaCompartilhada(
     });
   }, []);
 
+  const anunciarPostura = useCallback(
+    (postura: Postura) => {
+      canalRef.current?.send({
+        type: "broadcast",
+        event: "postura",
+        payload: { id: meuId, ...postura },
+      });
+    },
+    [meuId],
+  );
+
   const lugares = useMemo(
     () => resolverTapetes(reivindicacoes, totalTapetes),
     [reivindicacoes, totalTapetes],
@@ -170,6 +206,8 @@ export function useSalaCompartilhada(
     meuTapete: lugares.has(meuId) ? (lugares.get(meuId) ?? null) : tapetePedido,
     conectado,
     sessao,
+    posturas,
     anunciarSessao,
+    anunciarPostura,
   };
 }

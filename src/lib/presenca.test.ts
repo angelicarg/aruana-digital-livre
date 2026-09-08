@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { anuncioDeMudanca, inicioLocalDaSessao, resolverTapetes } from "./presenca";
+import {
+  anuncioDeMudanca,
+  deveEnviarPostura,
+  inicioLocalDaSessao,
+  resolverTapetes,
+} from "./presenca";
 import { TECNICAS, faseEm } from "./respiracao";
 
 /** Atalho: só o tapete de cada um, na ordem em que os ids foram passados. */
@@ -114,5 +119,47 @@ describe("anuncioDeMudanca", () => {
       anuncioDeMudanca(1, 0),
     ].join(" ");
     expect(textos).not.toMatch(/sozinh[oa]|bem-vind[oa]|conectad[oa]/i);
+  });
+});
+
+describe("deveEnviarPostura", () => {
+  const p = (x: number, z: number, yaw = 0) => ({ x, z, yaw });
+
+  it("manda a primeira sempre", () => {
+    expect(deveEnviarPostura(null, p(0, 0), 0)).toBe(true);
+  });
+
+  it("respeita o teto de 10 por segundo", () => {
+    const ultima = { postura: p(0, 0), emMs: 1000 };
+    expect(deveEnviarPostura(ultima, p(9, 9), 1050)).toBe(false);
+    expect(deveEnviarPostura(ultima, p(9, 9), 1100)).toBe(true);
+  });
+
+  /** O caso comum numa sala de yoga: gente quieta. Parado não pode gastar
+   *  mensagem, senão o custo é o mesmo de streaming contínuo. */
+  it("não gasta mensagem com quem está parado", () => {
+    const ultima = { postura: p(1, 1), emMs: 1000 };
+    expect(deveEnviarPostura(ultima, p(1.01, 1.01), 1500)).toBe(false);
+  });
+
+  it("manda quando andou o bastante para se ver", () => {
+    const ultima = { postura: p(1, 1), emMs: 1000 };
+    expect(deveEnviarPostura(ultima, p(1.06, 1), 1200)).toBe(true);
+  });
+
+  /** Quem chega numa sala de gente imóvel não recebe nenhuma atualização e
+   *  desenharia todo mundo na origem. O pulso é o que resolve. */
+  it("repete a posição de quem está parado a cada 2 s", () => {
+    const ultima = { postura: p(1, 1), emMs: 1000 };
+    expect(deveEnviarPostura(ultima, p(1, 1), 2900)).toBe(false);
+    expect(deveEnviarPostura(ultima, p(1, 1), 3000)).toBe(true);
+  });
+
+  /** Sem caminho curto, atravessar o ±π dispara envio a cada quadro — e o
+   *  sintoma seria custo de rede, não erro visível. */
+  it("mede giro pelo caminho curto ao cruzar o ±180°", () => {
+    const ultima = { postura: p(0, 0, -Math.PI + 0.01), emMs: 1000 };
+    expect(deveEnviarPostura(ultima, p(0, 0, Math.PI - 0.01), 1200)).toBe(false);
+    expect(deveEnviarPostura(ultima, p(0, 0, Math.PI - 0.3), 1200)).toBe(true);
   });
 });

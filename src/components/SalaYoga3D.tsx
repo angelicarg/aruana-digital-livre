@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, type RefObject } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, useGLTF } from "@react-three/drei";
 import { CeuPorDoSol } from "./CeuPorDoSol";
@@ -9,6 +9,7 @@ import { PERFIS, type Movimento, type Perfil } from "@/lib/movimento";
 import { vidroComGotas, type UniformesGota } from "@/lib/gotas";
 import { Avatares } from "./Avatares";
 import type { OutraPessoa, SessaoCompartilhada } from "@/hooks/useSalaCompartilhada";
+import { deveEnviarPostura, type Postura } from "@/lib/presenca";
 import * as THREE from "three";
 
 /** Comandos de andar vindos da interface (botões de toque). O teclado é lido
@@ -295,6 +296,10 @@ type Props = {
   outras: OutraPessoa[];
   /** Sessão de respiração em curso, para os corpos respirarem em fase. */
   sessao: SessaoCompartilhada | null;
+  /** Onde cada pessoa de pé está, atualizado fora do React. */
+  posturas: RefObject<Map<string, Postura>>;
+  /** Publica a minha posição. O freio de quantas vezes mora em lib/presenca. */
+  anunciarPostura: (postura: Postura) => void;
   clima: Clima;
   /** Chamado no instante do clarão, para a interface agendar o trovão. */
   aoRaio: (raio: Raio) => void;
@@ -311,6 +316,8 @@ function Navegacao({
   aoMedirSala,
   outras,
   sessao,
+  posturas,
+  anunciarPostura,
   clima,
   vento,
   perfil,
@@ -324,6 +331,7 @@ function Navegacao({
   useEffect(() => aoMedirSala(sala.tapetes.length), [sala, aoMedirSala]);
 
   const giro = useRef({ yaw: 0, pitch: 0 });
+  const ultimaPostura = useRef<{ postura: Postura; emMs: number } | null>(null);
   const teclas = useRef(new Set<string>());
   const arrasto = useRef<{ x: number; y: number; andou: number } | null>(null);
   const sensor = useRef<{ alfa: number; beta: number; gama: number } | null>(null);
@@ -507,6 +515,21 @@ function Navegacao({
     // As gotas do vidro sobem aqui, no topo, porque este useFrame retorna cedo
     // quando ninguem esta andando — e a chuva no vidro nao para so porque a
     // pessoa parou de caminhar.
+    // Enquanto de pé, publica onde estou. Sentado nao publica: o indice do
+    // tapete ja diz tudo, e repetir seria gastar rede para dizer o mesmo.
+    if (!sentado) {
+      const agora = performance.now();
+      const minha: Postura = {
+        x: camera.position.x,
+        z: camera.position.z,
+        yaw: giro.current.yaw,
+      };
+      if (deveEnviarPostura(ultimaPostura.current, minha, agora)) {
+        ultimaPostura.current = { postura: minha, emMs: agora };
+        anunciarPostura(minha);
+      }
+    }
+
     const g = sala.gotas;
     g.uTempo.value += passo;
     g.uEscorrer.value = perfil.escorrimento;
@@ -598,6 +621,7 @@ function Navegacao({
         outras={outras}
         tapetes={sala.tapetes}
         sessao={sessao}
+        posturas={posturas}
         amplitude={perfil.amplitudeAvatar}
       />
     </>
