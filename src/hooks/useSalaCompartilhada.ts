@@ -78,6 +78,14 @@ export function useSalaCompartilhada(
   tapetePedido: number | null,
   totalTapetes: number,
   ativo: boolean,
+  /** `false` na antessala: escuta a sala e **não** se publica nela. Quem ainda
+   *  não entrou precisa saber quantas pessoas há lá dentro sem já aparecer como
+   *  um corpo — é a diferença entre olhar pela porta e estar na sala. */
+  presente: boolean,
+  /** Qual sala escutar. Entra por parametro e nao lido de `window` dentro do
+   *  efeito porque trocar de sala precisa reconectar o canal — e so e dependencia
+   *  explicita quem faz isso acontecer. */
+  codigo: string,
 ): Estado & {
   anunciarSessao: (tecnica: string, decorridoSegundos: number) => void;
   anunciarPostura: (postura: Postura) => void;
@@ -91,9 +99,12 @@ export function useSalaCompartilhada(
   const [sessao, setSessao] = useState<SessaoCompartilhada | null>(null);
   const canalRef = useRef<{
     track: (p: object) => unknown;
+    untrack?: () => unknown;
     send: (p: object) => unknown;
   } | null>(null);
   const posturas = useRef(new Map<string, Postura>());
+  const souPresente = useRef(presente);
+  souPresente.current = presente;
   /** A última posição que eu publiquei. Vai junto na presença para sobreviver à
    *  aba oculta: o navegador congela o laço de desenho, que é de onde sai o
    *  envio de posição — sem isto, quem trocou de janela some do mapa dos
@@ -121,7 +132,6 @@ export function useSalaCompartilhada(
       let canal: any;
       try {
         const { supabase } = await import("@/integrations/supabase/client");
-        const codigo = codigoDaSala(window.location.search);
         canal = supabase.channel(`sala-yoga:${codigo}`, {
           config: { presence: { key: meuId } },
         });
@@ -195,7 +205,9 @@ export function useSalaCompartilhada(
           if (ligado) {
             tentativa = 0;
             window.clearTimeout(esvaziar);
-            canal.track({ tapete: tapetePedido, pos: minhaPostura.current });
+            if (souPresente.current) {
+              canal.track({ tapete: tapetePedido, pos: minhaPostura.current });
+            }
             return;
           }
 
@@ -245,11 +257,21 @@ export function useSalaCompartilhada(
     // abaixo, e entrar aqui derrubaria e refaria o canal a cada vez que alguém
     // senta — o que faria a pessoa piscar para todo mundo na sala.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ativo, meuId]);
+  }, [ativo, meuId, codigo]);
 
   useEffect(() => {
+    if (!presente) return;
     canalRef.current?.track({ tapete: tapetePedido, pos: minhaPostura.current });
-  }, [tapetePedido]);
+  }, [tapetePedido, presente]);
+
+  // Sair da antessala publica; voltar para ela despublica. Sem o `untrack` a
+  // pessoa continuaria como corpo na sala depois de ter saido dela.
+  useEffect(() => {
+    const canal = canalRef.current;
+    if (!canal) return;
+    if (presente) canal.track({ tapete: null, pos: null });
+    else canal.untrack?.();
+  }, [presente, conectado]);
 
   // Republica a presença devagar enquanto de pé. `setInterval` continua rodando
   // com a aba oculta (estrangulado, e aqui isso basta) — ao contrário do laço de
@@ -258,7 +280,7 @@ export function useSalaCompartilhada(
   useEffect(() => {
     if (!ativo) return;
     const id = window.setInterval(() => {
-      if (!minhaPostura.current) return;
+      if (!minhaPostura.current || !souPresente.current) return;
       canalRef.current?.track({
         tapete: meuTapetePedido.current,
         pos: minhaPostura.current,

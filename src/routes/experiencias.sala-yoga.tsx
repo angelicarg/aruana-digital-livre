@@ -8,6 +8,7 @@ import { atrasoDoTrovao, type Clima, type Raio } from "@/lib/clima";
 import { movimentoDoSistema, type Movimento } from "@/lib/movimento";
 import { useSalaCompartilhada } from "@/hooks/useSalaCompartilhada";
 import { anuncioDeMudanca } from "@/lib/presenca";
+import { codigoDaSala } from "@/hooks/useSalaCompartilhada";
 import {
   ControlesRespiracao,
   GuiaRespiracao,
@@ -768,6 +769,108 @@ function BoasVindas() {
   );
 }
 
+/**
+ * Antessala.
+ *
+ * Ideia dela, e ela nomeou o motivo: as pessoas entram sabendo quantas há e se
+ * a sala está cheia, como nos ambientes de encontro remoto. O ganho maior nem é
+ * de etiqueta — é que **o estado da sala passa a ser visível antes de valer a
+ * pena descobri-lo**. Antes, se a conexão tivesse caído, isso só aparecia
+ * depois de acender a GPU e carregar a cena inteira; foi assim que um canal
+ * derrubado passou duas rodadas parecendo defeito de desenho.
+ *
+ * Quem está aqui **escuta a sala e não se publica nela**: aparece o que há lá
+ * dentro, sem que quem olha já vire um corpo. Entrar é a decisão que publica.
+ */
+function Antessala({
+  conectado,
+  pessoas,
+  sentadas,
+  codigo,
+  setCodigo,
+  entrar,
+}: {
+  conectado: boolean;
+  pessoas: number;
+  sentadas: number;
+  codigo: string;
+  setCodigo: (c: string) => void;
+  entrar: () => void;
+}) {
+  const [rascunho, setRascunho] = useState(codigo);
+  // O codigo da URL so chega depois da montagem (no servidor nao ha `window`),
+  // e sem isto o campo ficava eternamente escrito "publica" enquanto a pessoa
+  // ja estava conectada a outra sala — a tela contradizendo o estado.
+  useEffect(() => setRascunho(codigo), [codigo]);
+
+  return (
+    <div className="absolute inset-0 z-30 grid place-items-center overflow-y-auto bg-[#1a1512] p-6">
+      <div className="w-full max-w-md">
+        <h1 className="text-2xl font-semibold text-white">Sala de Yoga & Relaxamento</h1>
+        <p className="mt-2 text-sm leading-relaxed text-white/70">
+          Um espaço 3D para respirar junto com outras pessoas, cada uma no seu lugar.
+          Protótipo da Aruanã Digital.
+        </p>
+
+        {/* `status` e nao `alert`: muda sozinho conforme gente entra e sai, e
+            interromper a leitura a cada mudanca seria hostil. */}
+        <div
+          role="status"
+          aria-live="polite"
+          className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4"
+        >
+          {!conectado ? (
+            <p className="text-sm text-white/70">
+              <strong className="font-semibold text-white">
+                Sala compartilhada indisponível.
+              </strong>{" "}
+              Você pode entrar assim mesmo — a experiência funciona sozinha, mas ninguém
+              vai aparecer.
+            </p>
+          ) : pessoas === 0 ? (
+            <p className="text-sm text-white/70">
+              <strong className="font-semibold text-white">A sala está vazia.</strong> Você
+              será a primeira pessoa a entrar.
+            </p>
+          ) : (
+            <p className="text-sm text-white/70">
+              <strong className="font-semibold text-white">
+                {pessoas === 1 ? "1 pessoa" : `${pessoas} pessoas`} na sala
+              </strong>
+              {sentadas > 0 && `, ${sentadas} em um tapete`}.
+            </p>
+          )}
+        </div>
+
+        <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-white/50">
+          Código da sala
+          <input
+            value={rascunho}
+            onChange={(e) => setRascunho(e.target.value)}
+            onBlur={() => setCodigo(codigoDaSala(`?sala=${rascunho}`))}
+            className="mt-1.5 block w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none focus:border-[#00CCA7]"
+          />
+        </label>
+        <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+          Quem abrir o link com o mesmo código cai na mesma sala. Sem código, todo mundo
+          entra na sala pública.
+        </p>
+
+        <button
+          onClick={entrar}
+          className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#00CCA7] px-6 py-3 text-sm font-semibold text-[#041B33] transition hover:brightness-105"
+        >
+          Entrar na sala
+        </button>
+        <p className="mt-3 text-xs leading-relaxed text-white/45">
+          São 3 tapetes. Com a sala cheia você entra em pé e continua vendo e ouvindo
+          tudo — ninguém fica de fora.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function SalaYogaPage() {
   const [mounted, setMounted] = useState(false);
   const [xrSupported, setXrSupported] = useState(false);
@@ -778,6 +881,13 @@ function SalaYogaPage() {
   const [sentado, setSentado] = useState(false);
   // Qual tapete eu pedi, e quantos existem. Os dois sobem da cena: o modelo e
   // quem sabe quantos tapetes tem a sala.
+  // A antessala. Entrar e uma decisao, nao o que acontece por abrir a pagina:
+  // antes disso a pessoa ve quantos estao la dentro, se a conexao esta de pe e
+  // em que sala vai cair. O Canvas so monta depois — e e ele que acende a GPU.
+  const [entrou, setEntrou] = useState(false);
+  const [codigo, setCodigo] = useState("publica");
+  useEffect(() => setCodigo(codigoDaSala(window.location.search)), []);
+
   const [tapetePedido, setTapetePedido] = useState<number | null>(null);
   const [totalTapetes, setTotalTapetes] = useState(0);
   const { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente, aoRaio, avisarClima } =
@@ -813,7 +923,7 @@ function SalaYogaPage() {
     posturas,
     anunciarSessao,
     anunciarPostura,
-  } = useSalaCompartilhada(tapetePedido, totalTapetes, mounted);
+  } = useSalaCompartilhada(tapetePedido, totalTapetes, mounted, entrou, codigo);
 
   // O desempate pode me mover de tapete: se alguem com id menor pediu o mesmo,
   // eu vou para outro. Refletir isso no pedido mantem as duas maquinas
@@ -914,7 +1024,7 @@ function SalaYogaPage() {
 
   return (
     <div ref={containerRef} className="relative h-dvh w-full overflow-hidden bg-[#1a1512]">
-      {mounted && (
+      {mounted && entrou && (
         <Canvas
           camera={{ position: [0, 1.6, 2.8], fov: 60 }}
           dpr={[1, 1.75]}
@@ -944,6 +1054,17 @@ function SalaYogaPage() {
         </Canvas>
       )}
 
+      {!entrou && (
+        <Antessala
+          conectado={conectado}
+          pessoas={outras.length}
+          sentadas={outras.filter((o) => o.tapete !== null).length}
+          codigo={codigo}
+          setCodigo={setCodigo}
+          entrar={() => setEntrou(true)}
+        />
+      )}
+
       {/* Quem chegou e quem saiu, para quem nao ve o canvas. Fora do fluxo
           visual e sem `alert`: e informacao de ambiente, nao urgencia. */}
       <div role="status" aria-live="polite" className="sr-only">
@@ -951,7 +1072,10 @@ function SalaYogaPage() {
       </div>
 
       {/* Overlay UI */}
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 sm:p-6">
+      <div
+        hidden={!entrou}
+        className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 sm:p-6"
+      >
         <div className="flex items-start justify-between gap-3">
           <a
             href="/"
