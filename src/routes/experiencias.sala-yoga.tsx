@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, X } from "lucide-react";
+import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, Waves, X } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
 import { atrasoDoTrovao, type Clima, type Raio } from "@/lib/clima";
+import { movimentoDoSistema, type Movimento } from "@/lib/movimento";
 import {
   ControlesRespiracao,
   GuiaRespiracao,
@@ -491,6 +492,8 @@ function MenuAjustes({
   trocarAmbiente,
   clima,
   trocarClima,
+  movimento,
+  setMovimento,
   temSensor,
   giroscopio,
   setGiroscopio,
@@ -507,6 +510,8 @@ function MenuAjustes({
   trocarAmbiente: (a: Ambiente) => void;
   clima: Clima;
   trocarClima: (c: Clima) => void;
+  movimento: Movimento;
+  setMovimento: (m: Movimento) => void;
   temSensor: boolean;
   giroscopio: boolean;
   setGiroscopio: (v: boolean) => void;
@@ -668,6 +673,24 @@ function MenuAjustes({
             </button>
           )}
 
+          {/* Acima do giroscopio de proposito: os dois tratam de conforto de
+              movimento, e este e o que serve a mais gente. */}
+          <button
+            onClick={() =>
+              setMovimento(movimento === "reduzido" ? "completo" : "reduzido")
+            }
+            aria-pressed={movimento === "reduzido"}
+            className={linha}
+          >
+            <span className="inline-flex items-center gap-2">
+              <Waves className="h-4 w-4" /> Reduzir o movimento da cena
+            </span>
+            <span
+              aria-hidden="true"
+              className={`h-2 w-2 shrink-0 rounded-full ${movimento === "reduzido" ? "bg-[#00CCA7]" : "bg-white/25"}`}
+            />
+          </button>
+
           {temSensor && (
             <button
               onClick={async () => {
@@ -754,6 +777,12 @@ function SalaYogaPage() {
   const { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente, aoRaio, avisarClima } =
     useAmbientAudio();
   const [clima, setClima] = useState<Clima>("por_do_sol");
+  // Comeca na preferencia do sistema, mas nao termina nela: ha quem precise e
+  // nunca tenha mexido no ajuste do sistema, e ha quem o tenha ligado no
+  // aparelho inteiro e queira a sala completa mesmo assim. Por isso o controle
+  // existe no menu — e por isso o valor inicial e so o palpite de partida.
+  const [movimento, setMovimento] = useState<Movimento>("completo");
+  useEffect(() => setMovimento(movimentoDoSistema()), []);
 
   // O som do lado de fora é parte do clima, não um ajuste separado: trocar um
   // sem o outro produz chuva com canto de pássaro.
@@ -822,6 +851,7 @@ function SalaYogaPage() {
                 aoMudarPostura={aoMudarPostura}
                 clima={clima}
                 aoRaio={aoRaio}
+                movimento={movimento}
               />
             </Suspense>
           </XR>
@@ -849,6 +879,8 @@ function SalaYogaPage() {
               trocarAmbiente={trocarAmbiente}
               clima={clima}
               trocarClima={trocarClima}
+              movimento={movimento}
+              setMovimento={setMovimento}
               temSensor={temSensor}
               giroscopio={giroscopio}
               setGiroscopio={setGiroscopio}

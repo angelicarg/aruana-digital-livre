@@ -5,6 +5,7 @@ import { CeuPorDoSol } from "./CeuPorDoSol";
 import { Passaros } from "./Passaros";
 import { Chuva } from "./Chuva";
 import { PALETAS, RELAMPAGO, raioDaFatia, relampagoEm, type Clima, type Raio } from "@/lib/clima";
+import { PERFIS, type Movimento, type Perfil } from "@/lib/movimento";
 import * as THREE from "three";
 
 /** Comandos de andar vindos da interface (botões de toque). O teclado é lido
@@ -23,7 +24,8 @@ const PITCH_MAX = Math.PI / 3;
 
 // Constante de tempo da aceleração e da frenagem. Sem ela o passo liga e desliga
 // no zero, e o corpo lê isso como teletransporte curto, não como caminhada.
-const TAU_PASSO = 0.19;
+// TAU_PASSO e TRANSICAO_MS mudaram de lugar: agora sao campos de PERFIS em
+// lib/movimento, porque os dois tem valor diferente sob movimento reduzido.
 const PARADO = 0.02; // m/s abaixo dos quais a velocidade vira zero
 
 // Raio do corpo: as caixas de colisão são infladas por ele, então basta testar
@@ -34,7 +36,6 @@ const RAIO_CORPO = 0.32;
 // luminária sem precisar de lista de nomes.
 const OBSTACULO = { pisavel: 0.25, teto: 1.7, largura_maxima: 6 };
 
-const TRANSICAO_MS = 950;
 
 // Blender é Z para cima, glTF é Y para cima: o exportador converte (x, y, z) em
 // (x, z, -y). Estas posições vêm das luminárias do script e já estão convertidas.
@@ -129,8 +130,10 @@ type Sala = {
 function Arvore({ vento }: { vento: number }) {
   const { scene } = useGLTF("/modelos/arvore.glb", "/draco/");
   // O vento nao salta de brisa para tempestade num quadro: ele sobe junto com
-  // o resto do clima.
-  const ventoAtual = useRef(1);
+  // o resto do clima. Comeca no valor recebido e nao em 1: sob movimento
+  // reduzido o vento chega zerado, e partir de 1 faria a copa balancar um
+  // segundo e meio na abertura justamente para quem pediu que ela nao balance.
+  const ventoAtual = useRef(vento);
 
   const { raiz, copas } = useMemo(() => {
     const raiz = scene.clone(true);
@@ -271,11 +274,19 @@ type Props = {
   clima: Clima;
   /** Chamado no instante do clarão, para a interface agendar o trovão. */
   aoRaio: (raio: Raio) => void;
+  /** Quanto a sala pode se mexer. Ver lib/movimento. */
+  movimento: Movimento;
 };
 
 /** Olhar, andar e sentar em primeira pessoa. Controle orbital não serve aqui:
  *  ele gira em torno de um ponto e deixa o visitante sair pela parede. */
-function Navegacao({ giroscopio, sentado, aoMudarPostura, vento }: Props & { vento: number }) {
+function Navegacao({
+  giroscopio,
+  sentado,
+  aoMudarPostura,
+  vento,
+  perfil,
+}: Props & { vento: number; perfil: Perfil }) {
   const { camera, gl } = useThree();
   const sala = useSala();
 
@@ -462,7 +473,13 @@ function Navegacao({ giroscopio, sentado, aoMudarPostura, vento }: Props & { ven
 
     const v = viagem.current;
     if (v) {
-      const t = Math.min((performance.now() - v.inicio) / TRANSICAO_MS, 1);
+      // Duracao zero e corte seco, nao divisao por zero: com o perfil reduzido
+      // a camera chega sentada no primeiro quadro. Sem a guarda, o instante em
+      // que inicio e agora coincidem daria 0/0 e espalharia NaN pela camera.
+      const t =
+        perfil.transicaoMs > 0
+          ? Math.min((performance.now() - v.inicio) / perfil.transicaoMs, 1)
+          : 1;
       const e = suavizar(t);
       camera.position.lerpVectors(v.de, v.para, e);
       giro.current.yaw = v.yawDe + (v.yawPara - v.yawDe) * e;
@@ -514,7 +531,10 @@ function Navegacao({ giroscopio, sentado, aoMudarPostura, vento }: Props & { ven
 
     // Suavização exponencial: independente da taxa de quadros, ao contrário de
     // somar uma fração fixa por frame, que aceleraria mais num monitor de 144 Hz.
-    velocidade.current.lerp(alvo, 1 - Math.exp(-passo / TAU_PASSO));
+    // tauPasso zero cai em exp(-Infinity) = 0, logo fator 1: a velocidade
+    // alvo entra inteira no quadro. E de proposito — o desconforto vestibular
+    // nasce da aceleracao sem par no ouvido interno, nao da velocidade.
+    velocidade.current.lerp(alvo, 1 - Math.exp(-passo / perfil.tauPasso));
     if (velocidade.current.lengthSq() < PARADO * PARADO) velocidade.current.set(0, 0, 0);
     if (velocidade.current.lengthSq() === 0) return;
 
@@ -542,8 +562,9 @@ function Navegacao({ giroscopio, sentado, aoMudarPostura, vento }: Props & { ven
  * de nevoa nao sao estado do React: mexer nelas por `setState` redesenharia a
  * arvore de componentes sessenta vezes por segundo.
  */
-export function CenaSala({ clima, aoRaio, ...props }: Props) {
+export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
   const paleta = PALETAS[clima];
+  const perfil = PERFIS[movimento];
   const cena = useThree((estado) => estado.scene);
 
   const sol = useRef<THREE.DirectionalLight>(null);
@@ -552,15 +573,6 @@ export function CenaSala({ clima, aoRaio, ...props }: Props) {
   const luzDoRaio = useRef<THREE.DirectionalLight>(null);
   const relampago = useRef(0);
   const ultimaFatia = useRef(-1);
-
-  // ⚠️ Criterio de acessibilidade, nao preferencia visual: quem pediu menos
-  // movimento nao recebe clarao nenhum. Ver o comentario de CLAROES_POR_RAIO.
-  const semMovimento = useMemo(
-    () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    [],
-  );
 
   const alvo = useMemo(
     () => ({
@@ -600,7 +612,9 @@ export function CenaSala({ clima, aoRaio, ...props }: Props) {
     }
 
     const t = estado.clock.elapsedTime;
-    const trovoada = clima === "chuva" && !semMovimento;
+    // ⚠️ Criterio de acessibilidade, nao preferencia visual. Ver CLAROES_POR_RAIO
+    // em lib/clima e o teste de PERFIS em lib/movimento.
+    const trovoada = clima === "chuva" && perfil.relampago;
     relampago.current = trovoada ? relampagoEm(t) : 0;
     // 3,5 e nao 7: medido com o clarao fixo em 0,8, o interior inteiro estourava
     // para quase branco. Clarao de tela cheia e justamente o caso de risco do
@@ -622,10 +636,17 @@ export function CenaSala({ clima, aoRaio, ...props }: Props) {
 
   return (
     <>
-      <CeuPorDoSol sol={SOL} paleta={paleta} relampagoRef={relampago} />
-      <Passaros />
+      <CeuPorDoSol
+        sol={SOL}
+        paleta={paleta}
+        relampagoRef={relampago}
+        deriva={perfil.nuvens}
+      />
+      {/* A revoada sai da arvore inteira em vez de ficar parada no ceu: ave
+          imovel a 58 m nao le como ave, le como sujeira no vidro. */}
+      {perfil.revoada && <Passaros />}
       <Chuva
-        intensidade={paleta.chuva}
+        intensidade={paleta.chuva * perfil.chuva}
         neblina={[paleta.neblina.perto, paleta.neblina.longe]}
       />
       {/* O clarao entra pelo alto e sem sombra: raio ilumina a nuvem inteira,
@@ -693,7 +714,14 @@ export function CenaSala({ clima, aoRaio, ...props }: Props) {
         <Lightformer intensity={0.7} position={[7, 1.5, 4]} scale={[8, 4, 1]} color="#8fa9c4" />
       </Environment>
 
-      <Navegacao {...props} clima={clima} aoRaio={aoRaio} vento={paleta.vento} />
+      <Navegacao
+        {...props}
+        clima={clima}
+        aoRaio={aoRaio}
+        movimento={movimento}
+        vento={paleta.vento * perfil.copas}
+        perfil={perfil}
+      />
     </>
   );
 }

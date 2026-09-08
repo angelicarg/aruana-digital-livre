@@ -113,13 +113,15 @@ type Props = {
    *  quadro, e passa-lo por estado do React redesenharia a arvore inteira
    *  sessenta vezes por segundo para mexer num uniform. */
   relampagoRef: RefObject<number>;
+  /** Multiplica o avanco do tempo da nuvem. Zero congela. */
+  deriva: number;
 };
 
 /** Segundos para o ceu inteiro virar de um clima para o outro. Trocar de uma
  *  vez le como falha de carregamento; o tempo mudando devagar le como tempo. */
 const TRANSICAO = 3.5;
 
-export function CeuPorDoSol({ sol, paleta, relampagoRef }: Props) {
+export function CeuPorDoSol({ sol, paleta, relampagoRef, deriva }: Props) {
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -160,7 +162,10 @@ export function CeuPorDoSol({ sol, paleta, relampagoRef }: Props) {
   // nuvem que corre vira time-lapse e tira a calma, que aqui e o produto.
   useFrame((_, delta) => {
     const u = material.uniforms;
-    u.uTempo.value += delta;
+    // `deriva` zerada congela a nuvem onde ela estiver, sem apagar o desenho
+    // dela do ceu: quem pediu menos movimento continua vendo ceu de nuvem, so
+    // que parado. Ver PERFIS em lib/movimento.
+    u.uTempo.value += delta * deriva;
 
     // Suavizacao exponencial, independente da taxa de quadros — o mesmo motivo
     // da aceleracao do passo: somar fracao fixa por quadro faria a transicao
