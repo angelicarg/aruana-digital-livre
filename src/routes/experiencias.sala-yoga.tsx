@@ -808,6 +808,7 @@ function SalaYogaPage() {
   const {
     outras,
     meuTapete,
+    conectado,
     sessao: sessaoCompartilhada,
     posturas,
     anunciarSessao,
@@ -1003,12 +1004,23 @@ function SalaYogaPage() {
             de respiração, embaixo brigava com o título, e à direita esbarraria no
             VLibras e no botão de acessibilidade, que moram lá. */}
         <div className="absolute left-4 top-1/2 -translate-y-1/2 sm:left-6">
-          {outras.length > 0 && (
-            <span className="pointer-events-none inline-flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm">
-              <Users className="h-3.5 w-3.5" aria-hidden="true" />
-              {outras.length + 1} pessoas na sala
-            </span>
-          )}
+          {/* Sempre visivel, e dizendo qual dos tres estados vale. Antes so
+              aparecia com gente na sala, e ai "sozinho" e "sala compartilhada
+              fora do ar" ficavam indistinguiveis — inclusive para mim, tentando
+              diagnosticar de longe. Degradar em silencio e o pior modo de
+              degradar: quem olha conclui que o produto nao funciona. */}
+          <span
+            className={`pointer-events-none inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-sm ${
+              conectado ? "bg-black/55 text-white/90" : "bg-black/55 text-white/60"
+            }`}
+          >
+            <Users className="h-3.5 w-3.5" aria-hidden="true" />
+            {!conectado
+              ? "Sala compartilhada indisponível"
+              : outras.length === 0
+                ? "Você é a única pessoa aqui"
+                : `${outras.length + 1} pessoas na sala`}
+          </span>
           {sentado ? (
             <button
               onClick={() => aoMudarPostura(false, null)}

@@ -105,7 +105,11 @@ export function useSalaCompartilhada(
   useEffect(() => {
     if (!ativo || typeof window === "undefined") return;
     let vivo = true;
-    let limpar: (() => void) | undefined;
+    // ⚠️ Guardar o canal numa variavel do escopo, e nao so numa funcao de
+    // limpeza criada no fim do IIFE: navegar rapido fazia a limpeza rodar antes
+    // do `await import` terminar, e ai `limpar` ainda era `undefined` — o canal
+    // ficava inscrito para sempre. Cada ida e volta na rota deixava um fantasma.
+    let canalAberto: { unsubscribe: () => void } | null = null;
 
     (async () => {
       let canal: any;
@@ -181,15 +185,19 @@ export function useSalaCompartilhada(
         });
 
       canalRef.current = canal;
-      limpar = () => {
+      canalAberto = canal;
+      // O efeito pode ter sido desmontado enquanto o import corria. Nesse caso
+      // `vivo` ja e falso e ninguem mais vai chamar a limpeza — fechar aqui.
+      if (!vivo) {
         canalRef.current = null;
         canal.unsubscribe();
-      };
+      }
     })();
 
     return () => {
       vivo = false;
-      limpar?.();
+      canalRef.current = null;
+      canalAberto?.unsubscribe();
     };
     // `tapetePedido` fica fora: trocar de tapete republica presença no efeito
     // abaixo, e entrar aqui derrubaria e refaria o canal a cada vez que alguém
@@ -250,10 +258,12 @@ export function useSalaCompartilhada(
   );
 
   return {
-    // Enquanto o modelo nao carregou nao ha como resolver tapete nenhum, e
-    // resolver com total zero poe todo mundo de pe por um instante — a pessoa
-    // sentada aparece em pe e depois senta, que le como falha.
-    outras: (totalTapetes === 0 ? [] : reivindicacoes)
+    // ⚠️ Aqui havia um `totalTapetes === 0 ? [] : ...` para evitar o piscar de
+    // quem aparece em pe antes de sentar. Custava caro demais: se a contagem de
+    // tapetes nao chegasse — modelo lento, aba em segundo plano, efeito que nao
+    // disparou — **ninguem via ninguem**, sem erro nenhum em lugar nenhum. Um
+    // instante de postura errada e muito melhor que uma sala que parece vazia.
+    outras: reivindicacoes
       .filter((r) => r.id !== meuId)
       .map((r) => ({
         id: r.id,
