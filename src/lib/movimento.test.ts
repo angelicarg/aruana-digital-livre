@@ -1,20 +1,36 @@
 import { describe, expect, it } from "vitest";
 import { PERFIS, type Perfil } from "./movimento";
 
-/** Os campos que multiplicam alguma coisa. Separados dos booleanos e das
- *  durações porque a invariante deles é diferente. */
-const MULTIPLICADORES = ["chuva", "nuvens", "copas"] as const satisfies readonly (keyof Perfil)[];
+/** Faixa 0–1: so os campos que multiplicam. Duracao e constante de tempo sao
+ *  numeros tambem, mas em milissegundos e segundos. */
+const MULTIPLICADORES = ["chuva", "nuvens", "copas", "escorrimento"] as const satisfies readonly (keyof Perfil)[];
+
+/** As duas invariantes de baixo percorrem `Object.keys` de proposito, e nao uma
+ *  lista escrita a mao. Lista a mao nao pega justamente o caso que importa:
+ *  alguem acrescenta uma fonte de movimento ao perfil, esquece de baixa-la no
+ *  reduzido, e o teste passa verde porque o campo novo nao esta na lista.
+ *  Varrendo as chaves, o campo esquecido quebra o teste sem que ninguem precise
+ *  lembrar que este arquivo existe. */
+const CHAVES = Object.keys(PERFIS.completo) as (keyof Perfil)[];
 
 describe("perfil de movimento", () => {
-  /** A invariante que pega campo novo esquecido: quem acrescentar uma fonte de
-   *  movimento ao perfil e der a ela o mesmo valor nos dois lados quebra este
-   *  teste, mesmo sem saber que este teste existe. É o ponto dele. */
-  it("reduzido nunca se mexe mais que completo", () => {
-    for (const campo of MULTIPLICADORES) {
-      expect(PERFIS.reduzido[campo]).toBeLessThan(PERFIS.completo[campo]);
+  it("todo numero do reduzido e menor que o do completo", () => {
+    const numericos = CHAVES.filter((k) => typeof PERFIS.completo[k] === "number");
+    expect(numericos.length).toBeGreaterThan(0);
+    for (const campo of numericos) {
+      expect(
+        PERFIS.reduzido[campo],
+        `${campo}: campo numerico novo precisa de valor menor no perfil reduzido`,
+      ).toBeLessThan(PERFIS.completo[campo] as number);
     }
-    expect(PERFIS.reduzido.transicaoMs).toBeLessThan(PERFIS.completo.transicaoMs);
-    expect(PERFIS.reduzido.tauPasso).toBeLessThan(PERFIS.completo.tauPasso);
+  });
+
+  it("o reduzido nunca liga o que o completo deixa desligado", () => {
+    const booleanos = CHAVES.filter((k) => typeof PERFIS.completo[k] === "boolean");
+    expect(booleanos.length).toBeGreaterThan(0);
+    for (const campo of booleanos) {
+      if (PERFIS.reduzido[campo]) expect(PERFIS.completo[campo]).toBe(true);
+    }
   });
 
   it("nenhum multiplicador passa da faixa 0–1", () => {
@@ -62,6 +78,7 @@ describe("perfil de movimento", () => {
       relampago: true,
       transicaoMs: 950,
       tauPasso: 0.19,
+      escorrimento: 1,
     });
   });
 });

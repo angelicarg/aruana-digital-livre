@@ -6,6 +6,7 @@ import { Passaros } from "./Passaros";
 import { Chuva } from "./Chuva";
 import { PALETAS, RELAMPAGO, raioDaFatia, relampagoEm, type Clima, type Raio } from "@/lib/clima";
 import { PERFIS, type Movimento, type Perfil } from "@/lib/movimento";
+import { vidroComGotas, type UniformesGota } from "@/lib/gotas";
 import * as THREE from "three";
 
 /** Comandos de andar vindos da interface (botões de toque). O teclado é lido
@@ -106,6 +107,8 @@ type Sala = {
   raiz: THREE.Object3D;
   obstaculos: THREE.Box3[];
   tapetes: { malha: THREE.Object3D; centro: THREE.Vector3 }[];
+  /** Uniforms do vidro, para a cena avançar as gotas por quadro. */
+  gotas: UniformesGota;
 };
 
 /** Prepara a sala e extrai dela o que a navegação precisa.
@@ -200,6 +203,9 @@ function useSala(): Sala {
     const raiz = scene.clone(true);
     const obstaculos: THREE.Box3[] = [];
     const tapetes: Sala["tapetes"] = [];
+    // Um material de vidro para os três panos, e não um por pano: são uniforms
+    // compartilhados, então a cena avança o tempo das gotas uma vez só.
+    let vidroGotas: ReturnType<typeof vidroComGotas> | null = null;
     raiz.updateWorldMatrix(true, true);
 
     raiz.traverse((o) => {
@@ -226,6 +232,11 @@ function useSala(): Sala {
         mat.depthWrite = false;
       }
 
+      if (vidro) {
+        vidroGotas ??= vidroComGotas(mat);
+        malha.material = vidroGotas.material;
+      }
+
       malha.geometry.computeBoundingBox();
       const caixa = malha.geometry.boundingBox!.clone().applyMatrix4(malha.matrixWorld);
 
@@ -246,7 +257,9 @@ function useSala(): Sala {
     });
 
     tapetes.sort((a, b) => a.centro.x - b.centro.x);
-    return { raiz, obstaculos, tapetes };
+    // O `!` se sustenta na geometria: o glb tem vidro_frente, vidro_esq e
+    // vidro_dir, e sem vidro nenhum não há sala de vidro para navegar.
+    return { raiz, obstaculos, tapetes, gotas: vidroGotas!.uniformes };
   }, [scene]);
 }
 
@@ -284,6 +297,7 @@ function Navegacao({
   giroscopio,
   sentado,
   aoMudarPostura,
+  clima,
   vento,
   perfil,
 }: Props & { vento: number; perfil: Perfil }) {
@@ -470,6 +484,18 @@ function Navegacao({
 
   useFrame((_, delta) => {
     const passo = Math.min(delta, 0.05);
+
+    // As gotas do vidro sobem aqui, no topo, porque este useFrame retorna cedo
+    // quando ninguem esta andando — e a chuva no vidro nao para so porque a
+    // pessoa parou de caminhar.
+    const g = sala.gotas;
+    g.uTempo.value += passo;
+    g.uEscorrer.value = perfil.escorrimento;
+    // Entra e sai junto com o resto do clima, pelo mesmo motivo da chuva: o
+    // vidro secar de uma vez enquanto o ceu ainda esta clareando e o que
+    // denuncia o cenario.
+    g.uIntensidade.value +=
+      ((clima === "chuva" ? 1 : 0) - g.uIntensidade.value) * (1 - Math.exp(-passo / 1.6));
 
     const v = viagem.current;
     if (v) {

@@ -42,6 +42,9 @@ export type Perfil = {
   transicaoMs: number;
   /** Constante de tempo da aceleração do passo, em s. Zero é partida seca. */
   tauPasso: number;
+  /** Multiplica as gotas que escorrem no vidro. Zero deixa só a condensação
+   *  parada — o vidro segue molhado, nada se desloca. */
+  escorrimento: number;
 };
 
 export const PERFIS: Record<Movimento, Perfil> = {
@@ -55,6 +58,7 @@ export const PERFIS: Record<Movimento, Perfil> = {
     relampago: true,
     transicaoMs: 950,
     tauPasso: 0.19,
+    escorrimento: 1,
   },
   reduzido: {
     chuva: 0,
@@ -64,6 +68,7 @@ export const PERFIS: Record<Movimento, Perfil> = {
     relampago: false,
     transicaoMs: 0,
     tauPasso: 0,
+    escorrimento: 0,
   },
 };
 
