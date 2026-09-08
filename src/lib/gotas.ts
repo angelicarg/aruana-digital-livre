@@ -33,7 +33,75 @@ import * as THREE from "three";
  * desloca, não o que muda de valor.
  */
 
+/**
+ * Calibragem da arte. **Todo número visual mora aqui** — mesmo padrão do script
+ * do Blender: ajustar a chuva no vidro é trocar número, não reescrever shader.
+ *
+ * A primeira versão foi reprovada por ler como neve: gota demais, clara demais,
+ * opaca demais. O que consertou foi mexer nos três ao mesmo tempo — só baixar a
+ * quantidade deixava poucas bolas brancas, que é pior que muitas.
+ */
+const CALIBRAGEM = {
+  /** Células por metro. Menor = célula maior = menos gota na mesma área. */
+  escala: 4.0,
+
+  paradas: {
+    /** Corte do sorteio: **quanto maior, menos gotas**. 0,86 deixa 14% das
+     *  células com gota. Estava em 0,74, e 26% cobria o vidro de bolinhas. */
+    corteGrandes: 0.86,
+    raioGrandes: 0.2,
+    corteMiudas: 0.88,
+    raioMiudas: 0.13,
+    /** A camada miúda repete a grade numa escala menor, para dar variedade de
+     *  tamanho. Era 2,7 — perto demais, e o resultado virou chuvisco uniforme. */
+    escalaMiudas: 2.1,
+    /** Peso da condensação inteira. Ela é fundo, não assunto: quem chama a
+     *  atenção é a gota que desce. */
+    peso: 0.42,
+  },
+
+  correndo: {
+    /** Quantas colunas do vidro têm gota descendo. 0,68 deixa ~32%. */
+    corteColuna: 0.68,
+    corteCelula: 0.55,
+    peso: 1.0,
+  },
+
+  /** Quanto a gota fecha o vidro. O material tem opacidade 0,16, então este
+   *  número é o que separa a gota do fundo — e é o que fazia ela virar bola
+   *  branca quando estava em 0,42. */
+  opacidade: 0.26,
+  /** Quanto a gota puxa para o branco. */
+  clareamento: 0.18,
+  /** Inclinação da normal na direção do centro da gota: é o que faz o sol
+   *  acender a borda e a gota virar volume em vez de mancha. */
+  relevo: 2.4,
+};
+
+/** As constantes de calibragem entram no GLSL como `#define`: o compilador de
+ *  shader dobra a conta em tempo de compilacao, e o valor aparece por nome
+ *  dentro do codigo em vez de numero solto. */
+const DEFINES = [
+  ["C_ESCALA", CALIBRAGEM.escala],
+  ["C_CORTE_G", CALIBRAGEM.paradas.corteGrandes],
+  ["C_RAIO_G", CALIBRAGEM.paradas.raioGrandes],
+  ["C_CORTE_M", CALIBRAGEM.paradas.corteMiudas],
+  ["C_RAIO_M", CALIBRAGEM.paradas.raioMiudas],
+  ["C_ESC_M", CALIBRAGEM.paradas.escalaMiudas],
+  ["C_PESO_P", CALIBRAGEM.paradas.peso],
+  ["C_CORTE_COL", CALIBRAGEM.correndo.corteColuna],
+  ["C_CORTE_CEL", CALIBRAGEM.correndo.corteCelula],
+  ["C_OPACIDADE", CALIBRAGEM.opacidade],
+  ["C_CLAREAMENTO", CALIBRAGEM.clareamento],
+  ["C_RELEVO", CALIBRAGEM.relevo],
+]
+  // toFixed obrigatorio: em GLSL `4` e int e `4.0` e float, e dividir por int
+  // nao compila. Um numero inteiro escrito sem ponto quebra o shader inteiro.
+  .map(([nome, valor]) => `#define ${nome} ${(valor as number).toFixed(4)}`)
+  .join("\n  ");
+
 const COMUM = /* glsl */ `
+  ${DEFINES}
   uniform float uTempo;
   uniform float uIntensidade;  // 0 a 1, acompanha a troca de clima
   uniform float uEscorrer;     // 0 sob movimento reduzido
@@ -71,10 +139,10 @@ const COMUM = /* glsl */ `
   vec3 gotasParadas(vec2 p) {
     // Poucas grandes, muitas pequenas. O corte alto na primeira e o que impede
     // o vidro de virar chapa de bolinhas.
-    vec3 grandes = umaCamadaParada(p, 0.74, 0.20);
-    vec3 miudas = umaCamadaParada(p * 2.7 + 31.4, 0.52, 0.16);
+    vec3 grandes = umaCamadaParada(p, C_CORTE_G, C_RAIO_G);
+    vec3 miudas = umaCamadaParada(p * C_ESC_M + 31.4, C_CORTE_M, C_RAIO_M);
     vec3 g = grandes.z > miudas.z * 0.62 ? grandes : miudas * vec3(1.0, 1.0, 0.62);
-    return g;
+    return g * vec3(1.0, 1.0, C_PESO_P);
   }
 
   vec3 gotasCorrendo(vec2 p, float t) {
@@ -84,7 +152,7 @@ const COMUM = /* glsl */ `
 
     // Nem toda coluna tem gota descendo. Uma por coluna em todas as colunas e o
     // que fazia a chuva no vidro parecer cortina em vez de gota solta.
-    float colAtiva = step(0.55, hashGota(vec2(col, 91.2)));
+    float colAtiva = step(C_CORTE_COL, hashGota(vec2(col, 91.2)));
 
     // Cada coluna desce com velocidade e fase propria. Uma velocidade so faz o
     // pano inteiro andar junto, que le como textura rolando e nao como chuva.
@@ -96,7 +164,7 @@ const COMUM = /* glsl */ `
     float fy = fract(yy);
     float r2 = hashGota(vec2(col, linha));
 
-    float existe = step(0.42, r2) * colAtiva;
+    float existe = step(C_CORTE_CEL, r2) * colAtiva;
     float cx = 0.25 + r2 * 0.5;
     float raio = 0.07 + r2 * 0.10;
 
@@ -127,10 +195,6 @@ const VERTICE_NOR = /* glsl */ `
   vNorGota = normalize(mat3(modelMatrix) * objectNormal);
 `;
 
-/** Densidade: células por metro. A 5,2 a célula tem ~19 cm, e a gota grande
- *  fica com ~3 cm — perto do tamanho de uma gota de verdade num vidro. */
-const ESCALA = 5.2;
-
 const FRAGMENTO_MASCARA = /* glsl */ `
   vec3 gGota = vec3(0.0);
   // Ramo por uniform, nao por fragmento: ou o pano inteiro esta seco ou nao
@@ -143,7 +207,7 @@ const FRAGMENTO_MASCARA = /* glsl */ `
     // degenera. Zerar ali e mais barato que tratar o caso.
     float verticalidade = smoothstep(0.55, 0.85, 1.0 - abs(n.y));
     vec3 tangente = normalize(cross(vec3(0.0, 1.0, 0.0), n) + vec3(1e-5));
-    vec2 p = vec2(dot(vPosGota, tangente), vPosGota.y) * ${ESCALA.toFixed(1)};
+    vec2 p = vec2(dot(vPosGota, tangente), vPosGota.y) * C_ESCALA;
 
     vec3 paradas = gotasParadas(p);
     vec3 correndo = gotasCorrendo(p, uTempo) * uEscorrer;
@@ -157,15 +221,15 @@ const FRAGMENTO_MASCARA = /* glsl */ `
 /** Inclina a normal na direcao do centro da gota. E o que faz o sol baixo
  *  acender a borda: sem isso a gota e uma mancha clara, com isso e volume. */
 const FRAGMENTO_NORMAL = /* glsl */ `
-  normal = normalize(normal + vec3(gGota.xy, 0.0) * 2.6 * gGota.z);
+  normal = normalize(normal + vec3(gGota.xy, 0.0) * C_RELEVO * gGota.z);
 `;
 
 /** Onde a gota esta, o vidro deixa de ser quase invisivel: agua espalha luz.
  *  Subir a opacidade e o que separa a gota do fundo — mexer so na cor nao
  *  aparece num material de opacidade 0,16. */
 const FRAGMENTO_COR = /* glsl */ `
-  diffuseColor.a = min(1.0, diffuseColor.a + gGota.z * 0.42);
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.90, 0.93), gGota.z * 0.35);
+  diffuseColor.a = min(1.0, diffuseColor.a + gGota.z * C_OPACIDADE);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.90, 0.93), gGota.z * C_CLAREAMENTO);
 `;
 
 export type UniformesGota = {
