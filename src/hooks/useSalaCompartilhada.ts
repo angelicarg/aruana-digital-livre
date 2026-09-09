@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { acrescentar, normalizarFala, type Fala } from "@/lib/conversa";
 import {
   resolverEspera,
   resolverTapetes,
@@ -63,6 +64,10 @@ type Estado = {
   conectado: boolean;
   /** Por que nao esta conectado, quando nao esta. */
   motivo: string | null;
+  /** A conversa da sala. Vive so na memoria desta aba. */
+  falas: Fala[];
+  /** O meu proprio id, para a interface saber qual fala e minha. */
+  meuId: string;
   sessao: SessaoCompartilhada | null;
 };
 
@@ -91,6 +96,8 @@ export function useSalaCompartilhada(
 ): Estado & {
   anunciarSessao: (tecnica: string, decorridoSegundos: number) => void;
   anunciarPostura: (postura: Postura) => void;
+  /** Devolve `false` quando nao havia o que mandar ou nao ha canal. */
+  falar: (texto: string, nome: string) => boolean;
 } {
   const meuId = useMemo(
     () => (typeof crypto !== "undefined" ? crypto.randomUUID() : `p${Math.random()}`),
@@ -100,6 +107,7 @@ export function useSalaCompartilhada(
   const [conectado, setConectado] = useState(false);
   /** O ultimo status que nao foi `SUBSCRIBED`. Vai para a tela. */
   const [motivo, setMotivo] = useState<string | null>(null);
+  const [falas, setFalas] = useState<Fala[]>([]);
   const [sessao, setSessao] = useState<SessaoCompartilhada | null>(null);
   const canalRef = useRef<{
     track: (p: object) => unknown;
@@ -160,7 +168,15 @@ export function useSalaCompartilhada(
         const { supabase } = await import("@/integrations/supabase/client");
         cliente = supabase as unknown as typeof cliente;
         canal = supabase.channel(`sala-yoga:${codigo}`, {
-          config: { presence: { key: meuId } },
+          config: {
+            presence: { key: meuId },
+            // `self: true` faz a minha propria mensagem voltar pelo servidor. E
+            // o que transforma "mandei" em "chegou": a fala nasce como
+            // `entregue: false` e so vira verdadeira quando volta. Sem isso, a
+            // unica coisa que eu poderia mostrar era que o `send` nao explodiu,
+            // que nao e a mesma pergunta.
+            broadcast: { self: true },
+          },
         });
       } catch (erro) {
         // Sem credencial de Supabase a sala fica sozinha, e isso e um estado
@@ -220,6 +236,19 @@ export function useSalaCompartilhada(
             z: Number(payload.z) || 0,
             yaw: Number(payload.yaw) || 0,
           });
+        })
+        .on("broadcast", { event: "fala", }, ({ payload }: any) => {
+          if (!vivo || !payload?.id || !payload?.texto) return;
+          setFalas((atuais) =>
+            acrescentar(atuais, {
+              id: String(payload.id),
+              de: String(payload.de ?? ""),
+              nome: String(payload.nome ?? "Alguém"),
+              texto: String(payload.texto),
+              em: Number(payload.em) || Date.now(),
+              entregue: true,
+            }),
+          );
         })
         .on("broadcast", { event: "sessao" }, ({ payload }: any) => {
           if (!vivo) return;
@@ -353,6 +382,34 @@ export function useSalaCompartilhada(
     });
   }, []);
 
+  /**
+   * Manda uma fala. Ela aparece na hora como "enviando" e vira entregue quando
+   * volta do servidor — ver `self: true` acima.
+   *
+   * Sem canal, a fala **nao entra na lista**: escrever no vazio e ver o proprio
+   * texto ali daria a impressao de que alguem leu.
+   */
+  const falar = useCallback(
+    (bruto: string, nome: string) => {
+      const texto = normalizarFala(bruto);
+      if (!texto) return false;
+      const canal = canalRef.current;
+      if (!canal) return false;
+      const fala: Fala = {
+        id: `${meuId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        de: meuId,
+        nome,
+        texto,
+        em: Date.now(),
+        entregue: false,
+      };
+      setFalas((atuais) => acrescentar(atuais, fala));
+      canal.send({ type: "broadcast", event: "fala", payload: fala });
+      return true;
+    },
+    [meuId],
+  );
+
   const anunciarPostura = useCallback(
     (postura: Postura) => {
       minhaPostura.current = postura;
@@ -393,8 +450,11 @@ export function useSalaCompartilhada(
     // Enquanto ninguém mais está na sala o desempate não tem o que decidir, e o
     // pedido vale como está — senão sentar teria um atraso de ida e volta.
     meuTapete: lugares.has(meuId) ? (lugares.get(meuId) ?? null) : tapetePedido,
+    meuId,
     conectado,
     motivo,
+    falas,
+    falar,
     sessao,
     posturas,
     anunciarSessao,

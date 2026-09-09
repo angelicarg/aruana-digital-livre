@@ -203,3 +203,26 @@ export function resolverEspera(ids: string[]): Map<string, { x: number; z: numbe
   });
   return lugares;
 }
+
+/**
+ * A cor de uma pessoa, em CSS.
+ *
+ * Mora aqui e não no componente do avatar porque a cor é **identidade**, não
+ * decoração: o nome de quem fala aparece na mesma cor do corpo dela na sala, e
+ * é isso que liga a frase à pessoa sem precisar de foto nem de crachá. Duas
+ * fontes de verdade para essa cor fariam a ligação mentir.
+ *
+ * Faixa estreita em torno dos tons de madeira e linho: saturação alta aqui
+ * roubaria o único ponto de cor saturada da sala, que são os cactos.
+ */
+export function corDeId(id: string): { h: number; s: number; l: number } {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return { h: (0.05 + ((h % 100) / 100) * 0.12) * 360, s: 30, l: 31 };
+}
+
+/** A mesma cor, clareada para ler como texto sobre fundo escuro. */
+export function corDeIdTexto(id: string): string {
+  const { h, s } = corDeId(id);
+  return `hsl(${h.toFixed(0)} ${s}% 72%)`;
+}

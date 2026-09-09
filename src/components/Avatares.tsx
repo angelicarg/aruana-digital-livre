@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { ESCALA, TECNICAS, faseEm } from "@/lib/respiracao";
 import type { OutraPessoa, SessaoCompartilhada } from "@/hooks/useSalaCompartilhada";
-import type { Postura } from "@/lib/presenca";
+import { corDeId, type Postura } from "@/lib/presenca";
 
 /**
  * As outras pessoas na sala.
@@ -36,11 +36,10 @@ import type { Postura } from "@/lib/presenca";
  *  madeira e linho da sala — saturação alta aqui roubaria o único ponto de cor
  *  saturada, que são os cactos. */
 function corDoId(id: string): THREE.Color {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  // Luminosidade 0,38 e nao 0,46: a 0,46 os corpos saiam marmoreos sob o sol
-  // do fim de tarde, e leem como estatueta em vez de gente.
-  return new THREE.Color().setHSL(0.05 + (h % 100) / 100 * 0.12, 0.3, 0.31);
+  // Uma fonte de verdade so: a mesma cor identifica o corpo na sala e o nome de
+  // quem fala no painel de conversa. Ver `corDeId` em lib/presenca.
+  const { h, s, l } = corDeId(id);
+  return new THREE.Color().setHSL(h / 360, s / 100, l / 100);
 }
 
 /** Fase própria de cada corpo fora de sessão, para os peitos não subirem juntos

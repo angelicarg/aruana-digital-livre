@@ -2,12 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, Waves, Users, X } from "lucide-react";
+import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, Waves, Users, MessageSquare, Send, X } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
 import { atrasoDoTrovao, type Clima, type Raio } from "@/lib/clima";
 import { movimentoDoSistema, type Movimento } from "@/lib/movimento";
 import { useSalaCompartilhada } from "@/hooks/useSalaCompartilhada";
-import { anuncioDeMudanca } from "@/lib/presenca";
+import { anuncioDeMudanca, corDeIdTexto } from "@/lib/presenca";
+import { normalizarNome, type Fala } from "@/lib/conversa";
 import { codigoDaSala } from "@/hooks/useSalaCompartilhada";
 import {
   ControlesRespiracao,
@@ -770,6 +771,159 @@ function BoasVindas() {
 }
 
 /**
+ * A conversa da sala.
+ *
+ * Painel, e nao balao sobre a cabeca do avatar. Balao aparece querendo ser lido
+ * e disputa a atencao no meio de uma sessao de respiracao — numa aula de yoga
+ * ninguem digita durante a pratica. Painel espera ser aberto.
+ *
+ * E o painel consegue ser honesto sobre a rede, que balao nao consegue: posicao
+ * perdida se corrige sozinha no quadro seguinte, mensagem perdida sumiria sem
+ * deixar rastro. Aqui a fala nasce esmaecida e so firma quando volta do
+ * servidor.
+ *
+ * ⚠️ `pr-16` no celular: o botao do VLibras flutua na borda direita com z-index
+ * maximo e **fica por cima de proposito** — quem cede espaco e o nosso
+ * conteudo. Ver a nota do menu de ajustes.
+ */
+function Conversa({
+  falas,
+  falar,
+  conectado,
+  nome,
+  setNome,
+  meuId,
+}: {
+  falas: Fala[];
+  falar: (texto: string, nome: string) => boolean;
+  conectado: boolean;
+  nome: string;
+  setNome: (n: string) => void;
+  meuId: string;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const [rascunho, setRascunho] = useState("");
+  const [lidasAte, setLidasAte] = useState(0);
+  const fim = useRef<HTMLDivElement>(null);
+
+  const naoLidas = aberto ? 0 : Math.max(0, falas.length - lidasAte);
+  useEffect(() => {
+    if (aberto) setLidasAte(falas.length);
+  }, [aberto, falas.length]);
+  useEffect(() => {
+    if (aberto) fim.current?.scrollIntoView({ block: "end" });
+  }, [aberto, falas.length]);
+
+  const enviar = () => {
+    if (falar(rascunho, normalizarNome(nome))) setRascunho("");
+  };
+
+  return (
+    <div className="pointer-events-auto pr-16 sm:pr-0">
+      {!aberto ? (
+        <button
+          onClick={() => setAberto(true)}
+          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-black/55 px-4 py-2 text-xs font-medium text-white/90 backdrop-blur-sm transition hover:bg-black/70"
+        >
+          <MessageSquare className="h-4 w-4" aria-hidden="true" />
+          Conversa
+          {naoLidas > 0 && (
+            <span className="rounded-full bg-[#00CCA7] px-1.5 py-0.5 text-[10px] font-bold text-[#041B33]">
+              {naoLidas}
+            </span>
+          )}
+        </button>
+      ) : (
+        <div className="flex w-[min(20rem,calc(100vw-6rem))] flex-col rounded-2xl bg-black/75 backdrop-blur-md">
+          <div className="flex items-center justify-between gap-2 border-b border-white/10 px-3 py-2">
+            <label className="flex-1 text-[10px] uppercase tracking-wide text-white/45">
+              Seu nome
+              <input
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Alguém"
+                className="mt-0.5 block w-full rounded-lg bg-white/5 px-2 py-1 text-xs normal-case tracking-normal text-white outline-none focus:bg-white/10"
+              />
+            </label>
+            <button
+              onClick={() => setAberto(false)}
+              aria-label="Fechar a conversa"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white/60 hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* `polite`: mensagem que chega nao interrompe quem esta lendo, mas e
+              anunciada. Sem isto a conversa seria invisivel para leitor de tela,
+              que e justamente quem mais depende de texto. */}
+          <div
+            role="log"
+            aria-live="polite"
+            aria-label="Mensagens da sala"
+            className="flex max-h-56 min-h-[6rem] flex-col gap-2 overflow-y-auto px-3 py-2.5"
+          >
+            {falas.length === 0 ? (
+              <p className="text-xs leading-relaxed text-white/45">
+                Nada dito ainda. O que se escreve aqui não fica guardado — some quando a
+                aba fecha, e quem chegar depois não lê o que passou.
+              </p>
+            ) : (
+              falas.map((f) => (
+                <p
+                  key={f.id}
+                  className={`text-xs leading-relaxed ${f.entregue === false ? "text-white/35" : "text-white/85"}`}
+                >
+                  <strong
+                    className="font-semibold"
+                    style={{ color: f.de === meuId ? undefined : corDeIdTexto(f.de) }}
+                  >
+                    {f.de === meuId ? "Você" : f.nome}
+                  </strong>{" "}
+                  {f.texto}
+                  {f.entregue === false && (
+                    <span className="text-white/30"> · enviando…</span>
+                  )}
+                </p>
+              ))
+            )}
+            <div ref={fim} />
+          </div>
+
+          <div className="flex items-end gap-1.5 border-t border-white/10 p-2">
+            <textarea
+              value={rascunho}
+              onChange={(e) => setRascunho(e.target.value)}
+              onKeyDown={(e) => {
+                // Enter manda, Shift+Enter quebra linha. E a convencao de todo
+                // chat, e contrariar custa uma mensagem cortada pela metade.
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  enviar();
+                }
+              }}
+              rows={1}
+              disabled={!conectado}
+              placeholder={conectado ? "Escreva algo…" : "Sem conexão com a sala"}
+              aria-label="Escrever uma mensagem"
+              className="min-h-11 flex-1 resize-none rounded-xl bg-white/5 px-3 py-2.5 text-xs text-white outline-none placeholder:text-white/35 focus:bg-white/10 disabled:opacity-50"
+            />
+            <button
+              onClick={enviar}
+              disabled={!conectado}
+              aria-label="Enviar mensagem"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#00CCA7] text-[#041B33] transition hover:brightness-105 disabled:opacity-40"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * Antessala.
  *
  * Ideia dela, e ela nomeou o motivo: as pessoas entram sabendo quantas há e se
@@ -896,6 +1050,13 @@ function SalaYogaPage() {
   // antes disso a pessoa ve quantos estao la dentro, se a conexao esta de pe e
   // em que sala vai cair. O Canvas so monta depois — e e ele que acende a GPU.
   const [entrou, setEntrou] = useState(false);
+  // O nome sobrevive a recarga: numa sala instavel, quem recarrega tres vezes
+  // nao deveria ter que se apresentar tres vezes.
+  const [nome, setNome] = useState("");
+  useEffect(() => setNome(localStorage.getItem("sala-yoga:nome") ?? ""), []);
+  useEffect(() => {
+    if (nome) localStorage.setItem("sala-yoga:nome", nome);
+  }, [nome]);
   const [codigo, setCodigo] = useState("publica");
   useEffect(() => setCodigo(codigoDaSala(window.location.search)), []);
 
@@ -931,6 +1092,9 @@ function SalaYogaPage() {
     meuTapete,
     conectado,
     motivo,
+    falas,
+    falar,
+    meuId,
     sessao: sessaoCompartilhada,
     posturas,
     anunciarSessao,
@@ -1158,6 +1322,15 @@ function SalaYogaPage() {
                 ? "Você é a única pessoa aqui"
                 : `${outras.length + 1} pessoas na sala`}
           </span>
+
+          <Conversa
+            falas={falas}
+            falar={falar}
+            conectado={conectado}
+            nome={nome}
+            setNome={setNome}
+            meuId={meuId}
+          />
           {sentado ? (
             <button
               onClick={() => aoMudarPostura(false, null)}
