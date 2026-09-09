@@ -967,14 +967,15 @@ function Conversa({
                 }
               }}
               rows={1}
-              disabled={!conectado}
-              placeholder={conectado ? "Escreva algo…" : "Sem conexão com a sala"}
+              // Nunca desabilitado: o canal cai a cada poucos segundos, e travar
+              // o campo no meio de uma frase e pior que segurar a mensagem. Ela
+              // fica esmaecida como "enviando" e sai quando a conexao volta.
+              placeholder={conectado ? "Escreva algo…" : "Sem conexão — a mensagem espera"}
               aria-label="Escrever uma mensagem"
               className="min-h-11 flex-1 resize-none rounded-xl bg-white/5 px-3 py-2.5 text-xs text-white outline-none placeholder:text-white/35 focus:bg-white/10 disabled:opacity-50"
             />
             <button
               onClick={enviar}
-              disabled={!conectado}
               aria-label="Enviar mensagem"
               className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#00CCA7] text-[#041B33] transition hover:brightness-105 disabled:opacity-40"
             >

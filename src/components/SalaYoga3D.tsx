@@ -452,13 +452,34 @@ function Navegacao({
     const NAVEGACAO = new Set([
       "arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d",
     ]);
+    /** ⚠️ Quem esta digitando nao esta caminhando.
+     *
+     *  O `keydown` mora no `window` e engolia W, A, S e D em qualquer lugar da
+     *  pagina. Isso era seguro enquanto a experiencia nao tinha campo de texto
+     *  — a nota logo acima dizia exatamente isso, e deixou de valer no dia em
+     *  que a conversa escrita entrou. O sintoma que ela relatou foi "a letra A
+     *  nao esta funcionando": quatro letras do alfabeto sumiam ao escrever, e
+     *  as outras tres so nao apareceram porque nao estavam no que ela digitou. */
+    const escrevendo = (alvo: EventTarget | null) => {
+      const el = alvo as HTMLElement | null;
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
+    };
+
     const desce = (e: KeyboardEvent) => {
+      if (escrevendo(e.target)) return;
       const k = e.key.toLowerCase();
       if (!NAVEGACAO.has(k)) return;
       e.preventDefault();
       teclas.current.add(k);
     };
-    const sobe = (e: KeyboardEvent) => teclas.current.delete(e.key.toLowerCase());
+    const sobe = (e: KeyboardEvent) => {
+      // O `keyup` nao precisa da guarda: soltar uma tecla que nunca entrou no
+      // conjunto e inofensivo, e checar aqui deixaria a tecla presa se o foco
+      // mudasse com ela apertada.
+      teclas.current.delete(e.key.toLowerCase());
+    };
     const limpar = () => teclas.current.clear();
 
     tela.addEventListener("pointerdown", pegar);

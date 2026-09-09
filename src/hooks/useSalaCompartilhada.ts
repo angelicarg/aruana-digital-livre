@@ -142,6 +142,11 @@ export function useSalaCompartilhada(
     [],
   );
   const publicouRef = useRef(false);
+  /** Falas escritas enquanto o canal estava fora. Saem quando ele volta.
+   *
+   *  Com o canal caindo a cada ~15 s, recusar a mensagem seria recusar o tempo
+   *  todo — e quem escreve nao tem como saber que escolheu um mau segundo. */
+  const pendentes = useRef<Fala[]>([]);
   const souPresente = useRef(presente);
   souPresente.current = presente;
   /** A última posição que eu publiquei. Vai junto na presença para sobreviver à
@@ -317,6 +322,13 @@ export function useSalaCompartilhada(
               publicouRef.current = true;
               canal.track({ tapete: tapetePedido, pos: minhaPostura.current });
             }
+            // O que foi escrito enquanto o canal estava fora sai agora, na
+            // ordem em que foi escrito.
+            const fila = pendentes.current;
+            pendentes.current = [];
+            for (const f of fila) {
+              canal.send({ type: "broadcast", event: "fala", payload: f });
+            }
             return;
           }
 
@@ -452,8 +464,6 @@ export function useSalaCompartilhada(
     (bruto: string, nome: string) => {
       const texto = normalizarFala(bruto);
       if (!texto) return false;
-      const canal = canalRef.current;
-      if (!canal) return false;
       const fala: Fala = {
         id: `${meuId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         de: meuId,
@@ -463,7 +473,9 @@ export function useSalaCompartilhada(
         entregue: false,
       };
       setFalas((atuais) => acrescentar(atuais, fala));
-      canal.send({ type: "broadcast", event: "fala", payload: fala });
+      const canal = canalRef.current;
+      if (canal) canal.send({ type: "broadcast", event: "fala", payload: fala });
+      else pendentes.current.push(fala);
       return true;
     },
     [meuId],
