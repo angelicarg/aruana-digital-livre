@@ -143,6 +143,9 @@ export function useSalaCompartilhada(
     let tentativa = 0;
     let reagendado: number | undefined;
     let esvaziar: number | undefined;
+    let vigia: number | undefined;
+    /** O canal que vale agora. Callback de canal antigo e ruido. */
+    let atual: any = null;
 
     /**
      * Conecta, e **reconecta**. O canal cai — por cota estourada, por rede que
@@ -165,6 +168,13 @@ export function useSalaCompartilhada(
         console.warn("[sala] presença indisponível, seguindo sozinho:", erro);
         return;
       }
+
+      // ⚠️ Antes do `.subscribe`: o retorno de inscricao pode chegar de
+      // imediato, e se `atual` ainda fosse nulo a guarda descartaria justamente
+      // o `SUBSCRIBED` que interessa.
+      atual = canal;
+      canalRef.current = canal;
+      canalAberto = canal;
 
       canal
         .on("presence", { event: "sync" }, () => {
@@ -222,14 +232,17 @@ export function useSalaCompartilhada(
           });
         })
         .subscribe((status: string) => {
-          if (!vivo) return;
-          const ligado = status === "SUBSCRIBED";
-          setConectado(ligado);
+          // Ignora quem ja foi abandonado. Sem isto, o `CLOSED` que o proprio
+          // fechamento dispara volta para ca e manda fechar de novo — o laco
+          // que se alimenta, e a causa do "vai e volta".
+          if (!vivo || canal !== atual) return;
 
-          if (ligado) {
+          if (status === "SUBSCRIBED") {
             tentativa = 0;
+            setConectado(true);
             setMotivo(null);
             window.clearTimeout(esvaziar);
+            window.clearTimeout(vigia);
             if (souPresente.current) {
               publicouRef.current = true;
               canal.track({ tapete: tapetePedido, pos: minhaPostura.current });
@@ -237,14 +250,16 @@ export function useSalaCompartilhada(
             return;
           }
 
-          // Queda. Nao esvazia na hora: oscilacao de rede de poucos segundos
-          // faria a sala inteira sumir e voltar, que assusta mais do que
-          // ajuda. Passando disso, o que esta na tela e mentira.
-          console.warn("[sala] canal caiu:", status, "— reconectando");
-          // O motivo sobe para a tela. Console e atrito: quem esta testando nao
-          // vai abrir o inspetor, e sem o motivo a distancia entre "nao
-          // conectou" e a causa e um chute.
+          setConectado(false);
           setMotivo(status);
+          console.warn("[sala] canal fora do ar:", status);
+
+          // ⚠️ **Nao derruba o canal aqui.** O cliente do Supabase tem
+          // reconexao propria, e a versao anterior deste arquivo a atropelava:
+          // fechava na primeira oscilacao, e como era o unico canal, o
+          // `removeChannel` derrubava o socket junto — cada queda virava
+          // reconstrucao completa, e a proxima oscilacao recomeçava tudo.
+          // Aqui so se espera; o socorro so entra se a espera nao resolver.
           window.clearTimeout(esvaziar);
           esvaziar = window.setTimeout(() => {
             if (!vivo) return;
@@ -253,14 +268,19 @@ export function useSalaCompartilhada(
             setSessao(null);
           }, 6000);
 
-          fechar(canal);
-          // Espera crescente ate 15 s: insistir de segundo em segundo depois de
-          // estourar cota e a melhor forma de continuar estourando.
-          const espera = Math.min(1000 * 2 ** tentativa++, 15000);
-          window.clearTimeout(reagendado);
-          reagendado = window.setTimeout(() => {
-            if (vivo) void conectar();
-          }, espera);
+          window.clearTimeout(vigia);
+          vigia = window.setTimeout(() => {
+            if (!vivo || canal !== atual) return;
+            // Vinte segundos parado e outra coisa: agora sim vale refazer o
+            // canal do zero, uma vez, com espera crescente entre as tentativas.
+            atual = null;
+            fechar(canal);
+            const espera = Math.min(2000 * 2 ** tentativa++, 30000);
+            window.clearTimeout(reagendado);
+            reagendado = window.setTimeout(() => {
+              if (vivo) void conectar();
+            }, espera);
+          }, 20000);
         });
 
       canalRef.current = canal;
@@ -276,6 +296,8 @@ export function useSalaCompartilhada(
       vivo = false;
       window.clearTimeout(reagendado);
       window.clearTimeout(esvaziar);
+      window.clearTimeout(vigia);
+      atual = null;
       fechar(canalAberto);
     };
     // `tapetePedido` fica fora: trocar de tapete republica presença no efeito
