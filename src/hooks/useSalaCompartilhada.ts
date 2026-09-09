@@ -61,6 +61,8 @@ type Estado = {
   /** Seu tapete depois do desempate — pode diferir do que você pediu. */
   meuTapete: number | null;
   conectado: boolean;
+  /** Por que nao esta conectado, quando nao esta. */
+  motivo: string | null;
   sessao: SessaoCompartilhada | null;
 };
 
@@ -96,6 +98,8 @@ export function useSalaCompartilhada(
   );
   const [reivindicacoes, setReivindicacoes] = useState<Reivindicacao[]>([]);
   const [conectado, setConectado] = useState(false);
+  /** O ultimo status que nao foi `SUBSCRIBED`. Vai para a tela. */
+  const [motivo, setMotivo] = useState<string | null>(null);
   const [sessao, setSessao] = useState<SessaoCompartilhada | null>(null);
   const canalRef = useRef<{
     track: (p: object) => unknown;
@@ -103,6 +107,7 @@ export function useSalaCompartilhada(
     send: (p: object) => unknown;
   } | null>(null);
   const posturas = useRef(new Map<string, Postura>());
+  const publicouRef = useRef(false);
   const souPresente = useRef(presente);
   souPresente.current = presente;
   /** A última posição que eu publiquei. Vai junto na presença para sobreviver à
@@ -116,7 +121,25 @@ export function useSalaCompartilhada(
   useEffect(() => {
     if (!ativo || typeof window === "undefined") return;
     let vivo = true;
-    let canalAberto: { unsubscribe: () => void } | null = null;
+    let canalAberto: unknown = null;
+    let cliente: { removeChannel: (c: unknown) => unknown; channel: Function } | null = null;
+
+    /**
+     * ⚠️ `removeChannel`, nunca `unsubscribe`.
+     *
+     * `unsubscribe()` fecha a inscricao mas **deixa o canal registrado no
+     * cliente**. Na reconexao, pedir `channel()` com o mesmo topico devolve um
+     * segundo canal para o mesmo lugar, e os dois brigam — o que transformava
+     * qualquer queda unica em falha permanente. Era isto que fazia a sala nunca
+     * mais voltar depois de cair uma vez.
+     */
+    const fechar = (canal: unknown) => {
+      if (!canal) return;
+      publicouRef.current = false;
+      if (canalRef.current === canal) canalRef.current = null;
+      if (cliente) cliente.removeChannel(canal);
+      else (canal as { unsubscribe: () => void }).unsubscribe();
+    };
     let tentativa = 0;
     let reagendado: number | undefined;
     let esvaziar: number | undefined;
@@ -132,6 +155,7 @@ export function useSalaCompartilhada(
       let canal: any;
       try {
         const { supabase } = await import("@/integrations/supabase/client");
+        cliente = supabase as unknown as typeof cliente;
         canal = supabase.channel(`sala-yoga:${codigo}`, {
           config: { presence: { key: meuId } },
         });
@@ -204,8 +228,10 @@ export function useSalaCompartilhada(
 
           if (ligado) {
             tentativa = 0;
+            setMotivo(null);
             window.clearTimeout(esvaziar);
             if (souPresente.current) {
+              publicouRef.current = true;
               canal.track({ tapete: tapetePedido, pos: minhaPostura.current });
             }
             return;
@@ -215,6 +241,10 @@ export function useSalaCompartilhada(
           // faria a sala inteira sumir e voltar, que assusta mais do que
           // ajuda. Passando disso, o que esta na tela e mentira.
           console.warn("[sala] canal caiu:", status, "— reconectando");
+          // O motivo sobe para a tela. Console e atrito: quem esta testando nao
+          // vai abrir o inspetor, e sem o motivo a distancia entre "nao
+          // conectou" e a causa e um chute.
+          setMotivo(status);
           window.clearTimeout(esvaziar);
           esvaziar = window.setTimeout(() => {
             if (!vivo) return;
@@ -223,8 +253,7 @@ export function useSalaCompartilhada(
             setSessao(null);
           }, 6000);
 
-          canal.unsubscribe();
-          if (canalRef.current === canal) canalRef.current = null;
+          fechar(canal);
           // Espera crescente ate 15 s: insistir de segundo em segundo depois de
           // estourar cota e a melhor forma de continuar estourando.
           const espera = Math.min(1000 * 2 ** tentativa++, 15000);
@@ -238,10 +267,7 @@ export function useSalaCompartilhada(
       canalAberto = canal;
       // O efeito pode ter sido desmontado enquanto o import corria. Nesse caso
       // `vivo` ja e falso e ninguem mais vai chamar a limpeza — fechar aqui.
-      if (!vivo) {
-        canalRef.current = null;
-        canal.unsubscribe();
-      }
+      if (!vivo) fechar(canal);
     };
 
     void conectar();
@@ -250,8 +276,7 @@ export function useSalaCompartilhada(
       vivo = false;
       window.clearTimeout(reagendado);
       window.clearTimeout(esvaziar);
-      canalRef.current = null;
-      canalAberto?.unsubscribe();
+      fechar(canalAberto);
     };
     // `tapetePedido` fica fora: trocar de tapete republica presença no efeito
     // abaixo, e entrar aqui derrubaria e refaria o canal a cada vez que alguém
@@ -264,13 +289,22 @@ export function useSalaCompartilhada(
     canalRef.current?.track({ tapete: tapetePedido, pos: minhaPostura.current });
   }, [tapetePedido, presente]);
 
-  // Sair da antessala publica; voltar para ela despublica. Sem o `untrack` a
-  // pessoa continuaria como corpo na sala depois de ter saido dela.
+  // Sair da antessala publica; voltar para ela despublica.
+  //
+  // ⚠️ So despublica quem publicou. Antes isto chamava `untrack()` toda vez que
+  // `conectado` mudava, inclusive na antessala num canal que nunca publicou —
+  // mensagem de presenca a toa, no exato momento em que o canal ja estava
+  // instavel.
   useEffect(() => {
     const canal = canalRef.current;
-    if (!canal) return;
-    if (presente) canal.track({ tapete: null, pos: null });
-    else canal.untrack?.();
+    if (!canal || !conectado) return;
+    if (presente) {
+      publicouRef.current = true;
+      canal.track({ tapete: null, pos: null });
+    } else if (publicouRef.current) {
+      publicouRef.current = false;
+      canal.untrack?.();
+    }
   }, [presente, conectado]);
 
   // Republica a presença devagar enquanto de pé. `setInterval` continua rodando
@@ -338,6 +372,7 @@ export function useSalaCompartilhada(
     // pedido vale como está — senão sentar teria um atraso de ida e volta.
     meuTapete: lugares.has(meuId) ? (lugares.get(meuId) ?? null) : tapetePedido,
     conectado,
+    motivo,
     sessao,
     posturas,
     anunciarSessao,

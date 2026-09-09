@@ -784,6 +784,7 @@ function BoasVindas() {
  */
 function Antessala({
   conectado,
+  motivo,
   pessoas,
   sentadas,
   codigo,
@@ -791,6 +792,7 @@ function Antessala({
   entrar,
 }: {
   conectado: boolean;
+  motivo: string | null;
   pessoas: number;
   sentadas: number;
   codigo: string;
@@ -826,6 +828,15 @@ function Antessala({
               </strong>{" "}
               Você pode entrar assim mesmo — a experiência funciona sozinha, mas ninguém
               vai aparecer.
+              {motivo && (
+                <>
+                  {" "}
+                  <span className="text-white/45">
+                    Motivo: <code className="font-mono">{motivo}</code>. Tentando
+                    reconectar.
+                  </span>
+                </>
+              )}
             </p>
           ) : pessoas === 0 ? (
             <p className="text-sm text-white/70">
@@ -919,6 +930,7 @@ function SalaYogaPage() {
     outras,
     meuTapete,
     conectado,
+    motivo,
     sessao: sessaoCompartilhada,
     posturas,
     anunciarSessao,
@@ -1057,6 +1069,7 @@ function SalaYogaPage() {
       {!entrou && (
         <Antessala
           conectado={conectado}
+          motivo={motivo}
           pessoas={outras.length}
           sentadas={outras.filter((o) => o.tapete !== null).length}
           codigo={codigo}
@@ -1140,7 +1153,7 @@ function SalaYogaPage() {
           >
             <Users className="h-3.5 w-3.5" aria-hidden="true" />
             {!conectado
-              ? "Sala compartilhada indisponível"
+              ? `Sala indisponível${motivo ? ` (${motivo})` : ""}`
               : outras.length === 0
                 ? "Você é a única pessoa aqui"
                 : `${outras.length + 1} pessoas na sala`}
