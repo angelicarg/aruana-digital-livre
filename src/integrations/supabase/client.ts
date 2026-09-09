@@ -4,6 +4,7 @@
 // ainda está aqui antes de procurar em qualquer outro lugar.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { registrar } from '@/lib/diagnostico';
 
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
@@ -45,8 +46,10 @@ function createSupabaseClient() {
       // busca script na rede e não depende de CSP.
       worker: true,
       heartbeatCallback: (status: string, latencia?: number) => {
-        // Só o que interessa: batimento atrasado ou perdido é a assinatura do
-        // problema acima. `sent` a cada 25 s poluiria o console sem informar.
+        // Tudo vai para o registro, inclusive o batimento normal: e o intervalo
+        // entre eles que diz se o temporizador esta atrasando. Só o anormal vai
+        // para o console.
+        registrar('batimento', latencia != null ? `${status} ${latencia}ms` : status);
         if (status !== 'sent' && status !== 'ok') {
           console.warn('[sala] batimento', status, latencia ?? '');
         }

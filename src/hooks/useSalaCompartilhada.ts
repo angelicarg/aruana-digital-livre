@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { acrescentar, normalizarFala, type Fala } from "@/lib/conversa";
+import { registrar } from "@/lib/diagnostico";
 import {
   resolverEspera,
   resolverTapetes,
@@ -126,8 +127,21 @@ export function useSalaCompartilhada(
   const meuTapetePedido = useRef(tapetePedido);
   meuTapetePedido.current = tapetePedido;
 
+  // A aba escondida congela temporizadores e o laco de desenho. Se as quedas
+  // acontecerem sempre depois de a aba sair de foco, a causa e essa e nao a
+  // rede.
+  useEffect(() => {
+    const aoTrocar = () => registrar("aba", document.visibilityState);
+    document.addEventListener("visibilitychange", aoTrocar);
+    return () => document.removeEventListener("visibilitychange", aoTrocar);
+  }, []);
+
   useEffect(() => {
     if (!ativo || typeof window === "undefined") return;
+    // ⚠️ Se estas duas linhas aparecerem em par, repetidamente, o problema e
+    // meu: o efeito esta remontando e cada volta derruba o canal. Tem que ser
+    // descartado antes de acusar rede ou servidor.
+    registrar("efeito", `montou (sala ${codigo})`);
     let vivo = true;
     let canalAberto: unknown = null;
     let cliente: { removeChannel: (c: unknown) => unknown; channel: Function } | null = null;
@@ -202,6 +216,7 @@ export function useSalaCompartilhada(
           // Quem saiu leva a postura junto: sem esta limpeza o corpo de quem
           // fechou a aba ficaria guardado e voltaria a aparecer se um id fosse
           // reaproveitado.
+          registrar("presenca", `${Object.keys(estado).length} na sala`);
           const presentes = new Set(Object.keys(estado));
           for (const id of posturas.current.keys()) {
             if (!presentes.has(id)) posturas.current.delete(id);
@@ -266,6 +281,7 @@ export function useSalaCompartilhada(
           // que se alimenta, e a causa do "vai e volta".
           if (!vivo || canal !== atual) return;
 
+          registrar("canal", status);
           if (status === "SUBSCRIBED") {
             tentativa = 0;
             setConectado(true);
@@ -322,6 +338,7 @@ export function useSalaCompartilhada(
     void conectar();
 
     return () => {
+      registrar("efeito", "desmontou");
       vivo = false;
       window.clearTimeout(reagendado);
       window.clearTimeout(esvaziar);

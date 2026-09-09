@@ -9,6 +9,7 @@ import { movimentoDoSistema, type Movimento } from "@/lib/movimento";
 import { useSalaCompartilhada } from "@/hooks/useSalaCompartilhada";
 import { anuncioDeMudanca, corDeIdTexto } from "@/lib/presenca";
 import { normalizarNome, type Fala } from "@/lib/conversa";
+import { comoTexto, historico, ouvir, relogio } from "@/lib/diagnostico";
 import { codigoDaSala } from "@/hooks/useSalaCompartilhada";
 import {
   ControlesRespiracao,
@@ -771,6 +772,69 @@ function BoasVindas() {
 }
 
 /**
+ * O registro da conexão, para eu enxergar o que acontece na máquina dela.
+ *
+ * Fica atrás de um toque no aviso de presença: quem só quer respirar nunca
+ * esbarra nisso, e quem está testando acha em um clique. É a peça que faltava —
+ * o defeito não reproduz aqui, e uma palavra solta (`CLOSED`) sai igual de um
+ * servidor que desistiu, de uma rede que caiu e do próprio código fechando o
+ * canal. O que separa as três é o intervalo entre os eventos.
+ */
+function Diagnostico({ fechar }: { fechar: () => void }) {
+  const [, redesenhar] = useState(0);
+  useEffect(() => ouvir(() => redesenhar((n) => n + 1)), []);
+  const lista = historico();
+  const [copiado, setCopiado] = useState(false);
+
+  return (
+    <div className="pointer-events-auto mt-1 w-[min(24rem,calc(100vw-6rem))] rounded-2xl bg-black/80 p-3 backdrop-blur-md">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-white/50">
+          Registro da conexão
+        </p>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              void navigator.clipboard?.writeText(comoTexto());
+              setCopiado(true);
+            }}
+            className="inline-flex min-h-11 items-center rounded-lg px-2 text-[11px] text-white/70 hover:bg-white/10 hover:text-white"
+          >
+            {copiado ? "Copiado" : "Copiar"}
+          </button>
+          <button
+            onClick={fechar}
+            aria-label="Fechar o registro da conexão"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-white/60 hover:bg-white/10"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <ol className="mt-1.5 max-h-52 space-y-0.5 overflow-y-auto font-mono text-[11px] leading-snug">
+        {lista.length === 0 ? (
+          <li className="text-white/40">Nada registrado ainda.</li>
+        ) : (
+          lista.map((e, i) => (
+            <li key={i} className="text-white/70">
+              <span className="text-white/35">{relogio(e.em)}</span>{" "}
+              <span
+                className={
+                  e.tipo === "canal" || e.tipo === "efeito" ? "text-[#00CCA7]" : "text-white/45"
+                }
+              >
+                {e.tipo}
+              </span>{" "}
+              {e.detalhe}
+            </li>
+          ))
+        )}
+      </ol>
+    </div>
+  );
+}
+
+/**
  * A conversa da sala.
  *
  * Painel, e nao balao sobre a cabeca do avatar. Balao aparece querendo ser lido
@@ -1050,6 +1114,7 @@ function SalaYogaPage() {
   // antes disso a pessoa ve quantos estao la dentro, se a conexao esta de pe e
   // em que sala vai cair. O Canvas so monta depois — e e ele que acende a GPU.
   const [entrou, setEntrou] = useState(false);
+  const [verRegistro, setVerRegistro] = useState(false);
   // O nome sobrevive a recarga: numa sala instavel, quem recarrega tres vezes
   // nao deveria ter que se apresentar tres vezes.
   const [nome, setNome] = useState("");
@@ -1310,8 +1375,10 @@ function SalaYogaPage() {
               fora do ar" ficavam indistinguiveis — inclusive para mim, tentando
               diagnosticar de longe. Degradar em silencio e o pior modo de
               degradar: quem olha conclui que o produto nao funciona. */}
-          <span
-            className={`pointer-events-none inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-sm ${
+          <button
+            onClick={() => setVerRegistro((v) => !v)}
+            aria-expanded={verRegistro}
+            className={`pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-sm transition hover:bg-black/70 ${
               conectado ? "bg-black/55 text-white/90" : "bg-black/55 text-white/60"
             }`}
           >
@@ -1321,7 +1388,8 @@ function SalaYogaPage() {
               : outras.length === 0
                 ? "Você é a única pessoa aqui"
                 : `${outras.length + 1} pessoas na sala`}
-          </span>
+          </button>
+          {verRegistro && <Diagnostico fechar={() => setVerRegistro(false)} />}
 
           <Conversa
             falas={falas}
