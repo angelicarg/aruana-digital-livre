@@ -428,30 +428,35 @@ export function useSalaCompartilhada(
     }
   }, [presente, conectado]);
 
-  // Republica a presença devagar enquanto de pé. `setInterval` continua rodando
-  // com a aba oculta (estrangulado, e aqui isso basta) — ao contrário do laço de
-  // desenho, que para. É o que garante que a última posição conhecida chegue a
-  // quem entrar depois.
-  useEffect(() => {
-    if (!ativo) return;
-    if (quieto) return;
-    const id = window.setInterval(() => {
-      if (!minhaPostura.current || !souPresente.current) return;
-      canalRef.current?.track({
-        tapete: meuTapetePedido.current,
-        pos: minhaPostura.current,
-      });
-    }, 5000);
-    return () => window.clearInterval(id);
-  }, [ativo, quieto]);
+  /**
+   * Republica a presença **quando a pessoa para de andar**, nunca num relógio.
+   *
+   * ⚠️ Aqui morava um `setInterval` de 5 segundos, para sempre. Foi o que
+   * derrubou a sala por dois dias: medido em 09/09, com o canal calado a
+   * conexão ficou 5 minutos de pé; com este tráfego periódico, o servidor
+   * fechava o canal a cada 13–20 segundos.
+   *
+   * Aplicativo nenhum republica presença num temporizador — presença se publica
+   * ao entrar e quando algo muda. O que eu queria (que a última posição de quem
+   * congelou a aba chegasse a quem entra depois) se resolve publicando ao
+   * **parar**: dois segundos sem mexer e a posição final vai, uma vez.
+   *
+   * O piso de 15 s existe para quem anda sem parar não virar o mesmo
+   * temporizador por outro caminho.
+   */
+  const pararDeAndar = useRef<number | undefined>(undefined);
+  const ultimaPublicacao = useRef(0);
 
-  const anunciarSessao = useCallback((tecnica: string, decorridoSegundos: number) => {
-    canalRef.current?.send({
-      type: "broadcast",
-      event: "sessao",
-      payload: { tecnica, decorrido: decorridoSegundos },
-    });
-  }, []);
+  const anunciarSessao = useCallback(
+    (tecnica: string, decorridoSegundos: number) => {
+      canalRef.current?.send({
+        type: "broadcast",
+        event: "sessao",
+        payload: { tecnica, decorrido: decorridoSegundos },
+      });
+    },
+    [],
+  );
 
   /**
    * Manda uma fala. Ela aparece na hora como "enviando" e vira entregue quando
@@ -485,6 +490,19 @@ export function useSalaCompartilhada(
     (postura: Postura) => {
       minhaPostura.current = postura;
       if (quieto) return;
+
+      // Agenda a publicacao para quando ela parar. Cada passo adia; o envio so
+      // acontece dois segundos depois do ultimo movimento.
+      window.clearTimeout(pararDeAndar.current);
+      pararDeAndar.current = window.setTimeout(() => {
+        const agora = Date.now();
+        if (agora - ultimaPublicacao.current < 15000) return;
+        ultimaPublicacao.current = agora;
+        canalRef.current?.track({
+          tapete: meuTapetePedido.current,
+          pos: minhaPostura.current,
+        });
+      }, 2000);
       canalRef.current?.send({
         type: "broadcast",
         event: "postura",

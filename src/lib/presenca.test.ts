@@ -156,12 +156,19 @@ describe("deveEnviarPostura", () => {
     expect(deveEnviarPostura(ultima, p(1.06, 1), 1300)).toBe(true);
   });
 
-  /** Quem chega numa sala de gente imóvel não recebe nenhuma atualização e
-   *  desenharia todo mundo na origem. O pulso é o que resolve. */
-  it("repete a posição de quem está parado a cada 2 s", () => {
+  /** Quem chega numa sala de gente imóvel não recebe nenhuma atualização. O
+   *  pulso resolve — mas devagar: medido em 09/09, tráfego periódico frequente
+   *  fazia o servidor fechar o canal a cada 13–20 s. */
+  it("repete a posição de quem está parado, mas devagar", () => {
     const ultima = { postura: p(1, 1), emMs: 1000 };
-    expect(deveEnviarPostura(ultima, p(1, 1), 2900)).toBe(false);
-    expect(deveEnviarPostura(ultima, p(1, 1), 3000)).toBe(true);
+    expect(deveEnviarPostura(ultima, p(1, 1), 1000 + ENVIO.pulsoMs - 100)).toBe(false);
+    expect(deveEnviarPostura(ultima, p(1, 1), 1000 + ENVIO.pulsoMs)).toBe(true);
+  });
+
+  /** Trava contra a regressao que derrubava a sala: qualquer coisa que a gente
+   *  repita sozinho, sem ninguem mexer, precisa ser rara. */
+  it("nada periodico dispara mais de uma vez a cada 10 s", () => {
+    expect(ENVIO.pulsoMs).toBeGreaterThanOrEqual(10000);
   });
 
   /** Sem caminho curto, atravessar o ±π dispara envio a cada quadro — e o

@@ -1231,7 +1231,10 @@ function SalaYogaPage() {
     // No modo silencioso a sessao e anunciada uma vez e pronto: quem chegar
     // depois nao sincroniza, mas o experimento precisa do canal calado.
     if (modoQuieto(window.location.search)) return;
-    const id = window.setInterval(publicar, 5000);
+    // 20 s e nao 5: era o terceiro dos nossos temporizadores, e junto com os
+    // outros dois derrubava o canal. Quem entra no meio de uma sessao espera
+    // ate 20 s para pegar o ritmo — e enquanto espera, respira no proprio.
+    const id = window.setInterval(publicar, 20000);
     return () => window.clearInterval(id);
   }, [sessao.rodando, sessao.tecnica, sessao.inicioMs, anunciarSessao]);
 

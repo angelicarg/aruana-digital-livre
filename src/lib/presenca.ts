@@ -139,8 +139,11 @@ export type Postura = { x: number; z: number; yaw: number };
  * - `distancia` e `giro` são o piso: parado não gasta mensagem nenhuma. Numa
  *   sala de yoga esse é o caso comum — as pessoas ficam quietas.
  * - `pulsoMs` é a exceção que salva quem chegou depois: mesmo parada, a posição
- *   se repete a cada 2 s. Sem isso alguém que entra numa sala de gente imóvel
- *   não descobre onde ninguém está, e todos aparecem na origem.
+ *   se repete de tempos em tempos. Eram 2 s, e **isso era caro demais**: medido
+ *   em 09/09, com o canal calado a conexão ficou 5 minutos de pé; com o nosso
+ *   tráfego periódico, o servidor fechava a cada 13–20 s. Hoje são 15 s, e o
+ *   pulso ficou quase redundante — a presença passou a carregar a posição, e é
+ *   ela que informa quem chega.
  */
 export const ENVIO = {
   intervaloMs: 200,
@@ -148,7 +151,7 @@ export const ENVIO = {
   distancia: 0.05,
   /** ~5 graus. */
   giro: 0.09,
-  pulsoMs: 2000,
+  pulsoMs: 15000,
 };
 
 export function deveEnviarPostura(
