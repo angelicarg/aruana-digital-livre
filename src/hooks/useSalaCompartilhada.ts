@@ -72,6 +72,27 @@ type Estado = {
   sessao: SessaoCompartilhada | null;
 };
 
+/**
+ * Modo silencioso: `?quieto=1` na URL.
+ *
+ * Experimento para separar duas causas que produzem o mesmo sintoma. O canal
+ * cai a cada 13–20 s com o socket saudável, e há exatamente duas explicações:
+ * ou o servidor nos fecha por causa do que **nós** mandamos, ou ele fecha por
+ * conta própria.
+ *
+ * Ligado, isto zera o tráfego de saída — sem posição, sem republicação de
+ * presença, sem repetição de sessão. Sobra entrar e ficar quieto.
+ *
+ * - **Continua caindo** → não somos nós, e a decisão passa a ser trocar de
+ *   fornecedor de tempo real.
+ * - **Para de cair** → é o nosso ritmo de envio, e o conserto é aqui dentro.
+ *
+ * Uma pergunta, uma resposta. Mais barato que continuar propondo causa.
+ */
+export function modoQuieto(busca: string): boolean {
+  return new URLSearchParams(busca).get("quieto") === "1";
+}
+
 /** Sala pública quando não vem código na URL. `?sala=EQUIPE-X` separa turmas —
  *  numa demonstração para cliente ninguém quer esbarrar em estranho. */
 export function codigoDaSala(busca: string): string {
@@ -116,6 +137,10 @@ export function useSalaCompartilhada(
     send: (p: object) => unknown;
   } | null>(null);
   const posturas = useRef(new Map<string, Postura>());
+  const quieto = useMemo(
+    () => (typeof window === "undefined" ? false : modoQuieto(window.location.search)),
+    [],
+  );
   const publicouRef = useRef(false);
   const souPresente = useRef(presente);
   souPresente.current = presente;
@@ -313,19 +338,32 @@ export function useSalaCompartilhada(
             setSessao(null);
           }, 6000);
 
+          // ⚠️ **O cliente do Supabase NAO se recupera de um `phx_close`.**
+          //
+          // Medido no registro dela em 09/09: entre cada `CLOSED` e o
+          // `SUBSCRIBED` seguinte davam sempre ~22 s, que e exatamente este
+          // vigia mais a espera. Nunca foi a biblioteca voltando sozinha — era
+          // sempre eu reconstruindo. Ontem eu tinha concluido o contrario e
+          // esperava 20 s de bracos cruzados por uma recuperacao que nao vem.
+          //
+          // Canal fechado pelo servidor fica em `closed`, e o Phoenix so
+          // religa sozinho a partir de `errored`. Entao esperar e so ficar
+          // desconectado mais tempo.
+          const rapido = status === "CLOSED";
           window.clearTimeout(vigia);
-          vigia = window.setTimeout(() => {
-            if (!vivo || canal !== atual) return;
-            // Vinte segundos parado e outra coisa: agora sim vale refazer o
-            // canal do zero, uma vez, com espera crescente entre as tentativas.
-            atual = null;
-            fechar(canal);
-            const espera = Math.min(2000 * 2 ** tentativa++, 30000);
-            window.clearTimeout(reagendado);
-            reagendado = window.setTimeout(() => {
-              if (vivo) void conectar();
-            }, espera);
-          }, 20000);
+          vigia = window.setTimeout(
+            () => {
+              if (!vivo || canal !== atual) return;
+              atual = null;
+              fechar(canal);
+              const espera = rapido ? 500 : Math.min(2000 * 2 ** tentativa++, 30000);
+              window.clearTimeout(reagendado);
+              reagendado = window.setTimeout(() => {
+                if (vivo) void conectar();
+              }, espera);
+            },
+            rapido ? 300 : 20000,
+          );
         });
 
       canalRef.current = canal;
@@ -368,7 +406,10 @@ export function useSalaCompartilhada(
     if (!canal || !conectado) return;
     if (presente) {
       publicouRef.current = true;
-      canal.track({ tapete: null, pos: null });
+      // O tapete real, nao `null`: publicar nulo aqui derrubava quem estava
+      // sentado de volta para de pe a cada reconexao — e com o canal caindo a
+      // cada 15 s, isso e o tempo todo.
+      canal.track({ tapete: meuTapetePedido.current, pos: minhaPostura.current });
     } else if (publicouRef.current) {
       publicouRef.current = false;
       canal.untrack?.();
@@ -381,6 +422,7 @@ export function useSalaCompartilhada(
   // quem entrar depois.
   useEffect(() => {
     if (!ativo) return;
+    if (quieto) return;
     const id = window.setInterval(() => {
       if (!minhaPostura.current || !souPresente.current) return;
       canalRef.current?.track({
@@ -389,7 +431,7 @@ export function useSalaCompartilhada(
       });
     }, 5000);
     return () => window.clearInterval(id);
-  }, [ativo]);
+  }, [ativo, quieto]);
 
   const anunciarSessao = useCallback((tecnica: string, decorridoSegundos: number) => {
     canalRef.current?.send({
@@ -430,13 +472,14 @@ export function useSalaCompartilhada(
   const anunciarPostura = useCallback(
     (postura: Postura) => {
       minhaPostura.current = postura;
+      if (quieto) return;
       canalRef.current?.send({
         type: "broadcast",
         event: "postura",
         payload: { id: meuId, ...postura },
       });
     },
-    [meuId],
+    [meuId, quieto],
   );
 
   const lugares = useMemo(

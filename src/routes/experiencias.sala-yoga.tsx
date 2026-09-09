@@ -10,7 +10,7 @@ import { useSalaCompartilhada } from "@/hooks/useSalaCompartilhada";
 import { anuncioDeMudanca, corDeIdTexto } from "@/lib/presenca";
 import { normalizarNome, type Fala } from "@/lib/conversa";
 import { comoTexto, historico, ouvir, relogio } from "@/lib/diagnostico";
-import { codigoDaSala } from "@/hooks/useSalaCompartilhada";
+import { codigoDaSala, modoQuieto } from "@/hooks/useSalaCompartilhada";
 import {
   ControlesRespiracao,
   GuiaRespiracao,
@@ -1227,6 +1227,9 @@ function SalaYogaPage() {
     const publicar = () =>
       anunciarSessao(sessao.tecnica.id, (Date.now() - sessao.inicioMs) / 1000);
     publicar();
+    // No modo silencioso a sessao e anunciada uma vez e pronto: quem chegar
+    // depois nao sincroniza, mas o experimento precisa do canal calado.
+    if (modoQuieto(window.location.search)) return;
     const id = window.setInterval(publicar, 5000);
     return () => window.clearInterval(id);
   }, [sessao.rodando, sessao.tecnica, sessao.inicioMs, anunciarSessao]);
