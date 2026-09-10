@@ -120,6 +120,97 @@ type Sala = {
  *  sala é gerada por um script do Blender que muda, e duplicar as posições
  *  garantiria que um dia elas divergissem sem ninguém perceber. */
 /**
+ * Objetos de canto: pedras empilhadas, vaso com folhas e uma lanterna de papel.
+ *
+ * Ideias dela, tiradas da arte de referência. São os três mais baratos do
+ * conjunto — pedra é esfera achatada, folha é esfera esticada, lanterna é
+ * esfera. Nada aqui tem textura própria.
+ *
+ * ⚠️ **Uma lanterna só, e ela custa uma luz.** Material emissivo brilha e **não
+ * acende o vizinho** em tempo real: para a lanterna parecer acesa em vez de
+ * pintada, precisa de uma `pointLight` curta junto. Já são cinco luzes na sala
+ * (sol, três luminárias, a do relâmpago) e cada uma pesa no sombreamento —
+ * quatro lanternas seriam quatro luzes por um ganho decorativo.
+ *
+ * ⚠️ **As velas ficam apagadas.** A cera é trivial; a chama é que é cara —
+ * parada lê como plástico, e tremulando é movimento, que teria de respeitar
+ * quem pediu menos movimento. Fica para quando fizer falta.
+ *
+ * Estes objetos vivem em código e não no `.glb`, ao contrário do resto da sala,
+ * e isso tem um preço declarado: **eles não entram na colisão**, que é derivada
+ * do modelo. Por isso ficam encostados na parede, longe de onde se caminha. Se
+ * um dia precisarem ser sólidos, o caminho é o script do Blender.
+ */
+function Cenario() {
+  const pedra = new THREE.Color("#8d8981");
+  const barro = new THREE.Color("#b5714a");
+  const folha = new THREE.Color("#5f8f4e");
+
+  return (
+    <>
+      {/* Pedras empilhadas: três achatadas, cada uma menor e levemente torta.
+          Empilhamento perfeito lê como gráfico; torto lê como equilíbrio. */}
+      <group position={[-3.5, 0, 1.9]}>
+        {[
+          { r: 0.19, y: 0.055, achata: 0.55, gira: 0.2 },
+          { r: 0.145, y: 0.15, achata: 0.6, gira: -0.35 },
+          { r: 0.1, y: 0.225, achata: 0.62, gira: 0.5 },
+        ].map((p, i) => (
+          <mesh key={i} position={[0, p.y, 0]} rotation={[0, p.gira, p.gira * 0.15]} castShadow receiveShadow>
+            <sphereGeometry args={[p.r, 10, 8]} />
+            <meshStandardMaterial color={pedra} roughness={0.95} flatShading />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Vaso com folhas. Mesmo padrão dos cactos que já estão na sala: vaso
+          cilíndrico e a parte de cima trocada. */}
+      <group position={[3.45, 0, 1.9]}>
+        <mesh position={[0, 0.16, 0]} castShadow receiveShadow>
+          <cylinderGeometry args={[0.19, 0.15, 0.32, 12]} />
+          <meshStandardMaterial color={barro} roughness={0.9} />
+        </mesh>
+        <mesh position={[0, 0.33, 0]} castShadow>
+          <cylinderGeometry args={[0.175, 0.175, 0.03, 12]} />
+          <meshStandardMaterial color="#3d2a1f" roughness={1} />
+        </mesh>
+        {[0, 1.3, 2.6, 3.9, 5.2].map((angulo, i) => (
+          <mesh
+            key={i}
+            position={[Math.cos(angulo) * 0.11, 0.5 + (i % 2) * 0.09, Math.sin(angulo) * 0.11]}
+            rotation={[0.5 * Math.sin(angulo), -angulo, 0.55]}
+            scale={[1, 1, 0.28]}
+            castShadow
+          >
+            <sphereGeometry args={[0.14, 8, 7]} />
+            <meshStandardMaterial color={folha} roughness={0.85} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Lanterna de papel, pendurada. O corpo emissivo dá o papel aceso; a luz
+          curta ao lado é o que faz o teto e a parede responderem. */}
+      <group position={[2.6, 0, -2.4]}>
+        <mesh position={[0, 2.62, 0]}>
+          <cylinderGeometry args={[0.004, 0.004, 0.5, 4]} />
+          <meshStandardMaterial color="#2a2320" />
+        </mesh>
+        <mesh position={[0, 2.3, 0]} scale={[1, 0.82, 1]}>
+          <sphereGeometry args={[0.17, 14, 10]} />
+          <meshStandardMaterial
+            color="#f6e6c8"
+            emissive="#ffcf8f"
+            emissiveIntensity={0.9}
+            roughness={0.9}
+          />
+        </mesh>
+        <pointLight position={[0, 2.28, 0]} intensity={2.2} distance={3.4} decay={2} color="#ffcf9c" />
+      </group>
+    </>
+  );
+}
+
+/**
  * Arvore do lado de fora, com balanco ao vento.
  *
  * Vem em arquivo proprio porque o pipeline de otimizacao junta malhas por
@@ -645,6 +736,7 @@ function Navegacao({
   return (
     <>
       <primitive object={sala.raiz} />
+      <Cenario />
       <Arvore vento={vento} />
       <Avatares
         outras={outras}
