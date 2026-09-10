@@ -52,6 +52,95 @@ function faseDoId(id: string): number {
 
 const CICLO_OCIOSO = 7.5; // segundos de uma respiração tranquila em repouso
 
+/**
+ * As criaturas.
+ *
+ * ⚠️ **Nunca pessoas** — decisão dela, e a razão é de produto: um conjunto de
+ * avatares humanos é uma declaração sobre quem está representado (tom de pele,
+ * tipo de corpo, cabelo, gênero), e com três opções qualquer conjunto exclui.
+ * Criatura inventada não tem essa conta. Inventada e não animal conhecido, que
+ * carrega conotação cultural em algum lugar do mundo.
+ *
+ * ⚠️ **Nenhuma pode parecer o Aru.** Ele é a voz da marca; sala onde qualquer um
+ * o veste dilui a identidade.
+ *
+ * O que separa uma da outra é **silhueta**, não detalhe: a três metros, num
+ * corpo de 15 cm na tela, o que se lê é o contorno. Orelha grande, crista alta e
+ * cabeça pequena distinguem; textura e enfeite miúdo não chegam.
+ */
+export const FORMAS = ["barro", "folha", "pelo"] as const;
+export type Forma = (typeof FORMAS)[number];
+
+export const NOME_DA_FORMA: Record<Forma, string> = {
+  barro: "Barro",
+  folha: "Folha",
+  pelo: "Pelo",
+};
+
+const DESENHO: Record<Forma, { cabeca: number; largura: number }> = {
+  // Pesada e baixa: cabeça grande sem pescoço, orelhas rentes. Lê calma.
+  barro: { cabeca: 0.155, largura: 1.08 },
+  // Esguia e alta: cabeça pequena com crista. Lê desperta.
+  folha: { cabeca: 0.112, largura: 0.9 },
+  // Redonda com orelhas altas e topete. Lê amistosa.
+  pelo: { cabeca: 0.135, largura: 1 },
+};
+
+/** O que fica preso à cabeça e gira com ela. Fora do `<mesh>` da cabeça de
+ *  propósito: são estes volumes que fazem a silhueta, e eles precisam
+ *  acompanhar o olhar junto com ela. */
+function Enfeite({ forma, cor }: { forma: Forma; cor: THREE.Color }) {
+  const r = DESENHO[forma].cabeca;
+  const mat = <meshStandardMaterial color={cor} roughness={0.85} />;
+
+  if (forma === "barro") {
+    return (
+      <>
+        {[-1, 1].map((lado) => (
+          <mesh key={lado} position={[lado * r * 0.92, -r * 0.1, 0]} castShadow>
+            <sphereGeometry args={[r * 0.34, 10, 8]} />
+            {mat}
+          </mesh>
+        ))}
+      </>
+    );
+  }
+
+  if (forma === "folha") {
+    return (
+      <>
+        {[-0.32, 0.16].map((inclina, i) => (
+          <mesh
+            key={i}
+            position={[i === 0 ? -r * 0.3 : r * 0.35, r * 1.5, -r * 0.2]}
+            rotation={[inclina, 0, inclina * 0.8]}
+            scale={[1, 1, 0.25]}
+            castShadow
+          >
+            <coneGeometry args={[r * 0.5, r * 2.4, 6]} />
+            {mat}
+          </mesh>
+        ))}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {[-1, 1].map((lado) => (
+        <mesh key={lado} position={[lado * r * 0.72, r * 0.82, 0]} scale={[1, 1.25, 0.5]} castShadow>
+          <sphereGeometry args={[r * 0.42, 10, 8]} />
+          {mat}
+        </mesh>
+      ))}
+      <mesh position={[0, r * 1.05, 0]} scale={[1, 0.7, 1]} castShadow>
+        <sphereGeometry args={[r * 0.38, 10, 8]} />
+        {mat}
+      </mesh>
+    </>
+  );
+}
+
 /** Até onde a cabeça gira sozinha, em radianos (~70°). Além disso o corpo
  *  inteiro teria que acompanhar, e pescoço humano não faz isso. */
 const GIRO_CABECA = 1.22;
@@ -82,6 +171,7 @@ const POSTURA = {
 
 function Corpo({
   pessoa,
+  forma,
   posicao,
   sentado,
   alvo,
@@ -89,6 +179,7 @@ function Corpo({
   amplitude,
 }: {
   pessoa: OutraPessoa;
+  forma: Forma;
   posicao: [number, number, number];
   sentado: boolean;
   /** Para quem está de pé: onde a rede diz que a pessoa está agora. */
@@ -97,9 +188,10 @@ function Corpo({
   amplitude: number;
 }) {
   const p = sentado ? POSTURA.sentado : POSTURA.emPe;
+  const d = DESENHO[forma];
   const corpo = useRef<THREE.Group>(null);
   const tronco = useRef<THREE.Mesh>(null);
-  const cabeca = useRef<THREE.Mesh>(null);
+  const cabeca = useRef<THREE.Group>(null);
   const suave = useRef(ESCALA.minima);
   const cor = useMemo(() => corDoId(pessoa.id), [pessoa.id]);
 
@@ -154,26 +246,36 @@ function Corpo({
           de quem senta assim já é essa, então geometria simples não é
           concessão. Em pé, o mesmo volume vira as duas pernas juntas. */}
       <mesh position={[0, p.base.y, 0]} castShadow>
-        <cylinderGeometry args={[p.base.raioAlto, p.base.raioBaixo, p.base.altura, 14]} />
+        <cylinderGeometry
+          args={[p.base.raioAlto * d.largura, p.base.raioBaixo * d.largura, p.base.altura, 14]}
+        />
         <meshStandardMaterial color={cor} roughness={0.85} />
       </mesh>
       <mesh ref={tronco} position={[0, p.tronco.y, 0]} castShadow>
         <cylinderGeometry
-          args={[p.tronco.raioAlto, p.tronco.raioBaixo, p.tronco.altura, 14]}
+          args={[
+            p.tronco.raioAlto * d.largura,
+            p.tronco.raioBaixo * d.largura,
+            p.tronco.altura,
+            14,
+          ]}
         />
         <meshStandardMaterial color={cor} roughness={0.85} />
       </mesh>
       {/* Ombro. A outra metade da peca de xadrez era esta: sem ombro, tronco
           conico e cabeca redonda leem como peao, nao como pessoa. Uma esfera
           achatada resolve, e continua sendo forma simples. */}
-      <mesh position={[0, p.ombroY, 0]} scale={[1, 0.42, 0.78]} castShadow>
+      <mesh position={[0, p.ombroY, 0]} scale={[d.largura, 0.42, 0.78]} castShadow>
         <sphereGeometry args={[0.2, 14, 10]} />
         <meshStandardMaterial color={cor} roughness={0.85} />
       </mesh>
-      <mesh ref={cabeca} position={[0, p.cabecaY, 0]} castShadow>
-        <sphereGeometry args={[0.125, 16, 12]} />
-        <meshStandardMaterial color={cor.clone().offsetHSL(0, 0, 0.06)} roughness={0.8} />
-      </mesh>
+      <group ref={cabeca} position={[0, p.cabecaY, 0]}>
+        <mesh castShadow>
+          <sphereGeometry args={[d.cabeca, 16, 12]} />
+          <meshStandardMaterial color={cor.clone().offsetHSL(0, 0, 0.06)} roughness={0.8} />
+        </mesh>
+        <Enfeite forma={forma} cor={cor} />
+      </group>
     </group>
   );
 }
@@ -230,6 +332,7 @@ export function Avatares({
           <Corpo
             key={p.id}
             pessoa={p}
+            forma={p.forma}
             sentado={!emPe}
             posicao={posicao}
             // Sempre, nao so de pe: sentado o que interessa da postura e a

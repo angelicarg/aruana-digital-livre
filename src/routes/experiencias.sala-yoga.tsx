@@ -11,6 +11,7 @@ import { anuncioDeMudanca, corDeIdTexto } from "@/lib/presenca";
 import { normalizarNome, type Fala } from "@/lib/conversa";
 import { comoTexto, historico, ouvir, relogio } from "@/lib/diagnostico";
 import { codigoDaSala, modoQuieto } from "@/hooks/useSalaCompartilhada";
+import { FORMAS, NOME_DA_FORMA, type Forma } from "@/components/Avatares";
 import {
   ControlesRespiracao,
   GuiaRespiracao,
@@ -1008,6 +1009,8 @@ function Antessala({
   sentadas,
   codigo,
   setCodigo,
+  forma,
+  setForma,
   entrar,
 }: {
   conectado: boolean;
@@ -1016,6 +1019,8 @@ function Antessala({
   sentadas: number;
   codigo: string;
   setCodigo: (c: string) => void;
+  forma: Forma;
+  setForma: (f: Forma) => void;
   entrar: () => void;
 }) {
   const [rascunho, setRascunho] = useState(codigo);
@@ -1072,6 +1077,34 @@ function Antessala({
           )}
         </div>
 
+        <fieldset className="mt-5">
+          <legend className="text-xs font-medium uppercase tracking-wide text-white/50">
+            Sua criatura
+          </legend>
+          <div className="mt-1.5 flex gap-1.5">
+            {FORMAS.map((f) => (
+              <button
+                key={f}
+                onClick={() => setForma(f)}
+                aria-pressed={f === forma}
+                className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-xl px-3 py-2 text-sm font-medium transition ${
+                  f === forma
+                    ? "bg-white/85 text-[#1a1512]"
+                    : "bg-white/5 text-white/80 hover:bg-white/10"
+                }`}
+              >
+                {NOME_DA_FORMA[f]}
+              </button>
+            ))}
+          </div>
+          {/* Nada de humanos aqui, e é decisão de produto: um conjunto de
+              avatares humanos é uma declaração sobre quem está representado, e
+              com três opções qualquer conjunto exclui. */}
+          <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+            Você entra na sala como ela. Ninguém vê seu rosto nem seu nome real.
+          </p>
+        </fieldset>
+
         <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-white/50">
           Código da sala
           <input
@@ -1116,6 +1149,25 @@ function SalaYogaPage() {
   // em que sala vai cair. O Canvas so monta depois — e e ele que acende a GPU.
   const [entrou, setEntrou] = useState(false);
   const [verRegistro, setVerRegistro] = useState(false);
+  // VITRINE TEMPORARIA — remover depois da escolha
+  const vitrine = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    if (new URLSearchParams(window.location.search).get("vitrine") !== "1") return null;
+    return FORMAS.map((f, i) => ({
+      id: `vitrine-${f}`,
+      forma: f,
+      tapete: i,
+      espera: { x: 0, z: 0 },
+    }));
+  }, []);
+  // A criatura escolhida sobrevive a recarga, como o nome: numa sala que ja
+  // exigiu recarregar muitas vezes, escolher de novo a cada vez cansa.
+  const [forma, setForma] = useState<Forma>(FORMAS[0]);
+  useEffect(() => {
+    const guardada = localStorage.getItem("sala-yoga:forma") as Forma | null;
+    if (guardada && (FORMAS as readonly string[]).includes(guardada)) setForma(guardada);
+  }, []);
+  useEffect(() => localStorage.setItem("sala-yoga:forma", forma), [forma]);
   // O nome sobrevive a recarga: numa sala instavel, quem recarrega tres vezes
   // nao deveria ter que se apresentar tres vezes.
   const [nome, setNome] = useState("");
@@ -1165,7 +1217,7 @@ function SalaYogaPage() {
     posturas,
     anunciarSessao,
     anunciarPostura,
-  } = useSalaCompartilhada(tapetePedido, totalTapetes, mounted, entrou, codigo);
+  } = useSalaCompartilhada(tapetePedido, totalTapetes, mounted, entrou, forma, codigo);
 
   // O desempate pode me mover de tapete: se alguem com id menor pediu o mesmo,
   // eu vou para outro. Refletir isso no pedido mantem as duas maquinas
@@ -1292,7 +1344,7 @@ function SalaYogaPage() {
                 aoRaio={aoRaio}
                 movimento={movimento}
                 aoMedirSala={aoMedirSala}
-                outras={outras}
+                outras={vitrine ?? outras}
                 sessao={respiracaoDaSala}
                 posturas={posturas}
                 anunciarPostura={anunciarPostura}
@@ -1310,6 +1362,8 @@ function SalaYogaPage() {
           sentadas={outras.filter((o) => o.tapete !== null).length}
           codigo={codigo}
           setCodigo={setCodigo}
+          forma={forma}
+          setForma={setForma}
           entrar={() => setEntrou(true)}
         />
       )}

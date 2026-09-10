@@ -33,6 +33,8 @@
 export type Reivindicacao = {
   /** Identificador da pessoa na sala. Anônimo e sorteado por sessão. */
   id: string;
+  /** Qual criatura ela escolheu. Só atravessa; quem desenha é que interpreta. */
+  forma?: string;
   /** Índice do tapete em que ela quer sentar, ou null se está de pé. */
   tapete: number | null;
 };

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { acrescentar, normalizarFala, type Fala } from "@/lib/conversa";
 import { registrar } from "@/lib/diagnostico";
+import { FORMAS, type Forma } from "@/components/Avatares";
 import {
   resolverEspera,
   resolverTapetes,
@@ -38,6 +39,8 @@ const ESPERA_PADRAO = -2.6;
 
 export type OutraPessoa = {
   id: string;
+  /** Qual criatura essa pessoa escolheu na antessala. */
+  forma: Forma;
   tapete: number | null;
   /** Onde desenhar enquanto não se sabe a posição real. Calculado do conjunto
    *  de ids, então todas as máquinas concordam. */
@@ -111,6 +114,8 @@ export function useSalaCompartilhada(
    *  não entrou precisa saber quantas pessoas há lá dentro sem já aparecer como
    *  um corpo — é a diferença entre olhar pela porta e estar na sala. */
   presente: boolean,
+  /** A criatura que eu escolhi. Viaja na presença, junto com o tapete. */
+  forma: Forma,
   /** Qual sala escutar. Entra por parametro e nao lido de `window` dentro do
    *  efeito porque trocar de sala precisa reconectar o canal — e so e dependencia
    *  explicita quem faz isso acontecer. */
@@ -142,6 +147,8 @@ export function useSalaCompartilhada(
     [],
   );
   const publicouRef = useRef(false);
+  const minhaForma = useRef<Forma>(forma);
+  minhaForma.current = forma;
   /** Falas escritas enquanto o canal estava fora. Saem quando ele volta.
    *
    *  Com o canal caindo a cada ~15 s, recusar a mensagem seria recusar o tempo
@@ -270,6 +277,7 @@ export function useSalaCompartilhada(
               // sai do lugar antigo, e o sintoma e mudo — a rede funciona, o
               // track devolve "ok", e o avatar simplesmente nao senta.
               tapete: metas[metas.length - 1]?.tapete ?? null,
+              forma: (metas[metas.length - 1] as { forma?: Forma })?.forma ?? FORMAS[0],
             })),
           );
         })
@@ -320,7 +328,11 @@ export function useSalaCompartilhada(
             window.clearTimeout(vigia);
             if (souPresente.current) {
               publicouRef.current = true;
-              canal.track({ tapete: tapetePedido, pos: minhaPostura.current });
+              canal.track({
+              tapete: tapetePedido,
+              pos: minhaPostura.current,
+              forma: minhaForma.current,
+            });
             }
             // O que foi escrito enquanto o canal estava fora sai agora, na
             // ordem em que foi escrito.
@@ -404,7 +416,11 @@ export function useSalaCompartilhada(
 
   useEffect(() => {
     if (!presente) return;
-    canalRef.current?.track({ tapete: tapetePedido, pos: minhaPostura.current });
+    canalRef.current?.track({
+      tapete: tapetePedido,
+      pos: minhaPostura.current,
+      forma: minhaForma.current,
+    });
   }, [tapetePedido, presente]);
 
   // Sair da antessala publica; voltar para ela despublica.
@@ -421,7 +437,11 @@ export function useSalaCompartilhada(
       // O tapete real, nao `null`: publicar nulo aqui derrubava quem estava
       // sentado de volta para de pe a cada reconexao — e com o canal caindo a
       // cada 15 s, isso e o tempo todo.
-      canal.track({ tapete: meuTapetePedido.current, pos: minhaPostura.current });
+      canal.track({
+        tapete: meuTapetePedido.current,
+        pos: minhaPostura.current,
+        forma: minhaForma.current,
+      });
     } else if (publicouRef.current) {
       publicouRef.current = false;
       canal.untrack?.();
@@ -501,6 +521,7 @@ export function useSalaCompartilhada(
         canalRef.current?.track({
           tapete: meuTapetePedido.current,
           pos: minhaPostura.current,
+          forma: minhaForma.current,
         });
       }, 2000);
       canalRef.current?.send({
@@ -534,6 +555,7 @@ export function useSalaCompartilhada(
       .filter((r) => r.id !== meuId)
       .map((r) => ({
         id: r.id,
+        forma: (r.forma as Forma) ?? FORMAS[0],
         tapete: lugares.get(r.id) ?? null,
         espera: espera.get(r.id) ?? { x: 0, z: ESPERA_PADRAO },
       })),
