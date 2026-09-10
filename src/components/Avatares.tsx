@@ -69,93 +69,157 @@ function faseDoId(id: string): number {
  * corpo de 15 cm na tela, o que se lê é o contorno. Orelha grande, crista alta e
  * cabeça pequena distinguem; textura e enfeite miúdo não chegam.
  */
-export const FORMAS = ["barro", "folha", "pelo"] as const;
+export const FORMAS = ["angular", "broto", "redonda"] as const;
 export type Forma = (typeof FORMAS)[number];
 
 export const NOME_DA_FORMA: Record<Forma, string> = {
-  barro: "Barro",
-  folha: "Folha",
-  pelo: "Pelo",
+  angular: "Angular",
+  broto: "Broto",
+  redonda: "Redonda",
 };
 
 /**
- * ⚠️ A diferença tem que estar na **proporção**, não no enfeite.
+ * ⚠️ A diferença tem que estar na **proporção e no contorno**, não no enfeite.
  *
- * A primeira versão dava a todas a mesma altura e o mesmo corpo, mudando só o
- * que ficava preso na cabeça — e o resultado lia como um boneco só com chapéus
- * diferentes. Foi a primeira coisa que ela notou.
+ * Uma versão anterior dava a todas a mesma altura e o mesmo corpo, mudando só o
+ * que ficava preso na cabeça, e o resultado lia como um boneco só com chapéus
+ * diferentes. Estas três cobrem **anguloso, pontudo e redondo** — o máximo de
+ * separação possível com três, e separação é o que sobrevive a três metros.
  *
- * `altura` estica o corpo inteiro; `largura` engorda; `cabeca` é o raio. Uma
- * criatura baixa e larga com cabeça grande e outra alta e fina com cabeça
- * pequena se distinguem em silhueta a qualquer distância, mesmo com enfeite
- * nenhum.
+ * `facetas` é o número de lados dos cilindros do corpo, e `chato` liga o
+ * sombreamento por face. A Angular usa 5 lados com face chapada de propósito:
+ * a referência dela **já era baixo-poli**, então é a única que sai em 3D
+ * idêntica ao desenho, sem perder nada na tradução. As outras duas usam 14
+ * lados e sombreamento suave.
  *
  * `ritmo` e `folego` são a personalidade onde ela de fato aparece: quem respira
  * devagar e fundo lê como pesada e calma; quem respira curto e rápido lê como
  * desperta. Custa dois números e vale mais que polígono.
  */
-const DESENHO: Record<
-  Forma,
-  { cabeca: number; largura: number; altura: number; ritmo: number; folego: number }
-> = {
-  // Baixa, larga, cabeça grande sem pescoço. Respira devagar e fundo.
-  barro: { cabeca: 0.17, largura: 1.16, altura: 0.86, ritmo: 10.5, folego: 1.35 },
-  // Alta, fina, cabeça pequena com crista. Respira curto e rápido.
-  folha: { cabeca: 0.1, largura: 0.82, altura: 1.2, ritmo: 5.2, folego: 0.7 },
-  // Média e redonda, orelhas altas. Respira num meio-termo.
-  pelo: { cabeca: 0.14, largura: 1.02, altura: 1, ritmo: 7.5, folego: 1 },
+type Desenho = {
+  cabeca: number;
+  largura: number;
+  altura: number;
+  ritmo: number;
+  folego: number;
+  facetas: number;
+  chato: boolean;
+  /** Deslocamento de matiz e luminosidade da cabeça em relação ao corpo. */
+  cabecaDesloca: { h: number; l: number };
+  /** O emblema no peito. Nas referências ele é uma mancha de cor chapada, e é
+   *  barato: uma forma achatada em tom contrastante segura a identidade sem
+   *  custar textura. */
+  emblema: string;
 };
 
-/** O que fica preso à cabeça e gira com ela. Fora do `<mesh>` da cabeça de
- *  propósito: são estes volumes que fazem a silhueta, e eles precisam
- *  acompanhar o olhar junto com ela. */
-function Enfeite({ forma, cor }: { forma: Forma; cor: THREE.Color }) {
-  const r = DESENHO[forma].cabeca;
-  const mat = <meshStandardMaterial color={cor} roughness={0.85} />;
+const DESENHO: Record<Forma, Desenho> = {
+  // Facetada, ombros largos, cabeça em losango. Respira num ritmo firme.
+  angular: {
+    cabeca: 0.15,
+    largura: 1.06,
+    altura: 1.04,
+    ritmo: 7,
+    folego: 0.9,
+    facetas: 5,
+    chato: true,
+    cabecaDesloca: { h: -186, l: 0.28 },
+    emblema: "#f7fafc",
+  },
+  // Alta e fina, cabeça em gota com duas folhas. Respira curto e rápido.
+  broto: {
+    cabeca: 0.115,
+    largura: 0.86,
+    altura: 1.18,
+    ritmo: 5.4,
+    folego: 0.72,
+    facetas: 14,
+    chato: false,
+    cabecaDesloca: { h: 8, l: 0.12 },
+    emblema: "#f2d06b",
+  },
+  // Baixa, larga e redonda, com calota clara na cabeça. Devagar e fundo.
+  redonda: {
+    cabeca: 0.17,
+    largura: 1.14,
+    altura: 0.88,
+    ritmo: 10,
+    folego: 1.3,
+    facetas: 14,
+    chato: false,
+    // Calota azul sobre corpo lilás, como na referência: -72 graus tira do
+    // roxo e chega no azul claro.
+    cabecaDesloca: { h: -72, l: 0.18 },
+    emblema: "#f6f1e4",
+  },
+};
 
-  if (forma === "barro") {
+/** A cabeça de cada criatura, e é ela que faz a silhueta.
+ *
+ *  Fica num grupo com o resto do que se prende nela porque **tudo isso gira
+ *  junto com o olhar** — ver o repartimento de giro em `Corpo`. */
+function Cabeca({ forma, cor }: { forma: Forma; cor: THREE.Color }) {
+  const d = DESENHO[forma];
+  const r = d.cabeca;
+  const clara = cor
+    .clone()
+    .offsetHSL(d.cabecaDesloca.h / 360, 0, d.cabecaDesloca.l);
+  const mat = (c: THREE.Color) => (
+    <meshStandardMaterial color={c} roughness={0.82} flatShading={d.chato} />
+  );
+
+  if (forma === "angular") {
     return (
       <>
-        {[-1, 1].map((lado) => (
-          <mesh key={lado} position={[lado * r * 0.92, -r * 0.1, 0]} castShadow>
-            <sphereGeometry args={[r * 0.34, 10, 8]} />
-            {mat}
-          </mesh>
-        ))}
+        {/* Octaedro achatado: é exatamente o losango da referência, e sai
+            facetado de graça porque octaedro tem oito faces planas. */}
+        <mesh scale={[1, 0.62, 0.72]} castShadow>
+          <octahedronGeometry args={[r * 1.5, 0]} />
+          {mat(clara)}
+        </mesh>
       </>
     );
   }
 
-  if (forma === "folha") {
+  if (forma === "broto") {
     return (
       <>
-        {[-0.32, 0.16].map((inclina, i) => (
+        {/* Gota: esfera esticada com uma ponta curta em cima. */}
+        <mesh scale={[1, 1.35, 1]} castShadow>
+          <sphereGeometry args={[r, 14, 12]} />
+          {mat(clara)}
+        </mesh>
+        <mesh position={[0, r * 1.32, 0]} castShadow>
+          <coneGeometry args={[r * 0.42, r * 0.7, 10]} />
+          {mat(clara)}
+        </mesh>
+        {/* As duas folhas. Curtas de propósito: folha comprida em 2D fica
+            linda e em 3D vira vareta dura, porque não temos simulação. */}
+        {[-1, 1].map((lado) => (
           <mesh
-            key={i}
-            position={[i === 0 ? -r * 0.3 : r * 0.35, r * 1.5, -r * 0.2]}
-            rotation={[inclina, 0, inclina * 0.8]}
-            scale={[1, 1, 0.25]}
+            key={lado}
+            position={[lado * r * 0.42, r * 1.72, 0]}
+            rotation={[0.1, 0, lado * -0.85]}
+            scale={[1, 1, 0.35]}
             castShadow
           >
-            <coneGeometry args={[r * 0.5, r * 2.4, 6]} />
-            {mat}
+            <sphereGeometry args={[r * 0.44, 10, 8]} />
+            {mat(cor.clone().offsetHSL(0.02, 0, 0.1))}
           </mesh>
         ))}
       </>
     );
   }
 
+  // Redonda: esfera com uma calota clara por cima, como na referência.
   return (
     <>
-      {[-1, 1].map((lado) => (
-        <mesh key={lado} position={[lado * r * 0.72, r * 0.82, 0]} scale={[1, 1.25, 0.5]} castShadow>
-          <sphereGeometry args={[r * 0.42, 10, 8]} />
-          {mat}
-        </mesh>
-      ))}
-      <mesh position={[0, r * 1.05, 0]} scale={[1, 0.7, 1]} castShadow>
-        <sphereGeometry args={[r * 0.38, 10, 8]} />
-        {mat}
+      <mesh castShadow>
+        <sphereGeometry args={[r, 16, 12]} />
+        {mat(cor)}
+      </mesh>
+      <mesh position={[0, r * 0.16, 0]} scale={[1.01, 0.72, 1.01]} castShadow>
+        <sphereGeometry args={[r, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        {mat(clara)}
       </mesh>
     </>
   );
@@ -281,9 +345,14 @@ function Corpo({
           concessão. Em pé, o mesmo volume vira as duas pernas juntas. */}
       <mesh position={[0, p.base.y, 0]} castShadow>
         <cylinderGeometry
-          args={[p.base.raioAlto * d.largura, p.base.raioBaixo * d.largura, p.base.altura, 14]}
+          args={[
+            p.base.raioAlto * d.largura,
+            p.base.raioBaixo * d.largura,
+            p.base.altura,
+            d.facetas,
+          ]}
         />
-        <meshStandardMaterial color={cor} roughness={0.85} />
+        <meshStandardMaterial color={cor} roughness={0.85} flatShading={d.chato} />
       </mesh>
       <mesh ref={tronco} position={[0, p.tronco.y, 0]} castShadow>
         <cylinderGeometry
@@ -291,24 +360,29 @@ function Corpo({
             p.tronco.raioAlto * d.largura,
             p.tronco.raioBaixo * d.largura,
             p.tronco.altura,
-            14,
+            d.facetas,
           ]}
         />
-        <meshStandardMaterial color={cor} roughness={0.85} />
+        <meshStandardMaterial color={cor} roughness={0.85} flatShading={d.chato} />
       </mesh>
+      {/* O emblema do peito. Nas referências ele é uma mancha de cor chapada —
+          anéis, gota, círculo — e aqui vira uma forma achatada encostada no
+          tronco. Custa quase nada e é o que dá identidade de perto, onde a
+          silhueta já não é a informação. */}
+      <mesh position={[0, p.tronco.y + p.tronco.altura * 0.1, p.tronco.raioAlto * 0.92]} castShadow>
+        <sphereGeometry args={[0.055, 12, 10]} />
+        <meshStandardMaterial color={d.emblema} roughness={0.7} flatShading={d.chato} />
+      </mesh>
+
       {/* Ombro. A outra metade da peca de xadrez era esta: sem ombro, tronco
           conico e cabeca redonda leem como peao, nao como pessoa. Uma esfera
           achatada resolve, e continua sendo forma simples. */}
       <mesh position={[0, p.ombroY, 0]} scale={[d.largura, 0.42, 0.78]} castShadow>
-        <sphereGeometry args={[0.2, 14, 10]} />
-        <meshStandardMaterial color={cor} roughness={0.85} />
+        <sphereGeometry args={[0.2, d.chato ? 6 : 14, d.chato ? 4 : 10]} />
+        <meshStandardMaterial color={cor} roughness={0.85} flatShading={d.chato} />
       </mesh>
       <group ref={cabeca} position={[0, p.cabecaY, 0]}>
-        <mesh castShadow>
-          <sphereGeometry args={[d.cabeca, 16, 12]} />
-          <meshStandardMaterial color={cor.clone().offsetHSL(0, 0, 0.06)} roughness={0.8} />
-        </mesh>
-        <Enfeite forma={forma} cor={cor} />
+        <Cabeca forma={forma} cor={cor} />
       </group>
     </group>
   );

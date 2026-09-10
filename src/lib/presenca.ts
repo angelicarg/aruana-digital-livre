@@ -235,21 +235,24 @@ export function resolverEspera(ids: string[]): Map<string, { x: number; z: numbe
  * porque nenhuma faixa aqui passa de saturação 42.
  */
 const FAIXA: Record<string, { h: [number, number]; s: number; l: number }> = {
-  // Terra: do barro cru ao tijolo.
-  barro: { h: [18, 34], s: 38, l: 30 },
-  // Vegetal: verde acinzentado, longe do verde vivo do cacto.
-  folha: { h: [96, 140], s: 26, l: 33 },
-  // Pelagem: mel, castanho claro, quase rosado.
-  pelo: { h: [330, 372], s: 30, l: 36 },
+  // Azul de origami. Saturação mais alta que as outras porque azul está longe
+  // do verde do cacto e não disputa com ele — a regra sempre foi não roubar o
+  // ponto de cor do cacto, não ser pálido por princípio.
+  angular: { h: [205, 222], s: 48, l: 40 },
+  // Vegetal, e **de propósito menos vivo que o cacto**: a criatura não pode
+  // competir com a única cor saturada da sala.
+  broto: { h: [95, 122], s: 34, l: 38 },
+  // Lilás, longe das duas outras em matiz.
+  redonda: { h: [262, 286], s: 34, l: 46 },
 };
 
 export function corDeId(
   id: string,
-  forma: string = "barro",
+  forma: string = "redonda",
 ): { h: number; s: number; l: number } {
   let n = 0;
   for (let i = 0; i < id.length; i++) n = (n * 31 + id.charCodeAt(i)) >>> 0;
-  const faixa = FAIXA[forma] ?? FAIXA.barro;
+  const faixa = FAIXA[forma] ?? FAIXA.redonda;
   const [de, ate] = faixa.h;
   return {
     h: (de + ((n % 100) / 100) * (ate - de)) % 360,
