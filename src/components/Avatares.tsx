@@ -35,10 +35,10 @@ import { corDeId, type Postura } from "@/lib/presenca";
  *  estava, sem ninguém escolher nada. Faixa estreita em torno dos tons de
  *  madeira e linho da sala — saturação alta aqui roubaria o único ponto de cor
  *  saturada, que são os cactos. */
-function corDoId(id: string): THREE.Color {
+function corDoId(id: string, forma: Forma): THREE.Color {
   // Uma fonte de verdade so: a mesma cor identifica o corpo na sala e o nome de
   // quem fala no painel de conversa. Ver `corDeId` em lib/presenca.
-  const { h, s, l } = corDeId(id);
+  const { h, s, l } = corDeId(id, forma);
   return new THREE.Color().setHSL(h / 360, s / 100, l / 100);
 }
 
@@ -50,7 +50,8 @@ function faseDoId(id: string): number {
   return (h % 1000) / 1000;
 }
 
-const CICLO_OCIOSO = 7.5; // segundos de uma respiração tranquila em repouso
+// O ritmo de respiração em repouso deixou de ser único: cada criatura tem o
+// seu, em DESENHO. É onde a personalidade aparece de verdade.
 
 /**
  * As criaturas.
@@ -77,13 +78,32 @@ export const NOME_DA_FORMA: Record<Forma, string> = {
   pelo: "Pelo",
 };
 
-const DESENHO: Record<Forma, { cabeca: number; largura: number }> = {
-  // Pesada e baixa: cabeça grande sem pescoço, orelhas rentes. Lê calma.
-  barro: { cabeca: 0.155, largura: 1.08 },
-  // Esguia e alta: cabeça pequena com crista. Lê desperta.
-  folha: { cabeca: 0.112, largura: 0.9 },
-  // Redonda com orelhas altas e topete. Lê amistosa.
-  pelo: { cabeca: 0.135, largura: 1 },
+/**
+ * ⚠️ A diferença tem que estar na **proporção**, não no enfeite.
+ *
+ * A primeira versão dava a todas a mesma altura e o mesmo corpo, mudando só o
+ * que ficava preso na cabeça — e o resultado lia como um boneco só com chapéus
+ * diferentes. Foi a primeira coisa que ela notou.
+ *
+ * `altura` estica o corpo inteiro; `largura` engorda; `cabeca` é o raio. Uma
+ * criatura baixa e larga com cabeça grande e outra alta e fina com cabeça
+ * pequena se distinguem em silhueta a qualquer distância, mesmo com enfeite
+ * nenhum.
+ *
+ * `ritmo` e `folego` são a personalidade onde ela de fato aparece: quem respira
+ * devagar e fundo lê como pesada e calma; quem respira curto e rápido lê como
+ * desperta. Custa dois números e vale mais que polígono.
+ */
+const DESENHO: Record<
+  Forma,
+  { cabeca: number; largura: number; altura: number; ritmo: number; folego: number }
+> = {
+  // Baixa, larga, cabeça grande sem pescoço. Respira devagar e fundo.
+  barro: { cabeca: 0.17, largura: 1.16, altura: 0.86, ritmo: 10.5, folego: 1.35 },
+  // Alta, fina, cabeça pequena com crista. Respira curto e rápido.
+  folha: { cabeca: 0.1, largura: 0.82, altura: 1.2, ritmo: 5.2, folego: 0.7 },
+  // Média e redonda, orelhas altas. Respira num meio-termo.
+  pelo: { cabeca: 0.14, largura: 1.02, altura: 1, ritmo: 7.5, folego: 1 },
 };
 
 /** O que fica preso à cabeça e gira com ela. Fora do `<mesh>` da cabeça de
@@ -187,13 +207,25 @@ function Corpo({
   alvoEscala: (t: number) => number;
   amplitude: number;
 }) {
-  const p = sentado ? POSTURA.sentado : POSTURA.emPe;
+  const base = sentado ? POSTURA.sentado : POSTURA.emPe;
   const d = DESENHO[forma];
+  // A altura estica tudo o que sobe do chao: tronco, ombro e cabeca. A base
+  // (pernas cruzadas ou pernas juntas) nao estica, senao a criatura alta fica
+  // com pernas de garca.
+  const p = useMemo(
+    () => ({
+      base: base.base,
+      tronco: { ...base.tronco, altura: base.tronco.altura * d.altura, y: base.tronco.y * d.altura },
+      ombroY: base.ombroY * d.altura,
+      cabecaY: base.cabecaY * d.altura,
+    }),
+    [base, d.altura],
+  );
   const corpo = useRef<THREE.Group>(null);
   const tronco = useRef<THREE.Mesh>(null);
   const cabeca = useRef<THREE.Group>(null);
   const suave = useRef(ESCALA.minima);
-  const cor = useMemo(() => corDoId(pessoa.id), [pessoa.id]);
+  const cor = useMemo(() => corDoId(pessoa.id, forma), [pessoa.id, forma]);
 
   useFrame((estado, delta) => {
     // A posicao chega a 10 Hz e a tela desenha a 60: perseguir o alvo por
@@ -234,10 +266,12 @@ function Corpo({
     // A escala da respiração vai de 0,32 a 1. Aqui ela vira 5% de largura de
     // tronco — mais que isso e o corpo infla como balão em vez de respirar.
     const r = (suave.current - ESCALA.minima) / (ESCALA.maxima - ESCALA.minima);
-    const ganho = 1 + r * 0.05 * amplitude;
+    const ganho = 1 + r * 0.05 * amplitude * d.folego;
     if (tronco.current) tronco.current.scale.set(ganho, 1, ganho);
     // A cabeça sobe junto: quem inspira fundo cresce, e é o topo que se move.
-    if (cabeca.current) cabeca.current.position.y = p.cabecaY + r * 0.025 * amplitude;
+    if (cabeca.current) {
+      cabeca.current.position.y = p.cabecaY + r * 0.025 * amplitude * d.folego;
+    }
   });
 
   return (
@@ -323,7 +357,7 @@ export function Avatares({
             return faseEm(tecnica, (Date.now() - sessao.inicioLocalMs) / 1000).escala;
           }
           // Fora de sessão: respiração ociosa, cada um na sua fase.
-          const t = (agora / CICLO_OCIOSO + faseDoId(p.id)) % 1;
+          const t = (agora / DESENHO[p.forma].ritmo + faseDoId(p.id)) % 1;
           const onda = 0.5 - 0.5 * Math.cos(t * Math.PI * 2);
           return ESCALA.minima + (ESCALA.maxima - ESCALA.minima) * onda;
         };

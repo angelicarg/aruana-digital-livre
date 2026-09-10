@@ -220,14 +220,48 @@ export function resolverEspera(ids: string[]): Map<string, { x: number; z: numbe
  * Faixa estreita em torno dos tons de madeira e linho: saturação alta aqui
  * roubaria o único ponto de cor saturada da sala, que são os cactos.
  */
-export function corDeId(id: string): { h: number; s: number; l: number } {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return { h: (0.05 + ((h % 100) / 100) * 0.12) * 360, s: 30, l: 31 };
+/**
+ * A faixa de cor de cada criatura.
+ *
+ * ⚠️ Antes havia **uma faixa só**, de 18° a 61°, com saturação 30. Eu a apertei
+ * para não competir com os cactos — que são o único ponto saturado da sala — e
+ * passei do ponto: as três criaturas saíam praticamente do mesmo bege, e o
+ * conjunto lia como "o mesmo boneco de chapéu diferente". Ela viu isso na
+ * primeira olhada.
+ *
+ * Agora cada criatura tem **seu próprio território de cor**, e o id da pessoa só
+ * move dentro dele. Duas pessoas da mesma criatura são parentes; duas criaturas
+ * diferentes não se confundem nunca. O cacto continua sozinho no verde vivo
+ * porque nenhuma faixa aqui passa de saturação 42.
+ */
+const FAIXA: Record<string, { h: [number, number]; s: number; l: number }> = {
+  // Terra: do barro cru ao tijolo.
+  barro: { h: [18, 34], s: 38, l: 30 },
+  // Vegetal: verde acinzentado, longe do verde vivo do cacto.
+  folha: { h: [96, 140], s: 26, l: 33 },
+  // Pelagem: mel, castanho claro, quase rosado.
+  pelo: { h: [330, 372], s: 30, l: 36 },
+};
+
+export function corDeId(
+  id: string,
+  forma: string = "barro",
+): { h: number; s: number; l: number } {
+  let n = 0;
+  for (let i = 0; i < id.length; i++) n = (n * 31 + id.charCodeAt(i)) >>> 0;
+  const faixa = FAIXA[forma] ?? FAIXA.barro;
+  const [de, ate] = faixa.h;
+  return {
+    h: (de + ((n % 100) / 100) * (ate - de)) % 360,
+    // A pessoa tambem move um pouco a luminosidade: sem isso, duas pessoas da
+    // mesma criatura com matiz proxima ficam identicas.
+    s: faixa.s,
+    l: faixa.l + (((n >> 7) % 100) / 100) * 10 - 5,
+  };
 }
 
 /** A mesma cor, clareada para ler como texto sobre fundo escuro. */
-export function corDeIdTexto(id: string): string {
-  const { h, s } = corDeId(id);
-  return `hsl(${h.toFixed(0)} ${s}% 72%)`;
+export function corDeIdTexto(id: string, forma?: string): string {
+  const { h, s } = corDeId(id, forma);
+  return `hsl(${h.toFixed(0)} ${s}% 74%)`;
 }
