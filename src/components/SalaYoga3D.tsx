@@ -536,9 +536,17 @@ function Navegacao({
     // As gotas do vidro sobem aqui, no topo, porque este useFrame retorna cedo
     // quando ninguem esta andando — e a chuva no vidro nao para so porque a
     // pessoa parou de caminhar.
-    // Enquanto de pé, publica onde estou. Sentado nao publica: o indice do
-    // tapete ja diz tudo, e repetir seria gastar rede para dizer o mesmo.
-    if (!sentado) {
+    // Publica onde estou e para onde olho — **tambem sentado**.
+    //
+    // Antes so publicava de pe, com o argumento de que o indice do tapete ja
+    // dizia a posicao. Dizia a posicao e nao dizia a direcao: quem sentava
+    // congelava olhando para o mesmo lado, para sempre, e era metade do motivo
+    // de os avatares parecerem sem vida. Sentado o `x`/`z` e ignorado por quem
+    // desenha; o que importa e o `yaw`.
+    //
+    // O custo e baixo porque `deveEnviarPostura` so deixa passar giro acima de
+    // ~5 graus: quem esta sentado quieto nao manda nada.
+    {
       const agora = performance.now();
       const minha: Postura = {
         x: camera.position.x,

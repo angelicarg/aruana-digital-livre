@@ -52,6 +52,14 @@ function faseDoId(id: string): number {
 
 const CICLO_OCIOSO = 7.5; // segundos de uma respiração tranquila em repouso
 
+/** Até onde a cabeça gira sozinha, em radianos (~70°). Além disso o corpo
+ *  inteiro teria que acompanhar, e pescoço humano não faz isso. */
+const GIRO_CABECA = 1.22;
+
+/** Diferença angular pelo caminho curto. Sem isso, atravessar o ±180° faz a
+ *  cabeça dar quase uma volta inteira para olhar o vizinho. */
+const curto = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+
 /** As duas posturas, em metros. Um corpo sentado desenhado na posicao de quem
  *  esta em pe le como estatueta encostada na parede — foi o primeiro defeito
  *  visto com duas abas abertas. A silhueta tem que dizer a postura. */
@@ -104,13 +112,26 @@ function Corpo({
     const destino = alvo?.current?.get(pessoa.id);
     if (g && destino) {
       const k = 1 - Math.exp(-delta / 0.12);
-      g.position.x += (destino.x - g.position.x) * k;
-      g.position.z += (destino.z - g.position.z) * k;
-      // Angulo pelo caminho curto: sem isto, cruzar o ±180° faz o corpo girar
-      // quase uma volta inteira para chegar a um vizinho.
-      let d = destino.yaw - g.rotation.y;
-      d = Math.atan2(Math.sin(d), Math.cos(d));
-      g.rotation.y += d * k;
+      if (!sentado) {
+        // De pe: o corpo inteiro vira, e a cabeca acompanha o corpo.
+        g.position.x += (destino.x - g.position.x) * k;
+        g.position.z += (destino.z - g.position.z) * k;
+        g.rotation.y += curto(destino.yaw - g.rotation.y) * k;
+        if (cabeca.current) cabeca.current.rotation.y += -cabeca.current.rotation.y * k;
+      } else {
+        // Sentado, a pessoa olha a sala inteira, nao so o vidro — e ela me
+        // corrigiu nisso. Entao o giro se reparte como num corpo de verdade: a
+        // cabeca vai ate onde pescoco vai, e **o que passar disso o tronco
+        // assume**, girando no proprio eixo. Assim da para olhar para tras sem
+        // sair do tapete e sem a cabeca fazer o que cabeca nao faz.
+        const olhar = curto(destino.yaw);
+        const naCabeca = Math.max(-GIRO_CABECA, Math.min(GIRO_CABECA, olhar));
+        const noTronco = olhar - naCabeca;
+        g.rotation.y += curto(noTronco - g.rotation.y) * k;
+        if (cabeca.current) {
+          cabeca.current.rotation.y += curto(naCabeca - cabeca.current.rotation.y) * k;
+        }
+      }
     }
 
     const alvoE = alvoEscala(estado.clock.elapsedTime);
@@ -211,7 +232,9 @@ export function Avatares({
             pessoa={p}
             sentado={!emPe}
             posicao={posicao}
-            alvo={emPe ? posturas : null}
+            // Sempre, nao so de pe: sentado o que interessa da postura e a
+            // direcao do olhar, nao a posicao.
+            alvo={posturas}
             alvoEscala={alvoEscala}
             amplitude={amplitude}
           />
