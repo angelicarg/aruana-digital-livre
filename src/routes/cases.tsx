@@ -31,14 +31,10 @@ export const Route = createFileRoute("/cases")({
   component: CasesPage,
 });
 
+// Os quatro com painel vêm primeiro e juntos: o bloco de acesso de visitante
+// deixa esses cards mais altos, e na grade de duas colunas um card baixo ao
+// lado de um alto sobra em branco. Pares da mesma altura, linha a linha.
 const CASES = [
-  {
-    tag: "Serviços",
-    title: "Carlos Pintor",
-    desc: "Landing page com calculadora de orçamento em 3 passos, do cômodo até o valor final, direto para o fechamento via WhatsApp.",
-    highlights: ["Orçamento em 3 passos", "Cálculo automático", "Fechamento via WhatsApp"],
-    url: "https://carlos-pintor.vercel.app/",
-  },
   {
     tag: "Saúde",
     title: "Clínica Dente Vivo",
@@ -46,13 +42,6 @@ const CASES = [
     highlights: ["Agendamento em tempo real", "Painel da equipe", "Chatbot de atendimento"],
     url: "https://dente-vivo.vercel.app/",
     painel: "https://dente-vivo.vercel.app/admin/login",
-  },
-  {
-    tag: "Alimentação",
-    title: "Forno 81",
-    desc: "E-commerce com carrinho de compras, checkout via WhatsApp e o Toninho, um atendente com IA real que conhece todo o cardápio.",
-    highlights: ["IA real (Claude)", "Carrinho + WhatsApp", "Atendimento a qualquer hora"],
-    url: "https://forno81.vercel.app/",
   },
   {
     tag: "Varejo",
@@ -77,6 +66,20 @@ const CASES = [
     highlights: ["Agendamento + loja juntos", "IA recomenda produtos", "Histórico unificado por cliente"],
     url: "https://patas-nobres.vercel.app/",
     painel: "https://patas-nobres.vercel.app/admin/login",
+  },
+  {
+    tag: "Serviços",
+    title: "Carlos Pintor",
+    desc: "Landing page com calculadora de orçamento em 3 passos, do cômodo até o valor final, direto para o fechamento via WhatsApp.",
+    highlights: ["Orçamento em 3 passos", "Cálculo automático", "Fechamento via WhatsApp"],
+    url: "https://carlos-pintor.vercel.app/",
+  },
+  {
+    tag: "Alimentação",
+    title: "Forno 81",
+    desc: "E-commerce com carrinho de compras, checkout via WhatsApp e o Toninho, um atendente com IA real que conhece todo o cardápio.",
+    highlights: ["IA real (Claude)", "Carrinho + WhatsApp", "Atendimento a qualquer hora"],
+    url: "https://forno81.vercel.app/",
   },
   {
     tag: "Educação Inclusiva",
