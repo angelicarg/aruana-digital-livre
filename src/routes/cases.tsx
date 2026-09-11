@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
-import { Bot, ExternalLink, Info, Layers, Sparkles } from "lucide-react";
+import { Bot, Check, Copy, ExternalLink, Info, Layers, Sparkles } from "lucide-react";
 import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/cases")({
@@ -44,6 +45,7 @@ const CASES = [
     desc: "Agendamento online em tempo real, chatbot de atendimento e painel para a equipe confirmar ou recusar consultas.",
     highlights: ["Agendamento em tempo real", "Painel da equipe", "Chatbot de atendimento"],
     url: "https://dente-vivo.vercel.app/",
+    painel: "https://dente-vivo.vercel.app/admin/login",
   },
   {
     tag: "Alimentação",
@@ -58,6 +60,7 @@ const CASES = [
     desc: "Livraria online com painel administrativo completo — produtos, promoções e pedidos — e a Nina, uma IA que responde com o catálogo em tempo real.",
     highlights: ["Painel admin completo", "Pedidos salvos no banco", "IA lê o catálogo ao vivo"],
     url: "https://pagina-magica.vercel.app/",
+    painel: "https://pagina-magica.vercel.app/admin/login",
   },
   {
     tag: "Saúde",
@@ -65,6 +68,7 @@ const CASES = [
     desc: "Mesmo espírito do Dente Vivo, agora para oftalmologia: agendamento online por especialidade e médico, com painel para a equipe confirmar consultas e bloquear horários.",
     highlights: ["Agendamento por especialidade", "Painel da equipe", "Bloqueio de agenda"],
     url: "https://site-clinica-visao.vercel.app/",
+    painel: "https://site-clinica-visao.vercel.app/admin/login",
   },
   {
     tag: "Pet",
@@ -72,6 +76,7 @@ const CASES = [
     desc: "Pet shop completo: agendamento de banho e tosa, loja com carrinho de compras e uma assistente de IA que recomenda produtos com base no perfil do pet — tudo com histórico do cliente unificado.",
     highlights: ["Agendamento + loja juntos", "IA recomenda produtos", "Histórico unificado por cliente"],
     url: "https://patas-nobres.vercel.app/",
+    painel: "https://patas-nobres.vercel.app/admin/login",
   },
   {
     tag: "Educação Inclusiva",
@@ -80,6 +85,57 @@ const CASES = [
     status: "soon" as const,
   },
 ];
+
+// Mesma conta em todos os demos. Pública de propósito: os dados de demonstração
+// voltam ao original toda madrugada por cron no Supabase.
+const VISITANTE = { email: "visitante@demo.aruanadigital.com", senha: "visitante2026" };
+
+function AcessoVisitante({ painel }: { painel: string }) {
+  const [copiado, setCopiado] = useState(false);
+
+  async function copiar() {
+    await navigator.clipboard.writeText(`${VISITANTE.email}\n${VISITANTE.senha}`);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2500);
+  }
+
+  return (
+    <div className="border-t border-border bg-muted/40 px-6 py-5 text-sm">
+      <p className="font-bold text-brand-navy">Teste também o painel da equipe</p>
+      <p className="mt-1 text-muted-foreground">
+        Entre como visitante e use todas as funções, sem precisar falar com ninguém. Os dados
+        voltam ao original toda madrugada.
+      </p>
+      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-xs">
+        <dt className="text-muted-foreground">E-mail</dt>
+        <dd className="break-all text-foreground">{VISITANTE.email}</dd>
+        <dt className="text-muted-foreground">Senha</dt>
+        <dd className="text-foreground">{VISITANTE.senha}</dd>
+      </dl>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={copiar}
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-brand-navy-deep transition hover:border-brand-green"
+        >
+          {copiado ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copiado ? "Copiado" : "Copiar acesso"}
+        </button>
+        <a
+          href={painel}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-full bg-brand-navy-deep px-4 py-2 text-xs font-bold text-white transition hover:gap-3"
+        >
+          Abrir o painel <ExternalLink className="h-4 w-4" />
+        </a>
+      </div>
+      <span aria-live="polite" className="sr-only">
+        {copiado ? "Acesso copiado" : ""}
+      </span>
+    </div>
+  );
+}
 
 function CasesPage() {
   return (
@@ -149,6 +205,7 @@ function CasesPage() {
                         </div>
                       ))}
                     </div>
+                    {c.painel && <AcessoVisitante painel={c.painel} />}
                     <a
                       href={c.url}
                       target="_blank"
