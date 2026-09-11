@@ -60,6 +60,7 @@ const CASES = [
     desc: "Livraria online com painel administrativo completo — produtos, promoções e pedidos — e a Nina, uma IA que responde com o catálogo em tempo real.",
     highlights: ["Painel admin completo", "Pedidos salvos no banco", "IA lê o catálogo ao vivo"],
     url: "https://pagina-magica.vercel.app/",
+    painel: "https://pagina-magica.vercel.app/admin/login",
   },
   {
     tag: "Saúde",
@@ -67,6 +68,7 @@ const CASES = [
     desc: "Mesmo espírito do Dente Vivo, agora para oftalmologia: agendamento online por especialidade e médico, com painel para a equipe confirmar consultas e bloquear horários.",
     highlights: ["Agendamento por especialidade", "Painel da equipe", "Bloqueio de agenda"],
     url: "https://site-clinica-visao.vercel.app/",
+    painel: "https://site-clinica-visao.vercel.app/admin/login",
   },
   {
     tag: "Pet",
