@@ -3,6 +3,7 @@ import { acrescentar, normalizarFala, type Fala } from "@/lib/conversa";
 import { registrar } from "@/lib/diagnostico";
 import { FORMAS, type Forma } from "@/components/Avatares";
 import {
+  ESPERA,
   resolverEspera,
   resolverTapetes,
   type Postura,
@@ -32,10 +33,6 @@ import {
  * funcionando vazia** em vez de quebrar. Mesmo padrão do resto do site: nenhuma
  * página cai por falta de credencial de terceiro.
  */
-
-/** Fundo da sala: so vale se o mapa de espera nao tiver a pessoa, o que nao
- *  deve acontecer. */
-const ESPERA_PADRAO = -2.6;
 
 export type OutraPessoa = {
   id: string;
@@ -557,7 +554,8 @@ export function useSalaCompartilhada(
         id: r.id,
         forma: (r.forma as Forma) ?? FORMAS[0],
         tapete: lugares.get(r.id) ?? null,
-        espera: espera.get(r.id) ?? { x: 0, z: ESPERA_PADRAO },
+        // Só vale se o mapa de espera não tiver a pessoa, o que não deve acontecer.
+        espera: espera.get(r.id) ?? { x: ESPERA.xs[0], z: ESPERA.z },
       })),
     // Enquanto ninguém mais está na sala o desempate não tem o que decidir, e o
     // pedido vale como está — senão sentar teria um atraso de ida e volta.

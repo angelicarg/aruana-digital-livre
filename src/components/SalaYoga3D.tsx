@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, type RefObject } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, type RefObject } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, useGLTF } from "@react-three/drei";
 import { CeuPorDoSol } from "./CeuPorDoSol";
@@ -8,6 +8,8 @@ import { PALETAS, RELAMPAGO, raioDaFatia, relampagoEm, type Clima, type Raio } f
 import { PERFIS, type Movimento, type Perfil } from "@/lib/movimento";
 import { vidroComGotas, type UniformesGota } from "@/lib/gotas";
 import { Avatares } from "./Avatares";
+import { Professor, PROFESSOR } from "./Professor";
+import { useModeloNoChao } from "@/hooks/useModeloNoChao";
 import type { OutraPessoa, SessaoCompartilhada } from "@/hooks/useSalaCompartilhada";
 import { deveEnviarPostura, type Postura } from "@/lib/presenca";
 import * as THREE from "three";
@@ -120,11 +122,11 @@ type Sala = {
  *  sala é gerada por um script do Blender que muda, e duplicar as posições
  *  garantiria que um dia elas divergissem sem ninguém perceber. */
 /**
- * Objetos de canto: pedras empilhadas, vaso com folhas e uma lanterna de papel.
+ * Objetos de canto: pedras empilhadas e uma lanterna de papel.
  *
- * Ideias dela, tiradas da arte de referência. São os três mais baratos do
- * conjunto — pedra é esfera achatada, folha é esfera esticada, lanterna é
- * esfera. Nada aqui tem textura própria.
+ * Ideias dela, tiradas da arte de referência. São os mais baratos do conjunto —
+ * pedra é esfera achatada, lanterna é esfera. Nada aqui tem textura própria. O
+ * vaso com folhas que também morava aqui virou modelo dela: ver `Planta`.
  *
  * ⚠️ **Uma lanterna só, e ela custa uma luz.** Material emissivo brilha e **não
  * acende o vizinho** em tempo real: para a lanterna parecer acesa em vez de
@@ -143,8 +145,6 @@ type Sala = {
  */
 function Cenario() {
   const pedra = new THREE.Color("#8d8981");
-  const barro = new THREE.Color("#b5714a");
-  const folha = new THREE.Color("#5f8f4e");
 
   return (
     <>
@@ -159,31 +159,6 @@ function Cenario() {
           <mesh key={i} position={[0, p.y, 0]} rotation={[0, p.gira, p.gira * 0.15]} castShadow receiveShadow>
             <sphereGeometry args={[p.r, 10, 8]} />
             <meshStandardMaterial color={pedra} roughness={0.95} flatShading />
-          </mesh>
-        ))}
-      </group>
-
-      {/* Vaso com folhas. Mesmo padrão dos cactos que já estão na sala: vaso
-          cilíndrico e a parte de cima trocada. */}
-      <group position={[3.45, 0, 1.9]}>
-        <mesh position={[0, 0.16, 0]} castShadow receiveShadow>
-          <cylinderGeometry args={[0.19, 0.15, 0.32, 12]} />
-          <meshStandardMaterial color={barro} roughness={0.9} />
-        </mesh>
-        <mesh position={[0, 0.33, 0]} castShadow>
-          <cylinderGeometry args={[0.175, 0.175, 0.03, 12]} />
-          <meshStandardMaterial color="#3d2a1f" roughness={1} />
-        </mesh>
-        {[0, 1.3, 2.6, 3.9, 5.2].map((angulo, i) => (
-          <mesh
-            key={i}
-            position={[Math.cos(angulo) * 0.11, 0.5 + (i % 2) * 0.09, Math.sin(angulo) * 0.11]}
-            rotation={[0.5 * Math.sin(angulo), -angulo, 0.55]}
-            scale={[1, 1, 0.28]}
-            castShadow
-          >
-            <sphereGeometry args={[0.14, 8, 7]} />
-            <meshStandardMaterial color={folha} roughness={0.85} />
           </mesh>
         ))}
       </group>
@@ -209,6 +184,22 @@ function Cenario() {
     </>
   );
 }
+
+/** Planta em vaso de terracota, modelo dela (Copilot 3D). Fica no canto em que
+ *  morava o vaso feito de esferas, encostada na parede, fora de onde se anda —
+ *  como o resto do cenário em código, não entra na colisão. */
+const PLANTA = { posicao: [3.45, 0, 1.9] as [number, number, number], altura: 0.75, giro: 0.6 };
+
+function Planta() {
+  const { raiz, escala } = useModeloNoChao("/modelos/planta.glb", PLANTA.altura);
+  return (
+    <group position={PLANTA.posicao} rotation={[0, PLANTA.giro, 0]} scale={escala}>
+      <primitive object={raiz} />
+    </group>
+  );
+}
+
+useGLTF.preload("/modelos/planta.glb", "/draco/");
 
 /**
  * Arvore do lado de fora, com balanco ao vento.
@@ -350,7 +341,22 @@ function useSala(): Sala {
       obstaculos.push(caixa.expandByScalar(RAIO_CORPO));
     });
 
-    tapetes.sort((a, b) => a.centro.x - b.centro.x);
+    // O professor vive em código, fora do .glb, e mesmo assim precisa ser
+    // sólido: ele fica no caminho de quem vai até o vidro.
+    const [px, , pz] = PROFESSOR.posicao;
+    obstaculos.push(
+      new THREE.Box3(
+        new THREE.Vector3(px - PROFESSOR.raio, 0, pz - PROFESSOR.raio),
+        new THREE.Vector3(px + PROFESSOR.raio, PROFESSOR.alturaEmPe, pz + PROFESSOR.raio),
+      ).expandByScalar(RAIO_CORPO),
+    );
+
+    // Fileira da frente primeiro, depois da esquerda para a direita. O índice é
+    // o que a presença publica, então a ordem precisa ser a mesma em toda
+    // máquina — e só x deixaria de ser ordem de verdade com duas fileiras.
+    tapetes.sort(
+      (a, b) => Math.round(a.centro.z * 10) - Math.round(b.centro.z * 10) || a.centro.x - b.centro.x,
+    );
     // O `!` se sustenta na geometria: o glb tem vidro_frente, vidro_esq e
     // vidro_dir, e sem vidro nenhum não há sala de vidro para navegar.
     return { raiz, obstaculos, tapetes, gotas: vidroGotas!.uniformes };
@@ -737,6 +743,12 @@ function Navegacao({
     <>
       <primitive object={sala.raiz} />
       <Cenario />
+      {/* Suspense próprio: a sala abre sem esperar os ~400 KB de professor e
+          planta, e eles aparecem quando chegarem. */}
+      <Suspense fallback={null}>
+        <Planta />
+        <Professor sessao={sessao} amplitude={perfil.amplitudeAvatar} />
+      </Suspense>
       <Arvore vento={vento} />
       <Avatares
         outras={outras}

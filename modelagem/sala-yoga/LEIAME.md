@@ -19,7 +19,14 @@ A árvore sai em `arvore.glb` separado e usa **`--join false`**:
 
     npx @gltf-transform/cli optimize arvore.glb arvore-web.glb       --texture-compress webp --texture-size 512 --compress draco --simplify false --join false
 
-Os dois detalhes são obrigatórios, não preferência. `join` funde malhas por
+⚠️ **Na sala, cada tapete precisa de cor própria.** O `optimize` padrão funde
+materiais idênticos e junta as malhas que passam a dividir material: com duas
+fileiras e cores repetidas, 7 tapetes saíram como 3 nós e o site — que acha cada
+tapete pelo nome — perdeu os lugares. O script agora se recusa a exportar com
+cor repetida. Conferir depois de otimizar: `tapete_0` a `tapete_N` precisam
+estar todos no `.glb` publicado.
+
+Os dois detalhes da árvore são obrigatórios, não preferência. `join` funde malhas por
 material e apagaria os nós `copa_0..N`, que o balanço ao vento procura pelo nome.
 E se a árvore ficasse dentro do glb da sala, o passo `palette` fundiria a cor da
 copa com montanha e cacto — animar aquele material faria a montanha balançar.

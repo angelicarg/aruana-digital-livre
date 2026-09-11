@@ -1126,8 +1126,8 @@ function Antessala({
           Entrar na sala
         </button>
         <p className="mt-3 text-xs leading-relaxed text-white/45">
-          São 3 tapetes. Com a sala cheia você entra em pé e continua vendo e ouvindo
-          tudo — ninguém fica de fora.
+          Os tapetes são por ordem de chegada. Com a sala cheia você entra em pé e
+          continua vendo e ouvindo tudo — ninguém fica de fora.
         </p>
       </div>
     </div>

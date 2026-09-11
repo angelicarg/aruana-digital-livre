@@ -194,15 +194,22 @@ export function deveEnviarPostura(
  * lista diferente de "os outros", e resolver sobre essa lista traria de volta a
  * divergência por outro caminho.
  */
-export const ESPERA = { z: -2.6, primeiroX: -2.4, passo: 1.2, porFila: 5, recuoFila: 0.9 };
+/*
+ * A faixa de espera é a da frente, entre a primeira fileira e o vidro — **com
+ * o professor no meio**. O centro fica de fora: x = 0 punha a terceira pessoa
+ * da fila em pé em cima dele. Os primeiros ficam a ±1,5 m, fora do tapete dele
+ * (raio 0,62), e os seguintes a ±2,7 m, ainda a ~0,9 m dos cactos dos cantos
+ * (x ±3,6, z -2,85). O fundo não serve: porta à esquerda e aparador no meio.
+ */
+export const ESPERA = { z: -2.6, xs: [-1.5, 1.5, -2.7, 2.7], recuoFila: 0.7 };
 
 export function resolverEspera(ids: string[]): Map<string, { x: number; z: number }> {
   const ordenados = [...ids].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   const lugares = new Map<string, { x: number; z: number }>();
   ordenados.forEach((id, i) => {
-    const fila = Math.floor(i / ESPERA.porFila);
+    const fila = Math.floor(i / ESPERA.xs.length);
     lugares.set(id, {
-      x: ESPERA.primeiroX + (i % ESPERA.porFila) * ESPERA.passo,
+      x: ESPERA.xs[i % ESPERA.xs.length],
       z: ESPERA.z - fila * ESPERA.recuoFila,
     });
   });

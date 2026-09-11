@@ -15,14 +15,19 @@ from mathutils import Vector
 random.seed(7)  # mesma paisagem a cada render, para comparar versoes
 
 # ---------------------------------------------------------------- AJUSTES ---
-# Sala dimensionada para caber gente circulando: 3 tapetes de 0,72 x 1,95 no
-# centro deixam ~1,2 m de passagem de cada lado e 2 m ate a parede de fundo.
+# Sala dimensionada para caber gente circulando: duas fileiras de tapetes no
+# tamanho real (0,66 x 1,83), a de tras intercalada com a da frente para quem
+# senta atras ver o professor pelo vao, como em estudio. Sobra ~1 m ate a
+# parede de fundo e ~0,5 m entre a primeira fileira e o tapete do professor.
 SALA = {"larg": 9.0, "prof": 7.5, "alt": 3.2}
 PORTA = {"larg": 1.1, "alt": 2.15, "desloc": -2.6}   # desloc = posicao em x
 SOL = {"elevacao": 4.0, "rotacao": -35.0, "forca": 2.2}
 LUZ_INTERNA = {"forca": 70.0, "quantidade": 3, "cor": (1.0, 0.80, 0.60)}
 MONTANHAS = {"raio": 42, "altura": 19, "quantidade": 14}
-TAPETES = 3
+# y_frente = centro da primeira fileira (+y e o lado do vidro); passo = entre
+# centros na mesma fileira. "tras": 3 alinha as fileiras em vez de intercalar.
+TAPETES = {"frente": 3, "tras": 4, "passo": 1.6, "larg": 0.66, "comp": 1.83,
+           "y_frente": 0.45, "vao": 0.5}
 # Arvore do lado de fora, perto do vidro. A posicao importa: longe demais ela
 # vira cenario chapado como as montanhas; perto, ela desliza contra o fundo
 # quando a pessoa caminha, e e essa paralaxe que transforma a janela em vista.
@@ -414,13 +419,28 @@ for k in range(3):
 # ---------------------------------------------------------------- TAPETES ---
 # Divididas por 0,76 — a media linear do modulador de trama — para o tapete
 # renderizar no mesmo tom de antes, agora com a trama por cima.
-cores = [(0.20, 0.55, 0.46), (0.72, 0.45, 0.29), (0.37, 0.39, 0.50)]
-for i in range(TAPETES):
-    x = (i - (TAPETES - 1) / 2) * 1.35
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, 0.6, 0.025))
+# ⚠️ Uma cor por tapete, nunca repetida: o `optimize` funde materiais identicos
+# e depois junta as malhas que dividem material — dois tapetes da mesma cor
+# viravam um no so, e o site perdia os dois (ele acha cada tapete pelo nome).
+# A fileira da frente fica com as tres cores de sempre; a de tras, tons de terra
+# na mesma faixa apagada, para nao disputar com os cactos.
+cores = [
+    (0.20, 0.55, 0.46), (0.72, 0.45, 0.29), (0.37, 0.39, 0.50),
+    (0.66, 0.58, 0.40), (0.62, 0.40, 0.42), (0.20, 0.42, 0.50), (0.46, 0.52, 0.34),
+]
+def fileira(n, y):
+    return [((j - (n - 1) / 2) * TAPETES["passo"], y) for j in range(n)]
+
+# Frente primeiro: o site numera os tapetes nesta ordem.
+lugares = fileira(TAPETES["frente"], TAPETES["y_frente"]) + fileira(
+    TAPETES["tras"], TAPETES["y_frente"] - TAPETES["comp"] - TAPETES["vao"]
+)
+assert len(set(cores[: len(lugares)])) == len(lugares), "cada tapete precisa de cor propria"
+for i, (x, y) in enumerate(lugares):
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, 0.025))
     t = bpy.context.object
     t.name = f"tapete_{i}"
-    t.scale = (0.72, 1.95, 0.05)
+    t.scale = (TAPETES["larg"], TAPETES["comp"], 0.05)
     bpy.ops.object.transform_apply(scale=True)
     bpy.ops.object.modifier_add(type="BEVEL")
     t.modifiers["Bevel"].width = 0.02
@@ -428,7 +448,7 @@ for i in range(TAPETES):
     # Linho: da trama e variacao de brilho sem tocar na cor de cada tapete.
     # Relevo em 2.0 porque o pipeline reduz a textura para 512 px e come a trama.
     t.data.materials.append(
-        material_com_relevo(f"tapete_{i}", cores[i % len(cores)], "tapete", forca_relevo=2.0)
+        material_com_relevo(f"tapete_{i}", cores[i], "tapete", forca_relevo=2.0)
     )
     uv_metrico(t, metros=1.2)    # trama grossa: a 0,55 os fios davam ~2 mm e sumiam
 
