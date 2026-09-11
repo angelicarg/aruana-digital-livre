@@ -50,6 +50,10 @@ export const PROFESSOR = {
    *  renders o queixo fica a ~0,59 e o emblema do peito a ~0,5 nas duas
    *  poses; as mãos do sentado ficam abaixo de 0,3, fora da faixa. */
   pescoco: { altura: 0.56, faixa: 0.07 },
+  /** A textura do Copilot é rosa-choque de verdade (o Blender é que suavizava).
+   *  Ela pediu pastel: `saturacao` 1 é a cor original, 0 é cinza; `clareia`
+   *  puxa para o branco. Aplicado no shader, sem regerar o arquivo. */
+  cor: { saturacao: 0.55, clareia: 0.14 },
   cabeca: {
     /** Até onde ele vira para acompanhar quem anda, em radianos (~25°). */
     alcance: 0.45,
@@ -88,10 +92,23 @@ function comPescoco(pose: Pose): Pescoco {
     uInclina: { value: 0 },
     uPescoco: { value: PROFESSOR.pescoco.altura * pose.alturaOriginal },
     uFaixa: { value: PROFESSOR.pescoco.faixa * pose.alturaOriginal },
+    uSaturacao: { value: PROFESSOR.cor.saturacao },
+    uClareia: { value: PROFESSOR.cor.clareia },
   };
   for (const m of pose.materiais) {
     m.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, u);
+      // Depois de ler a textura e antes da luz: mexe na cor do material, não
+      // na da cena, então sombra e pôr do sol continuam agindo por cima.
+      shader.fragmentShader = shader.fragmentShader
+        .replace("#include <common>", "#include <common>\nuniform float uSaturacao;\nuniform float uClareia;")
+        .replace(
+          "#include <map_fragment>",
+          `#include <map_fragment>
+          float luma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+          diffuseColor.rgb = mix(vec3(luma), diffuseColor.rgb, uSaturacao);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0), uClareia);`,
+        );
       shader.vertexShader = shader.vertexShader
         .replace("#include <common>", `#include <common>\n${GLSL_PESCOCO}`)
         .replace(
