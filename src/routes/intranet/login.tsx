@@ -35,6 +35,14 @@ function IntranetLoginPage() {
       return;
     }
 
+    const { data: isAdmin } = await supabase.rpc("is_intranet_admin");
+    if (!isAdmin) {
+      await supabase.auth.signOut();
+      setError("Esta conta não tem acesso à intranet.");
+      setLoading(false);
+      return;
+    }
+
     navigate({ to: "/intranet" });
   }
 

@@ -48,20 +48,32 @@ export const Route = createFileRoute("/intranet/_authed")({
     // no client logo após montar.
     if (typeof window === "undefined") return;
 
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) {
+    if (!(await sessaoDeAdmin())) {
       throw redirect({ to: "/intranet/login" });
     }
   },
   component: IntranetAuthedLayout,
 });
 
+// O pool de contas do Supabase é compartilhado com os demos, que publicam um
+// acesso de visitante — ter sessão não basta, precisa estar na allowlist.
+async function sessaoDeAdmin() {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) return false;
+
+  const { data: isAdmin } = await supabase.rpc("is_intranet_admin");
+  if (isAdmin) return true;
+
+  await supabase.auth.signOut();
+  return false;
+}
+
 function IntranetAuthedLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate({ to: "/intranet/login" });
+    sessaoDeAdmin().then((ok) => {
+      if (!ok) navigate({ to: "/intranet/login" });
     });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
