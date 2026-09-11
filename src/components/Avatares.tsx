@@ -85,10 +85,14 @@ export const CRIATURA = {
  */
 type Adorno = { tipo: "laco" | "chapeu" | "coque"; y: number; escala: number; cor: string };
 
+// Uma cor por adorno, e não três tons de creme: de costas o coque e o chapéu
+// tinham silhueta parecida e a mesma cor, então viravam a mesma coisa. Laço de
+// fita branca, chapéu de palha, coque de cabelo escuro — três materiais que
+// existem no mundo e que ninguém confunde.
 const ADORNO: Record<Forma, Adorno> = {
-  angular: { tipo: "laco", y: 1.0, escala: 1, cor: "#f4f1ea" },
-  broto: { tipo: "chapeu", y: 0.86, escala: 1, cor: "#d9c9a8" },
-  redonda: { tipo: "coque", y: 1.0, escala: 1, cor: "#efe7dc" },
+  angular: { tipo: "laco", y: 1.0, escala: 1, cor: "#f7f3ea" },
+  broto: { tipo: "chapeu", y: 0.86, escala: 1, cor: "#c9a35e" },
+  redonda: { tipo: "coque", y: 1.0, escala: 1, cor: "#5c4634" },
 };
 
 function Enfeite({ adorno, tamanho }: { adorno: Adorno; tamanho: number }) {
