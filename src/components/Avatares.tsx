@@ -218,6 +218,16 @@ function faseDoId(id: string): number {
  *  cabeça dar quase uma volta inteira para olhar o vizinho. */
 const curto = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
+/**
+ * ⚠️ Meia-volta entre o olhar e o corpo.
+ *
+ * A câmera do three olha para **-Z** quando o giro é zero; o modelo, exportado
+ * do gerador, tem o rosto para **+Z**. Girar o corpo pelo ângulo do olhar sem
+ * isto deixava todo mundo de costas para onde a pessoa está olhando — e o que
+ * os outros viam era o oposto do que a pessoa via.
+ */
+const MEIA_VOLTA = Math.PI;
+
 function Corpo({
   pessoa,
   forma,
@@ -273,7 +283,7 @@ function Corpo({
         // De pé: o corpo inteiro vira, e a cabeça acompanha o corpo.
         g.position.x += (destino.x - g.position.x) * k;
         g.position.z += (destino.z - g.position.z) * k;
-        g.rotation.y += curto(destino.yaw - g.rotation.y) * k;
+        g.rotation.y += curto(destino.yaw + MEIA_VOLTA - g.rotation.y) * k;
       } else {
         // Sentado, a pessoa olha a sala inteira, não só o vidro — e ela me
         // corrigiu nisso. O giro se reparte como num corpo de verdade: a
@@ -281,7 +291,7 @@ function Corpo({
         // assume**, girando no próprio eixo.
         const olhar = curto(destino.yaw);
         naCabeca = Math.max(-CRIATURA.giroCabeca, Math.min(CRIATURA.giroCabeca, olhar));
-        g.rotation.y += curto(olhar - naCabeca - g.rotation.y) * k;
+        g.rotation.y += curto(olhar - naCabeca + MEIA_VOLTA - g.rotation.y) * k;
       }
     }
 
