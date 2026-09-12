@@ -53,7 +53,27 @@ pernas, que encostam nela na textura — a máscara `outros` impede.
 
 Nada de posição vem do arquivo: `useModeloNoChao` mede a caixa, põe os pés em
 y = 0 e escala pela altura pedida. Um modelo novo entra trocando o arquivo; a
-altura é constante em `PROFESSOR` / `PLANTA`.
+altura é constante em `PROFESSOR` / `PLANTAS`.
+
+## A planta passa por uma etapa a mais: o esmalte
+
+O vaso chegou em terracota e hoje é o **ponto de cor saturada da sala** — papel
+que era das flores dos cactos, removidos em 11/09/2026. A recoloração é por
+script, antes de otimizar:
+
+    blender --background --python ../sala-yoga/vaso_esmaltar.py --       ORIGINAL.glb planta-esmaltada.glb PASTA_DEBUG
+
+A cor vive em `ESMALTE`, no topo daquele script, e o matiz é o mesmo das flores
+de propósito: as cores das criaturas (`lib/presenca.ts`) e dos tapetes foram
+calibradas para não competir com aquela magenta.
+
+⚠️ **A cor entra rebaixada à luminância que o barro tinha, e isso não é
+detalhe.** Posto no valor cheio, o vermelho estoura em 1,0 enquanto verde e azul
+continuam subindo, e o vaso sai rosa pastel — foi o primeiro resultado. O ajuste
+de intensidade é `BRILHO`; acima de ~1,7 a magenta começa a desbotar de novo.
+
+Quatro plantas, um arquivo: `SalaYoga3D.tsx` chama `useModeloNoChao` uma vez e
+clona o nó, porque o hook clona geometria e material a cada chamada.
 
 A dobra do pescoço (`PROFESSOR.pescoco`) é em **fração da altura** do modelo:
 0,56 com faixa 0,07, medido nos renders (queixo a ~0,59, emblema a ~0,5 nas

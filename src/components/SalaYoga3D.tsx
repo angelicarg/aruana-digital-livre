@@ -126,7 +126,7 @@ type Sala = {
  *
  * Ideias dela, tiradas da arte de referência. São os mais baratos do conjunto —
  * pedra é esfera achatada, lanterna é esfera. Nada aqui tem textura própria. O
- * vaso com folhas que também morava aqui virou modelo dela: ver `Planta`.
+ * vaso com folhas que também morava aqui virou modelo dela: ver `Plantas`.
  *
  * ⚠️ **Uma lanterna só, e ela custa uma luz.** Material emissivo brilha e **não
  * acende o vizinho** em tempo real: para a lanterna parecer acesa em vez de
@@ -185,17 +185,51 @@ function Cenario() {
   );
 }
 
-/** Planta em vaso de terracota, modelo dela (Copilot 3D). Fica no canto em que
- *  morava o vaso feito de esferas, encostada na parede, fora de onde se anda —
- *  como o resto do cenário em código, não entra na colisão. */
-const PLANTA = { posicao: [3.45, 0, 1.9] as [number, number, number], altura: 0.75, giro: 0.6 };
+/**
+ * Plantas em vaso esmaltado, modelo dela (Copilot 3D).
+ *
+ * Substituíram os cactos, que nasciam no `.glb` da sala. Três destas quatro
+ * posições são as que os cactos ocupavam — vêm de `PLANTAS` em
+ * `modelagem/sala-yoga/sala_yoga.py`, convertidas de Blender para glTF; a
+ * quarta é onde a planta já estava.
+ *
+ * ⚠️ **O vaso é o ponto de cor saturada da sala**, papel que era das flores dos
+ * cactos. O esmalte tem o mesmo matiz daquelas flores de propósito: as cores
+ * das criaturas (`lib/presenca.ts`) e dos tapetes foram calibradas para não
+ * competir com aquela magenta. Trocar o matiz aqui pede recalibrar as duas
+ * listas — a cor vive em `ESMALTE`, em `modelagem/sala-yoga/vaso_esmaltar.py`,
+ * e está assada na textura, não neste arquivo.
+ *
+ * Um arquivo, quatro lugares: `useModeloNoChao` clona geometria e material, e
+ * chamá-lo por planta multiplicaria a malha por quatro. Ele é chamado uma vez e
+ * o nó é clonado — `Object3D.clone()` reaproveita geometria e material por
+ * referência, então as quatro custam quatro chamadas de desenho e uma malha. A
+ * variação de escala e de giro sai de graça.
+ */
+export const PLANTAS = {
+  altura: 0.75,
+  /** Raio do que é sólido: o vaso, medido no render (~0,41 m de diâmetro na
+   *  altura 0,75), e não a copa — passar raspando na folha é de se esperar. */
+  raio: 0.24,
+  onde: [
+    { pos: [3.45, 0, 1.9], giro: 0.6, escala: 0.96 },
+    { pos: [-3.6, 0, -2.85], giro: -1.1, escala: 1.05 },
+    { pos: [3.6, 0, -2.85], giro: 2.3, escala: 0.9 },
+    { pos: [3.6, 0, -0.6], giro: 3.9, escala: 1.0 },
+  ] as { pos: [number, number, number]; giro: number; escala: number }[],
+};
 
-function Planta() {
-  const { raiz, escala } = useModeloNoChao("/modelos/planta.glb", PLANTA.altura);
+function Plantas() {
+  const { raiz, escala } = useModeloNoChao("/modelos/planta.glb", PLANTAS.altura);
+  const nos = useMemo(() => PLANTAS.onde.map(() => raiz.clone()), [raiz]);
   return (
-    <group position={PLANTA.posicao} rotation={[0, PLANTA.giro, 0]} scale={escala}>
-      <primitive object={raiz} />
-    </group>
+    <>
+      {PLANTAS.onde.map((p, i) => (
+        <group key={i} position={p.pos} rotation={[0, p.giro, 0]} scale={escala * p.escala}>
+          <primitive object={nos[i]} />
+        </group>
+      ))}
+    </>
   );
 }
 
@@ -298,7 +332,7 @@ function useSala(): Sala {
       if (!malha.isMesh) return;
       // Chao e paredes recebem; o vidro nao projeta, porque o mapa de sombra
       // ignora transparencia e o pano inteiro viraria uma faixa preta no piso.
-      // O resto — movel, cacto, tapete — projeta.
+      // O resto — movel, tapete — projeta.
       const recebe = /^(piso|parede|teto)/.test(o.name);
       const vidro = /^vidro/.test(o.name);
       const cenario = /^(terreno|montanha)/.test(o.name);
@@ -350,6 +384,21 @@ function useSala(): Sala {
         new THREE.Vector3(px + PROFESSOR.raio, PROFESSOR.alturaEmPe, pz + PROFESSOR.raio),
       ).expandByScalar(RAIO_CORPO),
     );
+
+    // As plantas também vivem em código, e precisam ser sólidas pelo mesmo
+    // motivo que os cactos eram: três delas estão nos lugares que os cactos
+    // ocupavam, e duas ficam na faixa por onde se circula até o vidro. Sem
+    // isso a troca dos cactos teria aberto passagem onde antes havia obstáculo.
+    for (const planta of PLANTAS.onde) {
+      const [x, , z] = planta.pos;
+      const r = PLANTAS.raio * planta.escala;
+      obstaculos.push(
+        new THREE.Box3(
+          new THREE.Vector3(x - r, 0, z - r),
+          new THREE.Vector3(x + r, PLANTAS.altura * planta.escala, z + r),
+        ).expandByScalar(RAIO_CORPO),
+      );
+    }
 
     // Fileira da frente primeiro, depois da esquerda para a direita. O índice é
     // o que a presença publica, então a ordem precisa ser a mesma em toda
@@ -746,7 +795,7 @@ function Navegacao({
       {/* Suspense próprio: a sala abre sem esperar os ~400 KB de professor e
           planta, e eles aparecem quando chegarem. */}
       <Suspense fallback={null}>
-        <Planta />
+        <Plantas />
         <Professor sessao={sessao} amplitude={perfil.amplitudeAvatar} />
       </Suspense>
       <Arvore vento={vento} />

@@ -29,7 +29,7 @@ estar todos no `.glb` publicado.
 Os dois detalhes da árvore são obrigatórios, não preferência. `join` funde malhas por
 material e apagaria os nós `copa_0..N`, que o balanço ao vento procura pelo nome.
 E se a árvore ficasse dentro do glb da sala, o passo `palette` fundiria a cor da
-copa com montanha e cacto — animar aquele material faria a montanha balançar.
+copa com a montanha — animar aquele material faria a montanha balançar.
 
 Separada custa 12 KB e mantém as 7 copas. Junto e sem `join` custaria 277 KB com
 90 chamadas de desenho, contra os 203 KB e 12 de hoje.

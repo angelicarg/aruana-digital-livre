@@ -206,8 +206,6 @@ piso_mat = material_texturizado("piso_madeira", "piso")
 parede_mat = material_texturizado("parede_reboco", "parede")
 rocha = material("rocha", (0.13, 0.12, 0.13), 0.9)
 grama = material("grama", (0.10, 0.16, 0.09), 0.95)
-folha = material("folha", (0.09, 0.28, 0.12), 0.7)
-vaso_mat = material("vaso", (0.35, 0.28, 0.23), 0.8)
 tronco_mat = material("tronco", (0.19, 0.13, 0.09), 0.85)
 copa_mat = material("copa", (0.11, 0.24, 0.13), 0.75)
 metal_fosco = material("metal_fosco", (0.35, 0.35, 0.37), 0.35, metal=0.9)
@@ -423,7 +421,10 @@ for k in range(3):
 # e depois junta as malhas que dividem material — dois tapetes da mesma cor
 # viravam um no so, e o site perdia os dois (ele acha cada tapete pelo nome).
 # A fileira da frente fica com as tres cores de sempre; a de tras, tons de terra
-# na mesma faixa apagada, para nao disputar com os cactos.
+# na mesma faixa apagada, para nao disputar com o ponto de cor da sala — que
+# eram as flores dos cactos e hoje sao os vasos esmaltados, carregados em
+# codigo (ver Plantas em SalaYoga3D.tsx). A faixa apagada continua valendo: o
+# que mudou foi a altura do acento, nao a regra.
 cores = [
     (0.20, 0.55, 0.46), (0.72, 0.45, 0.29), (0.37, 0.39, 0.50),
     (0.66, 0.58, 0.40), (0.62, 0.40, 0.42), (0.20, 0.42, 0.50), (0.46, 0.52, 0.34),
@@ -451,88 +452,6 @@ for i, (x, y) in enumerate(lugares):
         material_com_relevo(f"tapete_{i}", cores[i], "tapete", forca_relevo=2.0)
     )
     uv_metrico(t, metros=1.2)    # trama grossa: a 0,55 os fios davam ~2 mm e sumiam
-
-# ---------------------------------------------------------------- PLANTAS ---
-# Cactos. A folha era o unico formato vegetal que sobrevivia a geometria simples;
-# o cacto e melhor ainda, porque a forma dificil vira a facil: um cilindro de
-# poucos lados com sombreamento suave ja le como as costelas do cacto. E a flor
-# da o unico ponto de cor saturada da sala.
-PLANTAS = ((-L / 2 + 0.9, P / 2 - 0.9), (L / 2 - 0.9, P / 2 - 0.9), (L / 2 - 0.9, 0.6))
-COSTELAS = 10  # lados do cilindro; poucos de proposito, sao as costelas
-CORES_FLOR = ((0.86, 0.20, 0.42), (0.95, 0.72, 0.18), (0.90, 0.35, 0.25))
-
-verde_cacto = material("cacto", (0.20, 0.36, 0.19), 0.75)
-terra_mat = material("terra", (0.10, 0.07, 0.05), 0.95)
-flores_mat = [material(f"flor_{i}", c, 0.55) for i, c in enumerate(CORES_FLOR)]
-
-
-def coluna(nome, base, raio, altura, mat):
-    """Tronco de cacto: cilindro facetado com a ponta arredondada."""
-    bpy.ops.mesh.primitive_cylinder_add(
-        vertices=COSTELAS, radius=raio, depth=altura,
-        location=(base[0], base[1], base[2] + altura / 2),
-    )
-    c = bpy.context.object
-    c.name = nome
-    bpy.ops.object.shade_smooth()
-    c.data.materials.append(mat)
-
-    bpy.ops.mesh.primitive_uv_sphere_add(
-        segments=COSTELAS, ring_count=6, radius=raio,
-        location=(base[0], base[1], base[2] + altura),
-    )
-    t = bpy.context.object
-    t.name = f"{nome}_topo"
-    t.scale = (1, 1, 0.75)
-    bpy.ops.object.shade_smooth()
-    t.data.materials.append(mat)
-    return c
-
-
-def flor(nome, loc, mat):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=8, ring_count=5, radius=0.075, location=loc)
-    f = bpy.context.object
-    f.name = nome
-    f.scale = (1, 1, 0.55)   # achatada, como flor de cacto assentada no corpo
-    bpy.ops.object.shade_smooth()
-    f.data.materials.append(mat)
-
-
-for i, (x, y) in enumerate(PLANTAS):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=16, radius=0.26, depth=0.44, location=(x, y, 0.22))
-    bpy.context.object.name = f"vaso_{i}"
-    bpy.context.object.data.materials.append(vaso_mat)
-    caixa(f"terra_{i}", (0.44, 0.44, 0.04), (x, y, 0.43), terra_mat)
-
-    alt = 0.95 + (i % 3) * 0.28
-    coluna(f"cacto_{i}", (x, y, 0.42), 0.17, alt, verde_cacto)
-    flor(f"flor_topo_{i}", (x, y, 0.42 + alt + 0.10), flores_mat[i % len(flores_mat)])
-
-    # Bracos: cotovelo esferico, um trecho horizontal e um vertical. E o desenho
-    # de saguaro que todo mundo reconhece, e sai de tres primitivas.
-    for lado, altura_braco in ((1, 0.52), (-1, 0.40)):
-        if i == 1 and lado == -1:
-            continue  # um dos cactos fica so com um braco, para nao ficarem iguais
-        cot = (x + lado * 0.30, y, 0.42 + alt * (0.45 + 0.1 * lado))
-        bpy.ops.mesh.primitive_cylinder_add(
-            vertices=COSTELAS, radius=0.085, depth=0.34,
-            location=(x + lado * 0.16, y, cot[2]),
-            rotation=(0, math.radians(90), 0),
-        )
-        b = bpy.context.object
-        b.name = f"cacto_{i}_ombro_{lado}"
-        bpy.ops.object.shade_smooth()
-        b.data.materials.append(verde_cacto)
-
-        bpy.ops.mesh.primitive_uv_sphere_add(segments=COSTELAS, ring_count=6, radius=0.085, location=cot)
-        bpy.context.object.name = f"cacto_{i}_cotovelo_{lado}"
-        bpy.ops.object.shade_smooth()
-        bpy.context.object.data.materials.append(verde_cacto)
-
-        coluna(f"cacto_{i}_braco_{lado}", (cot[0], cot[1], cot[2]), 0.085, altura_braco, verde_cacto)
-        if lado == 1:
-            flor(f"flor_braco_{i}", (cot[0], cot[1], cot[2] + altura_braco + 0.06),
-                 flores_mat[(i + 1) % len(flores_mat)])
 
 # ------------------------------------------------------------ LUZ INTERNA ---
 for i in range(LUZ_INTERNA["quantidade"]):
@@ -594,9 +513,9 @@ if "--exportar" in sys.argv:
     # A arvore sai num arquivo proprio, e nao por capricho de organizacao: o
     # pipeline junta malhas por material e funde as cores chapadas numa paleta
     # unica, entao dentro do glb da sala as copas perdem os nos individuais e
-    # passam a dividir material com montanha e cacto. Animar aquilo faria a
-    # montanha balancar. Separada, ela mantem copa_0..N e ainda serve de peca
-    # para o jardim.
+    # passam a dividir material com a montanha. Animar aquilo faria a montanha
+    # balancar. Separada, ela mantem copa_0..N e ainda serve de peca para o
+    # jardim.
     NOMES_ARVORE = ("tronco", "galho_", "copa_")
 
     def e_arvore(o):
