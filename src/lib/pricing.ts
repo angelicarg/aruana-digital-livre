@@ -148,3 +148,58 @@ export function precoMensal(pacote: Pacote, comPromo = isPromoActive()): FaixaPr
   const max = discount(pacote.mensalMax, PROMO.monthlyDiscountPct);
   return { original, comDesconto: `${formatBRL(min)} – ${formatBRL(max)}/mês` };
 }
+
+// ─── PREÇO DE ENTRADA (exibição pública ao lado de um case) ─────────────────
+// Um número só, e não a faixa que `precoSetup` devolve. A faixa serve ao
+// simulador, onde a pessoa já escolheu o escopo; ao lado de um case ela diz
+// "depende" duas vezes — e somar a isso um aviso de que o preço ainda pode
+// melhorar transforma o número numa abertura de negociação em vez de âncora.
+// A flexibilidade que a página comunica é o prazo da promoção, que é real e
+// tem data; desconto indefinido corrói o preço publicado.
+
+const MESES = [
+  "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+  "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+];
+
+/** Data do fim da promoção por extenso, sem `toLocaleDateString`: a formatação
+ *  por locale depende do ICU do ambiente, e servidor e navegador podem gerar
+ *  strings diferentes — o que quebra a hidratação numa página estática. */
+function dataPorExtenso(d: Date): string {
+  return `${d.getDate()} de ${MESES[d.getMonth()]}`;
+}
+
+export interface PrecoEntrada {
+  /** O valor a exibir, já com a promoção aplicada quando ela vale. */
+  valor: string;
+  /** O valor cheio, para riscar ao lado. Null quando não há promoção ativa
+   *  ou o pacote não tem preço fechado. */
+  cheio: string | null;
+  /** Dia em que a promoção acaba, por extenso. Só existe junto de `cheio`. */
+  ate: string | null;
+}
+
+/** Piso do investimento de implantação de um pacote, para publicar num case. */
+export function precoDeEntrada(pacote: Pacote, comPromo = isPromoActive()): PrecoEntrada {
+  // Sem teto (Sob Medida) o desconto não se aplica: anunciar 30% off de um
+  // valor que é "a partir de" promete um preço que a negociação não sustenta.
+  if (pacote.setupMax === null || !comPromo) {
+    return { valor: `A partir de ${formatBRL(pacote.setupMin)}`, cheio: null, ate: null };
+  }
+  return {
+    valor: `A partir de ${formatBRL(discount(pacote.setupMin, PROMO.setupDiscountPct))}`,
+    cheio: formatBRL(pacote.setupMin),
+    ate: dataPorExtenso(PROMO.expiresAt),
+  };
+}
+
+/** O pacote a que um projeto do portfólio pertence, pelo nome exibido.
+ *  O vínculo mora no campo `cases` de cada pacote, acima — este índice existe
+ *  para que a página de cases não repita a associação e as duas divirjam. */
+const PACOTE_POR_CASE: Record<string, Pacote> = Object.fromEntries(
+  Object.values(PACOTES).flatMap((p) => p.cases.map((nome) => [nome, p])),
+);
+
+export function pacoteDoCase(nomeDoCase: string): Pacote | null {
+  return PACOTE_POR_CASE[nomeDoCase] ?? null;
+}

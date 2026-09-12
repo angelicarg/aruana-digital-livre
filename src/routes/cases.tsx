@@ -3,6 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
 import { Bot, Check, Copy, ExternalLink, Info, Layers, Sparkles } from "lucide-react";
 import heroFish from "@/assets/hero-fish.jpg";
+import { PrecoDeEntrada } from "@/components/PrecoDeEntrada";
+import { pacoteDoCase } from "@/lib/pricing";
 
 export const Route = createFileRoute("/cases")({
   head: () => ({
@@ -11,7 +13,7 @@ export const Route = createFileRoute("/cases")({
       {
         name: "description",
         content:
-          "Veja projetos completos e no ar construídos pela Aruanã Digital: sites, agendamento online, e-commerce e chatbots com IA real que você pode testar agora.",
+          "Veja projetos completos e no ar construídos pela Aruanã Digital — sites, agendamento online, e-commerce e chatbots com IA real — e a faixa de preço de cada tipo de projeto.",
       },
       {
         name: "keywords",
@@ -19,7 +21,7 @@ export const Route = createFileRoute("/cases")({
           "cases Aruanã Digital, portfólio de projetos digitais, sites com chatbot IA, sistema de agendamento online, e-commerce com WhatsApp, agência digital Uberlândia",
       },
       { property: "og:title", content: "Cases: Criação de Sites e Projetos Digitais | Aruanã" },
-      { property: "og:description", content: "Projetos completos e no ar, prontos para você testar." },
+      { property: "og:description", content: "Projetos completos e no ar, prontos para você testar — com a faixa de preço de cada um." },
       { property: "og:url", content: "https://aruanadigital.com/cases" },
       { property: "og:type", content: "website" },
       { property: "og:image", content: `https://aruanadigital.com${heroFish}` },
@@ -146,7 +148,7 @@ function CasesPage() {
       <PageHero
         eyebrow="Portfólio de projetos"
         title="Projetos completos. No ar. Para você testar."
-        subtitle="Construímos cada um desses projetos do zero para mostrar como unimos design, automação e inteligência artificial. Clique e explore ao vivo."
+        subtitle="Construímos cada um desses projetos do zero para mostrar como unimos design, automação e inteligência artificial. Cada um traz a faixa de investimento do seu pacote — abra, teste por dentro e veja quanto custa."
       />
 
       <section className="py-20 lg:py-24">
@@ -194,6 +196,16 @@ function CasesPage() {
                   <h2 className="mt-4 text-2xl font-black">{c.title}</h2>
                   <p className="mt-3 text-white/80">{c.desc}</p>
                 </div>
+
+                {/* O pacote vem do vínculo em lib/pricing.ts, e não de uma lista
+                    repetida aqui: preço e portfólio divergirem seria só questão
+                    de tempo. Aparece também no card "em breve" — o que o preço
+                    responde é "quanto custa algo deste porte", e isso independe
+                    de o demo já estar no ar. */}
+                {(() => {
+                  const pacote = pacoteDoCase(c.title);
+                  return pacote ? <PrecoDeEntrada pacote={pacote} /> : null;
+                })()}
 
                 {c.status === "soon" ? (
                   <div className="p-6 text-center text-sm text-muted-foreground">

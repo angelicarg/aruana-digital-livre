@@ -450,8 +450,15 @@ function HomePage() {
                 </div>
                 <h3 className="mt-5 text-xl font-bold">{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                {/* Os seis cards repetiam "Saiba mais" como único texto do link.
+                    Quem usa leitor de tela navega puxando a lista de links da
+                    página, e ali isso vira seis entradas idênticas que não dizem
+                    para onde vão (WCAG 2.4.4). O rótulo nomeia o serviço sem
+                    mudar o que aparece na tela — mesmo padrão dos links de
+                    "Abrir e testar ao vivo" na seção de prova. */}
                 <Link
                   to="/servicos"
+                  aria-label={`Saiba mais sobre ${s.title}`}
                   className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-green-text transition group-hover:gap-2.5"
                 >
                   Saiba mais <ArrowRight className="h-4 w-4" />
@@ -593,12 +600,26 @@ function HomePage() {
               </article>
             ))}
           </div>
-          <div className="mt-10 text-center">
+          {/* A pergunta de preço vem depois da prova, e não antes: quem acabou de
+              abrir um agendamento funcionando já está perguntando quanto custa.
+              Um bloco só, e não dois links para /cases — a página passou a ter
+              projeto e preço juntos, então o rótulo diz as duas coisas.
+              ⚠️ O texto do link precisa dizer o destino sozinho (WCAG 2.4.4):
+              quem usa leitor de tela navega puxando a lista de links da página,
+              e "clique aqui" não informa nada nessa lista. */}
+          <div className="mx-auto mt-12 max-w-2xl rounded-3xl border border-border bg-card p-8 text-center shadow-card">
+            <h3 className="font-display text-2xl font-black text-brand-navy-deep">
+              Quer saber quanto custa?
+            </h3>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+              Os preços estão junto dos sites que a gente já construiu — dá para ver cada um
+              funcionando, testar por dentro e conferir a faixa de investimento.
+            </p>
             <Link
               to="/cases"
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-7 py-3.5 font-semibold text-brand-navy-deep shadow-card transition hover:-translate-y-0.5 hover:border-brand-green"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand-green px-7 py-3.5 font-semibold text-brand-navy-deep shadow-card transition hover:-translate-y-0.5 hover:gap-3"
             >
-              Ver todos os projetos no ar <ArrowRight className="h-5 w-5" />
+              Ver projetos e preços <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
         </div>
