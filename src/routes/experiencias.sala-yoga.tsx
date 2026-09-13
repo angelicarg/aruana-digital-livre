@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { createXRStore, XR } from "@react-three/xr";
-import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, Waves, Users, MessageSquare, Send, X } from "lucide-react";
+import { Volume2, VolumeX, Glasses, ArrowLeft, MessageCircle, Maximize, Minimize, Compass, PersonStanding, Settings2, Mic, MicOff, Waves, Users, MessageSquare, Send, X, Link as LinkIcon } from "lucide-react";
 import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/components/SalaYoga3D";
 import { atrasoDoTrovao, type Clima, type Raio } from "@/lib/clima";
 import { movimentoDoSistema, type Movimento } from "@/lib/movimento";
@@ -993,6 +993,38 @@ function Conversa({
 }
 
 /**
+ * Qual sala é esta, e o link para chamar alguém para ela.
+ *
+ * Copiar do próprio endereço e não remontar a URL: o que a pessoa manda tem de
+ * ser exatamente o que abriu aqui, senão a promessa da antessala volta a ser
+ * aproximada.
+ */
+function CodigoDaSala({ codigo }: { codigo: string }) {
+  const [copiado, setCopiado] = useState(false);
+
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopiado(true);
+      window.setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      // Área de transferência negada (permissão ou contexto sem HTTPS): o
+      // código continua à vista para ditar, que é o que importa.
+    }
+  }
+
+  return (
+    <button
+      onClick={copiar}
+      className="pointer-events-auto inline-flex min-h-11 items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-medium text-white/70 backdrop-blur-sm transition hover:bg-black/70 hover:text-white/90"
+    >
+      <LinkIcon className="h-3.5 w-3.5" aria-hidden="true" />
+      {copiado ? "Link copiado" : `Sala: ${codigo}`}
+    </button>
+  );
+}
+
+/**
  * Antessala.
  *
  * Ideia dela, e ela nomeou o motivo: as pessoas entram sabendo quantas há e se
@@ -1180,6 +1212,29 @@ function SalaYogaPage() {
   }, [nome]);
   const [codigo, setCodigo] = useState("publica");
   useEffect(() => setCodigo(codigoDaSala(window.location.search)), []);
+
+  /**
+   * Mantém o código na URL.
+   *
+   * A antessala diz "quem abrir o link com o mesmo código cai na mesma sala",
+   * e isso era mentira quando o código era digitado em vez de vir no link: o
+   * endereço continuava sem `?sala=`, então não havia link para passar adiante
+   * e a segunda pessoa caía na sala pública. Duas janelas lado a lado, cada uma
+   * numa sala, e nada na tela dizendo isso — foi assim que o primeiro teste de
+   * aula conduzida pareceu um defeito de rede.
+   *
+   * `replaceState` e não `navigate`: trocar de sala não é navegação para o
+   * histórico, e empilhar entradas faria o botão de voltar percorrer códigos.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const atual = codigoDaSala(url.search);
+    if (atual === codigo) return;
+    if (codigo === "publica") url.searchParams.delete("sala");
+    else url.searchParams.set("sala", codigo);
+    window.history.replaceState(null, "", url);
+  }, [codigo]);
 
   const [tapetePedido, setTapetePedido] = useState<number | null>(null);
   const [totalTapetes, setTotalTapetes] = useState(0);
@@ -1477,6 +1532,10 @@ function SalaYogaPage() {
                 ? "Você é a única pessoa aqui"
                 : `${outras.length + 1} pessoas na sala`}
           </button>
+          {/* Qual sala é esta. Sem isto não há como notar que duas pessoas
+              entraram em salas diferentes: as duas veem "você é a única pessoa
+              aqui", que é indistinguível de um problema de conexão. */}
+          <CodigoDaSala codigo={codigo} />
           {verRegistro && <Diagnostico fechar={() => setVerRegistro(false)} />}
 
           <Conversa
