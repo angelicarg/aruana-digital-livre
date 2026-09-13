@@ -527,15 +527,23 @@ if "--exportar" in sys.argv:
         filepath=os.path.join(BASE, "arvore.glb"),
         export_format="GLB",
         use_selection=True,
+        export_apply=True,
     )
     print("GLB_ARVORE_OK")
 
     for o in bpy.data.objects:
         o.select_set(o.type == "MESH" and not e_arvore(o))
+    # ⚠️ `export_apply=True` NAO e detalhe: sem ele o exportador ignora os
+    # modificadores e grava a malha crua. As montanhas saiam com 8 a 12
+    # triangulos cada — o cone limpo, sem o deslocamento por ruido que existe
+    # logo acima — e os tapetes sem o bisel. O engano durou porque os renders
+    # do Blender avaliam os modificadores: as vistas mostravam montanha e a web
+    # recebia piramide, e eu conferia pelas vistas.
     bpy.ops.export_scene.gltf(
         filepath=os.path.join(BASE, "sala-yoga.glb"),
         export_format="GLB",
         use_selection=True,
+        export_apply=True,
     )
     print("GLB_OK")
 
