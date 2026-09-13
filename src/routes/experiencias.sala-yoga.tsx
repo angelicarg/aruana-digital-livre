@@ -1047,6 +1047,9 @@ function Antessala({
   forma,
   setForma,
   entrar,
+  ehAdmin,
+  papel,
+  setPapel,
 }: {
   conectado: boolean;
   motivo: string | null;
@@ -1056,6 +1059,10 @@ function Antessala({
   setCodigo: (c: string) => void;
   forma: Forma;
   setForma: (f: Forma) => void;
+  /** Só quem está na allowlist da intranet escolhe conduzir. */
+  ehAdmin: boolean;
+  papel: "participante" | "professor";
+  setPapel: (p: "participante" | "professor") => void;
   entrar: () => void;
 }) {
   const [rascunho, setRascunho] = useState(codigo);
@@ -1154,11 +1161,44 @@ function Antessala({
           entra na sala pública.
         </p>
 
+        {/* A escolha do papel só existe para quem pode conduzir. Para todo o
+            resto a sala continua tendo uma porta só. */}
+        {ehAdmin && (
+          <fieldset className="mt-5">
+            <legend className="text-xs font-medium uppercase tracking-wide text-white/50">
+              Entrar como
+            </legend>
+            <div className="mt-2 flex gap-2">
+              {(["participante", "professor"] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPapel(p)}
+                  aria-pressed={papel === p}
+                  className={`min-h-11 flex-1 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                    papel === p
+                      ? "bg-[#00CCA7] text-[#041B33]"
+                      : "bg-white/10 text-white/80 hover:bg-white/20"
+                  }`}
+                >
+                  {p === "participante" ? "Participante" : "Professor"}
+                </button>
+              ))}
+            </div>
+            {papel === "professor" && (
+              <p className="mt-2 text-xs leading-relaxed text-white/50">
+                Você entra no lugar do professor, de frente para a turma. Não caminha e não
+                aparece como criatura — quem assiste vê você como o professor.
+              </p>
+            )}
+          </fieldset>
+        )}
+
         <button
           onClick={entrar}
           className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#00CCA7] px-6 py-3 text-sm font-semibold text-[#041B33] transition hover:brightness-105"
         >
-          Entrar na sala
+          {papel === "professor" ? "Entrar como professor" : "Entrar na sala"}
         </button>
         <p className="mt-3 text-xs leading-relaxed text-white/45">
           Os tapetes são por ordem de chegada. Com a sala cheia você entra em pé e
@@ -1263,6 +1303,14 @@ function SalaYogaPage() {
   }, []);
   const aoMedirSala = useCallback((n: number) => setTotalTapetes(n), []);
 
+  const ehAdmin = useEhAdmin();
+  const [poseProfessor, setPoseProfessor] = useState<PoseProfessor>("em_pe");
+  const [papel, setPapel] = useState<"participante" | "professor">("participante");
+  // O papel só vale se a pessoa pode conduzir. Guardar a decisão aqui, e não
+  // confiar no que a antessala mandou, é o que impede alguém sair admin,
+  // continuar com "professor" escolhido e ocupar o lugar sem permissão.
+  const souOProfessor = ehAdmin && papel === "professor";
+
   const {
     outras,
     meuTapete,
@@ -1277,7 +1325,15 @@ function SalaYogaPage() {
     anunciarSessao,
     anunciarPostura,
     instruir,
-  } = useSalaCompartilhada(tapetePedido, totalTapetes, mounted, entrou, forma, codigo);
+  } = useSalaCompartilhada(
+    tapetePedido,
+    totalTapetes,
+    mounted,
+    entrou,
+    forma,
+    souOProfessor ? "professor" : "participante",
+    codigo,
+  );
 
   // O desempate pode me mover de tapete: se alguem com id menor pediu o mesmo,
   // eu vou para outro. Refletir isso no pedido mantem as duas maquinas
@@ -1307,8 +1363,6 @@ function SalaYogaPage() {
   // daqui: assim quem conduz enxerga o mesmo professor que a sala enxerga, pelo
   // mesmo motivo que a legenda dela também chega pelo canal. Pose que viaja
   // junto do texto não tem como dessincronizar do que foi dito.
-  const ehAdmin = useEhAdmin();
-  const [poseProfessor, setPoseProfessor] = useState<PoseProfessor>("em_pe");
   const [temVoz, setTemVoz] = useState(false);
 
   const aoTrocarFase = useCallback(
@@ -1417,6 +1471,7 @@ function SalaYogaPage() {
                 outras={vitrine ?? outras}
                 sessao={respiracaoDaSala}
                 poseProfessor={instrucao?.pose ?? null}
+                souOProfessor={souOProfessor}
                 posturas={posturas}
                 anunciarPostura={anunciarPostura}
               />
@@ -1433,6 +1488,9 @@ function SalaYogaPage() {
           sentadas={outras.filter((o) => o.tapete !== null).length}
           codigo={codigo}
           setCodigo={setCodigo}
+          ehAdmin={ehAdmin}
+          papel={papel}
+          setPapel={setPapel}
           forma={forma}
           setForma={setForma}
           entrar={() => setEntrou(true)}

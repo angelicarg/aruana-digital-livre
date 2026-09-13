@@ -350,7 +350,10 @@ export function Avatares({
 
   return (
     <>
-      {outras.map((p) => {
+      {/* Quem conduz a aula não vira criatura: o corpo dele na cena é o modelo
+          do professor, na frente da sala. Ele continua na lista porque a
+          contagem de presença tem de incluí-lo. */}
+      {outras.filter((p) => p.papel !== "professor").map((p) => {
         // Sentado, a posição é o tapete. De pé, ela vem pela rede e o corpo a
         // persegue por quadro.
         //

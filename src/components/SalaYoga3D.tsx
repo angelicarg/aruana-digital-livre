@@ -446,6 +446,10 @@ type Props = {
   /** Pose ditada por quem conduz a aula, quando há alguém conduzindo. Vem de
    *  fora porque a decisão é de uma pessoa, não da cena. */
   poseProfessor?: PoseProfessor | null;
+  /** Esta pessoa **é** o professor: a câmera nasce no lugar dele, olhando para
+   *  a turma, e o modelo dele não é desenhado — em primeira pessoa ninguém vê
+   *  o próprio corpo. Ela também não caminha, porque o professor não anda. */
+  souOProfessor?: boolean;
   /** Onde cada pessoa de pé está, atualizado fora do React. */
   posturas: RefObject<Map<string, Postura>>;
   /** Publica a minha posição. O freio de quantas vezes mora em lib/presenca. */
@@ -467,6 +471,7 @@ function Navegacao({
   outras,
   sessao,
   poseProfessor,
+  souOProfessor = false,
   posturas,
   anunciarPostura,
   clima,
@@ -531,20 +536,32 @@ function Navegacao({
     const destino = camera.position.clone();
     destino.y = sentado ? ALTURA_SENTADO : ALTURA_OLHOS;
     // Sentado, a vista vira para o vidro: é a paisagem que a sala tem para
-    // oferecer a quem para de andar.
-    viajar(destino, sentado ? 0 : giro.current.yaw);
+    // oferecer a quem para de andar. Não vale para quem conduz — virar de
+    // costas para a turma no meio da aula é o oposto do que ele quer.
+    viajar(destino, sentado && !souOProfessor ? 0 : giro.current.yaw);
     // Só reage à mudança de postura; incluir `viajar` reiniciaria a viagem a
     // cada nova câmera.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sentado]);
 
   useEffect(() => {
-    // Entrada perto da porta, olhando para a paisagem com o queixo um pouco
-    // baixo: de frente e na horizontal os tapetes caem abaixo do quadro, e a
-    // instrução manda tocar num tapete que ninguém está vendo.
-    camera.position.set(0, ALTURA_OLHOS, 2.8);
-    camera.rotation.order = "YXZ";
-    giro.current.pitch = -0.14;
+    if (souOProfessor) {
+      // No lugar do professor, virado para a turma. O `yaw` de meia-volta é o
+      // que separa esta vista da de quem entra: a câmera padrão olha para -Z,
+      // que aqui é o vidro; a turma está do outro lado.
+      const [px, , pz] = PROFESSOR.posicao;
+      camera.position.set(px, ALTURA_OLHOS, pz);
+      camera.rotation.order = "YXZ";
+      giro.current.yaw = Math.PI;
+      giro.current.pitch = -0.08;
+    } else {
+      // Entrada perto da porta, olhando para a paisagem com o queixo um pouco
+      // baixo: de frente e na horizontal os tapetes caem abaixo do quadro, e a
+      // instrução manda tocar num tapete que ninguém está vendo.
+      camera.position.set(0, ALTURA_OLHOS, 2.8);
+      camera.rotation.order = "YXZ";
+      giro.current.pitch = -0.14;
+    }
 
     const tela = gl.domElement;
     tela.style.touchAction = "none";
@@ -576,6 +593,9 @@ function Navegacao({
       // Toque, não arrasto: a soleira separa quem quis olhar ao redor de quem
       // quis escolher um tapete. Sem ela, todo giro terminaria sentando alguém.
       if (!a || a.andou > 10 || viagem.current) return;
+      // Quem conduz não escolhe tapete: o lugar dele é fixo, e deixá-lo sentar
+      // na turma o tiraria de onde a turma o procura.
+      if (souOProfessor) return;
 
       const r = tela.getBoundingClientRect();
       raio.setFromCamera(
@@ -745,7 +765,10 @@ function Navegacao({
       camera.rotation.set(giro.current.pitch, giro.current.yaw, 0);
     }
 
-    if (v || sentado) {
+    // O professor não anda — é decisão de arte registrada, não limitação. Ele
+    // fica no tapete dele, senta, levanta e olha; quem conduz herda isso, e é
+    // o que mantém a cena coerente para quem assiste.
+    if (v || sentado || souOProfessor) {
       velocidade.current.set(0, 0, 0);
       return;
     }
@@ -801,7 +824,9 @@ function Navegacao({
           planta, e eles aparecem quando chegarem. */}
       <Suspense fallback={null}>
         <Plantas />
-        <Professor sessao={sessao} amplitude={perfil.amplitudeAvatar} poseForcada={poseProfessor} />
+        {!souOProfessor && (
+          <Professor sessao={sessao} amplitude={perfil.amplitudeAvatar} poseForcada={poseProfessor} />
+        )}
       </Suspense>
       <Arvore vento={vento} />
       <Avatares

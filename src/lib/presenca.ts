@@ -37,6 +37,15 @@ export type Reivindicacao = {
   forma?: string;
   /** Índice do tapete em que ela quer sentar, ou null se está de pé. */
   tapete: number | null;
+  /**
+   * "professor" para quem está conduzindo a aula; ausente para os demais.
+   *
+   * Quem conduz **continua contando na sala** — some da lista de criaturas, não
+   * da presença. Se saísse da presença, os alunos leriam "você é a única pessoa
+   * aqui" com a professora ali na frente deles, que é exatamente o sintoma
+   * indistinguível de queda de conexão.
+   */
+  papel?: "professor";
 };
 
 /**
@@ -47,6 +56,11 @@ export type Reivindicacao = {
  * turma maior que a sala, a pessoa continua presente e vendo, que é melhor que
  * ser expulsa sem explicação.
  */
+/** Só quem é participante desenha como criatura e disputa tapete. */
+export function ehParticipante(r: Reivindicacao): boolean {
+  return r.papel !== "professor";
+}
+
 export function resolverTapetes(
   reivindicacoes: Reivindicacao[],
   totalTapetes: number,

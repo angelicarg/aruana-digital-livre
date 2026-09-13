@@ -4,6 +4,7 @@ import {
   ENVIO,
   deveEnviarPostura,
   inicioLocalDaSessao,
+  ehParticipante,
   resolverEspera,
   resolverTapetes,
 } from "./presenca";
@@ -204,5 +205,37 @@ describe("resolverEspera", () => {
     const ids = Array.from({ length: 7 }, (_, i) => `p${i}`);
     const zs = [...resolverEspera(ids).values()].map((p) => p.z);
     expect(new Set(zs).size).toBe(2);
+  });
+});
+
+describe("quem conduz a aula", () => {
+  it("não é participante", () => {
+    expect(ehParticipante({ id: "a", tapete: null })).toBe(true);
+    expect(ehParticipante({ id: "b", tapete: null, papel: "professor" })).toBe(false);
+  });
+
+  it("não consome um tapete da turma", () => {
+    // O professor tem o tapete dele, na frente da sala, que não sai do modelo.
+    // Se ele entrasse no desempate, uma sala de dois tapetes atenderia só uma
+    // pessoa — e a que ficasse de fora não saberia por quê.
+    const gente = [
+      { id: "a", tapete: 0, papel: "professor" as const },
+      { id: "b", tapete: 0 },
+      { id: "c", tapete: 1 },
+    ];
+    const lugares = resolverTapetes(gente.filter(ehParticipante), 2);
+    expect(lugares.get("b")).toBe(0);
+    expect(lugares.get("c")).toBe(1);
+    expect(lugares.has("a")).toBe(false);
+  });
+
+  it("não ocupa lugar na fila de quem está de pé", () => {
+    const ids = [
+      { id: "prof", tapete: null, papel: "professor" as const },
+      { id: "x", tapete: null },
+    ].filter(ehParticipante).map((r) => r.id);
+    const fila = resolverEspera(ids);
+    expect(fila.has("prof")).toBe(false);
+    expect(fila.has("x")).toBe(true);
   });
 });

@@ -5,6 +5,7 @@ import { FORMAS, type Forma } from "@/components/Avatares";
 import {
   ESPERA,
   resolverEspera,
+  ehParticipante,
   resolverTapetes,
   type Postura,
   type Reivindicacao,
@@ -37,6 +38,8 @@ import { LIMITE_TEXTO, sanearInstrucao, type Instrucao, type PoseProfessor } fro
 
 export type OutraPessoa = {
   id: string;
+  /** "professor" some da lista de criaturas, mas continua contando na sala. */
+  papel?: "professor";
   /** Qual criatura essa pessoa escolheu na antessala. */
   forma: Forma;
   tapete: number | null;
@@ -118,6 +121,9 @@ export function useSalaCompartilhada(
   presente: boolean,
   /** A criatura que eu escolhi. Viaja na presença, junto com o tapete. */
   forma: Forma,
+  /** Quem conduz a aula entra como professor: ocupa o lugar dele na frente da
+   *  sala em vez de virar mais uma criatura. */
+  papel: "participante" | "professor",
   /** Qual sala escutar. Entra por parametro e nao lido de `window` dentro do
    *  efeito porque trocar de sala precisa reconectar o canal — e so e dependencia
    *  explicita quem faz isso acontecer. */
@@ -154,6 +160,20 @@ export function useSalaCompartilhada(
   const publicouRef = useRef(false);
   const minhaForma = useRef<Forma>(forma);
   minhaForma.current = forma;
+  const meuPapel = useRef(papel);
+  meuPapel.current = papel;
+
+  /** O que vai em toda chamada de `track`. Uma função só porque são três
+   *  lugares, e esquecer um deles deixaria o papel sumir na reconexão. */
+  const metaDePresenca = useCallback(
+    (tapete: number | null) => ({
+      tapete,
+      pos: minhaPostura.current,
+      forma: minhaForma.current,
+      ...(meuPapel.current === "professor" ? { papel: "professor" as const } : {}),
+    }),
+    [],
+  );
   /** Falas escritas enquanto o canal estava fora. Saem quando ele volta.
    *
    *  Com o canal caindo a cada ~15 s, recusar a mensagem seria recusar o tempo
@@ -283,6 +303,7 @@ export function useSalaCompartilhada(
               // track devolve "ok", e o avatar simplesmente nao senta.
               tapete: metas[metas.length - 1]?.tapete ?? null,
               forma: (metas[metas.length - 1] as { forma?: Forma })?.forma ?? FORMAS[0],
+              papel: (metas[metas.length - 1] as { papel?: "professor" })?.papel,
             })),
           );
         })
@@ -344,11 +365,7 @@ export function useSalaCompartilhada(
             window.clearTimeout(vigia);
             if (souPresente.current) {
               publicouRef.current = true;
-              canal.track({
-              tapete: tapetePedido,
-              pos: minhaPostura.current,
-              forma: minhaForma.current,
-            });
+              canal.track(metaDePresenca(tapetePedido));
             }
             // O que foi escrito enquanto o canal estava fora sai agora, na
             // ordem em que foi escrito.
@@ -432,11 +449,7 @@ export function useSalaCompartilhada(
 
   useEffect(() => {
     if (!presente) return;
-    canalRef.current?.track({
-      tapete: tapetePedido,
-      pos: minhaPostura.current,
-      forma: minhaForma.current,
-    });
+    canalRef.current?.track(metaDePresenca(tapetePedido));
   }, [tapetePedido, presente]);
 
   // Sair da antessala publica; voltar para ela despublica.
@@ -453,11 +466,7 @@ export function useSalaCompartilhada(
       // O tapete real, nao `null`: publicar nulo aqui derrubava quem estava
       // sentado de volta para de pe a cada reconexao — e com o canal caindo a
       // cada 15 s, isso e o tempo todo.
-      canal.track({
-        tapete: meuTapetePedido.current,
-        pos: minhaPostura.current,
-        forma: minhaForma.current,
-      });
+      canal.track(metaDePresenca(meuTapetePedido.current));
     } else if (publicouRef.current) {
       publicouRef.current = false;
       canal.untrack?.();
@@ -549,11 +558,7 @@ export function useSalaCompartilhada(
         const agora = Date.now();
         if (agora - ultimaPublicacao.current < 15000) return;
         ultimaPublicacao.current = agora;
-        canalRef.current?.track({
-          tapete: meuTapetePedido.current,
-          pos: minhaPostura.current,
-          forma: minhaForma.current,
-        });
+        canalRef.current?.track(metaDePresenca(meuTapetePedido.current));
       }, 2000);
       canalRef.current?.send({
         type: "broadcast",
@@ -564,16 +569,20 @@ export function useSalaCompartilhada(
     [meuId, quieto],
   );
 
+  // Quem conduz fica de fora do desempate: o lugar dele é o tapete da frente,
+  // fixo, e deixá-lo na disputa tiraria um tapete da turma.
+  const participantes = useMemo(() => reivindicacoes.filter(ehParticipante), [reivindicacoes]);
+
   const lugares = useMemo(
-    () => resolverTapetes(reivindicacoes, totalTapetes),
-    [reivindicacoes, totalTapetes],
+    () => resolverTapetes(participantes, totalTapetes),
+    [participantes, totalTapetes],
   );
   // Sobre TODOS os ids, inclusive o meu: cada máquina enxerga uma lista
   // diferente de "os outros", e resolver sobre essa lista devolveria lugares
   // discordantes — que foi o defeito relatado.
   const espera = useMemo(
-    () => resolverEspera(reivindicacoes.map((r) => r.id)),
-    [reivindicacoes],
+    () => resolverEspera(participantes.map((r) => r.id)),
+    [participantes],
   );
 
   return {
@@ -586,6 +595,7 @@ export function useSalaCompartilhada(
       .filter((r) => r.id !== meuId)
       .map((r) => ({
         id: r.id,
+        papel: r.papel,
         forma: (r.forma as Forma) ?? FORMAS[0],
         tapete: lugares.get(r.id) ?? null,
         // Só vale se o mapa de espera não tiver a pessoa, o que não deve acontecer.
