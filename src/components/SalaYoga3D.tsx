@@ -544,6 +544,22 @@ function Navegacao({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sentado]);
 
+  /**
+   * A altura de quem conduz acompanha a pose que ele anunciou.
+   *
+   * Sem isto a instrução "sente-se" abaixava o professor na tela de todo mundo
+   * menos na dele: a turma via o professor sentado e ele continuava olhando de
+   * pé. A pose vem da instrução, e não de um controle próprio, porque é ela que
+   * atravessa a rede — assim a vista dele e a que a sala vê nunca divergem.
+   */
+  useEffect(() => {
+    if (!souOProfessor || !poseProfessor) return;
+    const destino = camera.position.clone();
+    destino.y = poseProfessor === "sentado" ? ALTURA_SENTADO : ALTURA_OLHOS;
+    viajar(destino, giro.current.yaw);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poseProfessor, souOProfessor]);
+
   useEffect(() => {
     if (souOProfessor) {
       // No lugar do professor, virado para a turma. O `yaw` de meia-volta é o

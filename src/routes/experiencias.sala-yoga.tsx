@@ -1604,7 +1604,13 @@ function SalaYogaPage() {
             setNome={setNome}
             meuId={meuId}
           />
-          {sentado ? (
+          {/* Quem conduz não anda nem escolhe tapete, então nem seta de
+              caminhada nem botão de levantar. O movimento já estava bloqueado
+              na cena, mas os botões continuavam na tela sem fazer nada — e
+              controle que não responde é pior que controle ausente: a pessoa
+              conclui que a sala travou. A pose dela vem do painel de condução,
+              junto da instrução. */}
+          {souOProfessor ? null : sentado ? (
             <button
               onClick={() => aoMudarPostura(false, null)}
               className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-black/35 px-4 py-3 text-sm font-medium text-white/90 backdrop-blur-sm transition hover:bg-black/55"
