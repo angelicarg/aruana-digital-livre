@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Megaphone, Send, X } from "lucide-react";
+import { Check, Copy, Megaphone, Send, X } from "lucide-react";
 import {
   LIMITE_TEXTO,
   PRONTAS,
@@ -98,6 +98,30 @@ export function PainelDaAula({
 }) {
   const [aberto, setAberto] = useState(false);
   const [texto, setTexto] = useState("");
+  const [copiado, setCopiado] = useState(false);
+
+  /**
+   * O convite para a aula.
+   *
+   * Está aqui, e não só no chip da sala, porque é aqui que a pessoa está quando
+   * pensa em chamar alguém. Juntar duas pessoas dependia de coincidir um código
+   * digitado nas duas pontas, e foi o que fez três tentativas de teste
+   * falharem: cada janela numa sala, as duas sozinhas, e o sintoma idêntico ao
+   * de rede caída.
+   *
+   * Copia o endereço atual em vez de remontá-lo: o que a pessoa manda tem de
+   * ser exatamente o que abriu aqui.
+   */
+  async function copiarConvite() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopiado(true);
+      window.setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      // Sem área de transferência, o chip da sala continua mostrando o código
+      // para ditar.
+    }
+  }
 
   function enviarLivre() {
     const limpo = sanearInstrucao(texto);
@@ -133,7 +157,25 @@ export function PainelDaAula({
         </button>
       </div>
 
-      <fieldset className="mt-3">
+      {/* Primeiro item do painel de propósito: sem turma não há aula, e chamar
+          alguém é a primeira coisa que se faz. */}
+      <button
+        type="button"
+        onClick={copiarConvite}
+        className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-semibold text-white/85 transition hover:bg-white/20"
+      >
+        {copiado ? (
+          <>
+            <Check className="h-4 w-4" aria-hidden="true" /> Convite copiado
+          </>
+        ) : (
+          <>
+            <Copy className="h-4 w-4" aria-hidden="true" /> Copiar convite para esta sala
+          </>
+        )}
+      </button>
+
+      <fieldset className="mt-4">
         <legend className="text-xs font-semibold uppercase tracking-widest text-white/50">
           Pose do professor
         </legend>
