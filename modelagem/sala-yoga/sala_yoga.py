@@ -24,22 +24,33 @@ PORTA = {"larg": 1.1, "alt": 2.15, "desloc": -2.6}   # desloc = posicao em x
 SOL = {"elevacao": 4.0, "rotacao": -35.0, "forca": 2.2}
 LUZ_INTERNA = {"forca": 70.0, "quantidade": 3, "cor": (1.0, 0.80, 0.60)}
 MONTANHAS = {"raio": 42, "altura": 19, "quantidade": 14}
-# Faixas de material na montanha, em fracao da altura. Neve e mata nao sao
-# enfeite: um cone de cor unica some contra o ceu, e sao as duas trocas de
-# valor que devolvem a silhueta a distancia. A mata na base tambem tira o
-# ar de "objeto pousado na grama", que e o que denunciava a montanha.
-SERRA = {"neve": 0.72, "mata": 0.24}
+# Faixas de material da serra, em METROS de altitude e nao em fracao da altura
+# de cada morro. A diferenca e o que separa serra de enfeite: linha de neve e
+# altitude, entao numa serra de verdade ela corta todos os picos na mesma cota
+# e os morros baixos simplesmente nao tem neve. Por fracao, um morro de 10 m
+# ganhava capa de neve igual a um de 25.
+#
+# `bagunca` desmancha a borda reta: sem ela as faixas viram aneis horizontais
+# perfeitos, que e o desenho que o olho reconhece como falso na hora. Neve de
+# verdade desce pelas goteiras e a mata sobe pelos vales.
+SERRA = {"neve": 13.0, "musgo": 6.5, "mata": 3.0, "bagunca": 2.2}
 # Lagoa na distancia media. O vazio entre o gramado e a serra era o que
 # fazia a vista parecer um fundo pintado: sem nada entre 8 e 40 m, o olho
 # nao tem como medir profundidade. A agua preenche essa faixa e ainda
 # devolve a serra refletida, que e o dobro de paisagem pelo mesmo custo.
-# A margem proxima fica a 8 m, logo depois da arvore (y 6,2), e a distante a 28.
-# Comecar longe nao funciona: chao distante comprime, entao com a agua a partir
-# de 10 m o gramado entre o vidro e ela tomava a base inteira da janela e a
-# lagoa virava uma fita. O que enche o quadro e a margem proxima, nao o tamanho
-# do lago. E a margem distante para antes da montanha mais proxima, senao elas
-# nascem dentro da agua.
-LAGOA = {"centro_y": 18.0, "raio_x": 44.0, "raio_y": 10.0, "z": -0.015}
+# A margem proxima fica a ~7 m, logo depois da arvore (y 6,2). Comecar longe nao
+# funciona: chao distante comprime, entao com a agua a partir de 10 m o gramado
+# tomava a base inteira da janela e a lagoa virava uma fita. O que enche o
+# quadro e a margem proxima, nao o tamanho do lago.
+#
+# ⚠️ A margem distante **passa por entre as montanhas**, e nao para numa linha
+# antes delas. Agua encontra o nivel: num terreno plano ela ocupa tudo naquela
+# cota, e o que nao alaga e o que esta mais alto. Um lago que termina reto no
+# meio do campo e depois volta a ser grama ate a serra e fisicamente impossivel,
+# e o olho cobra isso sem saber nomear. A elipse resolve sozinha o resto: as
+# montanhas laterais caem fora dela e ficam em terra seca, como o terreno da
+# sala.
+LAGOA = {"centro_y": 29.0, "raio_x": 46.0, "raio_y": 22.0, "z": -0.015}
 # A 20 m o barco era um pixel. A 12 m ele vira detalhe que se nota sem virar
 # personagem — e continua pequeno o bastante para dar escala ao lago.
 BARCO = {"y": 12.0, "comprimento": 2.6, "largura": 1.1}
@@ -227,6 +238,10 @@ rocha = material("rocha", (0.13, 0.12, 0.13), 0.9)
 # Neve puxada para o quente: ela pega o sol baixo em cheio, e branco neutro
 # no por do sol le como recorte de papel colado no ceu.
 neve = material("neve", (0.74, 0.72, 0.68), 0.6)
+# Quatro faixas e nao duas: rocha nua de cor unica le como pedra de aquario. O
+# musgo e a transicao que existe em serra de verdade — cinza puxado para o
+# verde, entre a mata fechada da base e a rocha exposta do alto.
+musgo = material("musgo", (0.085, 0.105, 0.070), 0.92)
 mata = material("mata", (0.045, 0.075, 0.05), 0.95)
 # ⚠️ Agua CLARA, e nao quase preta.
 #
@@ -322,12 +337,28 @@ for i in range(MONTANHAS["quantidade"]):
     m.data.materials.append(rocha)
     m.data.materials.append(neve)
     m.data.materials.append(mata)
+    m.data.materials.append(musgo)
     # ⚠️ O cone do Blender tem origem no centro: o z local vai de -alt/2 a
-    # +alt/2, e nao de 0 a alt. Tratando como 0..1 a mata comia a montanha
-    # inteira e a neve nunca aparecia — a faixa precisa ser normalizada.
+    # +alt/2, e nao de 0 a alt. Tratando isso como 0..1 a mata comia a montanha
+    # inteira e a neve nunca aparecia.
+    #
+    # A cota de mundo soma a altura do objeto: assim a comparacao e com metros
+    # reais e a linha de neve corta a serra inteira na mesma altura.
+    base_mundo = alt / 2 - 1
     for poly in m.data.polygons:
-        f = (poly.center.z + alt / 2) / alt
-        poly.material_index = 1 if f > SERRA["neve"] else 2 if f < SERRA["mata"] else 0
+        z = poly.center.z + base_mundo
+        # Duas senoides de periodo diferente sobre a posicao horizontal da face:
+        # varia de forma continua em volta do morro, entao a borda ondula em vez
+        # de salpicar. Ruido por face daria chuvisco, nao goteira.
+        onda = (math.sin(poly.center.x * 0.9 + poly.center.y * 1.3)
+                + math.sin(poly.center.x * 2.7 - poly.center.y * 1.9) * 0.5)
+        z += onda * SERRA["bagunca"]
+        poly.material_index = (
+            1 if z > SERRA["neve"]
+            else 0 if z > SERRA["musgo"]
+            else 3 if z > SERRA["mata"]
+            else 2
+        )
 
 # ------------------------------------------------------------ LAGOA E BARCO ---
 # Elipse e nao circulo: vista da sala, um circulo em perspectiva encurta e vira
