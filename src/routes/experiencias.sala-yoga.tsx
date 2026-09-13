@@ -20,6 +20,9 @@ import {
 import { TECNICAS, type ChaveFase, type Fase } from "@/lib/respiracao";
 import { Narrador, SEGUNDOS_PARA_INSTRUCAO, temNarrador } from "@/lib/narrador";
 
+import { LegendaDaAula, PainelDaAula } from "@/components/AulaConduzida";
+import { useEhAdmin } from "@/hooks/useEhAdmin";
+import type { PoseProfessor } from "@/lib/aula";
 const WHATSAPP_NUMBER = "5534992086611";
 
 function whatsappHref(context: string) {
@@ -1214,9 +1217,11 @@ function SalaYogaPage() {
     falar,
     meuId,
     sessao: sessaoCompartilhada,
+    instrucao,
     posturas,
     anunciarSessao,
     anunciarPostura,
+    instruir,
   } = useSalaCompartilhada(tapetePedido, totalTapetes, mounted, entrou, forma, codigo);
 
   // O desempate pode me mover de tapete: se alguem com id menor pediu o mesmo,
@@ -1239,6 +1244,16 @@ function SalaYogaPage() {
   }, [outras.length]);
   const narrador = useRef<Narrador | null>(null);
   const [narrando, setNarrando] = useState(true);
+
+  // Aula conduzida por uma pessoa.
+  //
+  // Este estado é só a escolha de quem conduz para a **próxima** instrução. A
+  // pose que a cena mostra vem da instrução recebida (`instrucao.pose`), e não
+  // daqui: assim quem conduz enxerga o mesmo professor que a sala enxerga, pelo
+  // mesmo motivo que a legenda dela também chega pelo canal. Pose que viaja
+  // junto do texto não tem como dessincronizar do que foi dito.
+  const ehAdmin = useEhAdmin();
+  const [poseProfessor, setPoseProfessor] = useState<PoseProfessor>("em_pe");
   const [temVoz, setTemVoz] = useState(false);
 
   const aoTrocarFase = useCallback(
@@ -1346,6 +1361,7 @@ function SalaYogaPage() {
                 aoMedirSala={aoMedirSala}
                 outras={vitrine ?? outras}
                 sessao={respiracaoDaSala}
+                poseProfessor={instrucao?.pose ?? null}
                 posturas={posturas}
                 anunciarPostura={anunciarPostura}
               />
@@ -1374,6 +1390,10 @@ function SalaYogaPage() {
         {anuncio}
       </div>
 
+      {/* A legenda da aula fica fora do overlay em coluna: ela é centrada na
+          tela e não pertence nem ao topo nem ao rodapé. */}
+      {entrou && <LegendaDaAula instrucao={instrucao} narrando={narrando} />}
+
       {/* Overlay UI */}
       <div
         hidden={!entrou}
@@ -1386,6 +1406,13 @@ function SalaYogaPage() {
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Início
           </a>
+          {ehAdmin && (
+            <PainelDaAula
+              instruir={instruir}
+              pose={poseProfessor}
+              aoTrocarPose={setPoseProfessor}
+            />
+          )}
           <div className="pointer-events-auto flex items-center gap-2">
             <MenuAjustes
               temVoz={temVoz}

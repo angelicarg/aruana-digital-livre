@@ -12,6 +12,7 @@ import { Professor, PROFESSOR } from "./Professor";
 import { useModeloNoChao } from "@/hooks/useModeloNoChao";
 import type { OutraPessoa, SessaoCompartilhada } from "@/hooks/useSalaCompartilhada";
 import { deveEnviarPostura, type Postura } from "@/lib/presenca";
+import type { PoseProfessor } from "@/lib/aula";
 import * as THREE from "three";
 
 /** Comandos de andar vindos da interface (botões de toque). O teclado é lido
@@ -442,6 +443,9 @@ type Props = {
   outras: OutraPessoa[];
   /** Sessão de respiração em curso, para os corpos respirarem em fase. */
   sessao: SessaoCompartilhada | null;
+  /** Pose ditada por quem conduz a aula, quando há alguém conduzindo. Vem de
+   *  fora porque a decisão é de uma pessoa, não da cena. */
+  poseProfessor?: PoseProfessor | null;
   /** Onde cada pessoa de pé está, atualizado fora do React. */
   posturas: RefObject<Map<string, Postura>>;
   /** Publica a minha posição. O freio de quantas vezes mora em lib/presenca. */
@@ -462,6 +466,7 @@ function Navegacao({
   aoMedirSala,
   outras,
   sessao,
+  poseProfessor,
   posturas,
   anunciarPostura,
   clima,
@@ -796,7 +801,7 @@ function Navegacao({
           planta, e eles aparecem quando chegarem. */}
       <Suspense fallback={null}>
         <Plantas />
-        <Professor sessao={sessao} amplitude={perfil.amplitudeAvatar} />
+        <Professor sessao={sessao} amplitude={perfil.amplitudeAvatar} poseForcada={poseProfessor} />
       </Suspense>
       <Arvore vento={vento} />
       <Avatares

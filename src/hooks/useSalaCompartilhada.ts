@@ -9,6 +9,7 @@ import {
   type Postura,
   type Reivindicacao,
 } from "@/lib/presenca";
+import { LIMITE_TEXTO, sanearInstrucao, type Instrucao, type PoseProfessor } from "@/lib/aula";
 
 /**
  * Liga a sala de yoga à sala das outras pessoas.
@@ -70,6 +71,10 @@ type Estado = {
   /** O meu proprio id, para a interface saber qual fala e minha. */
   meuId: string;
   sessao: SessaoCompartilhada | null;
+  /** A ultima instrucao de quem esta conduzindo a aula, ou null se ninguem
+   *  assumiu. Some sozinha da tela pelo tempo de leitura, nao por mensagem
+   *  de "apagar" — ver `legendaVisivel` em lib/aula. */
+  instrucao: Instrucao | null;
 };
 
 /**
@@ -120,6 +125,8 @@ export function useSalaCompartilhada(
 ): Estado & {
   anunciarSessao: (tecnica: string, decorridoSegundos: number) => void;
   anunciarPostura: (postura: Postura) => void;
+  /** Envia uma instrucao para a sala. So o painel de quem conduz chama. */
+  instruir: (texto: string, pose: PoseProfessor) => void;
   /** Devolve `false` quando nao havia o que mandar ou nao ha canal. */
   falar: (texto: string, nome: string) => boolean;
 } {
@@ -133,6 +140,7 @@ export function useSalaCompartilhada(
   const [motivo, setMotivo] = useState<string | null>(null);
   const [falas, setFalas] = useState<Fala[]>([]);
   const [sessao, setSessao] = useState<SessaoCompartilhada | null>(null);
+  const [instrucao, setInstrucao] = useState<Instrucao | null>(null);
   const canalRef = useRef<{
     track: (p: object) => unknown;
     untrack?: () => unknown;
@@ -299,6 +307,17 @@ export function useSalaCompartilhada(
               entregue: true,
             }),
           );
+        })
+        .on("broadcast", { event: "aula" }, ({ payload }: any) => {
+          if (!vivo || !payload?.texto) return;
+          setInstrucao({
+            texto: String(payload.texto).slice(0, LIMITE_TEXTO),
+            pose: payload.pose === "em_pe" ? "em_pe" : "sentado",
+            // Carimba com o relogio de quem recebe, como a sessao faz: o tempo
+            // de leitura da legenda passa a contar da chegada, e o relogio de
+            // quem enviou nunca entra na conta.
+            emMs: Date.now(),
+          });
         })
         .on("broadcast", { event: "sessao" }, ({ payload }: any) => {
           if (!vivo) return;
@@ -476,6 +495,21 @@ export function useSalaCompartilhada(
   );
 
   /**
+   * Manda uma instrucao para a sala.
+   *
+   * Um evento por instrucao, e nada em relogio: um instrutor fala a cada 15 a
+   * 60 segundos, o que e ordens de grandeza abaixo do teto do canal. E o envio
+   * tambem chega em quem enviou, pelo `self: true` do canal — assim quem
+   * conduz ve exatamente a legenda que a sala esta vendo, e nao uma copia
+   * local que poderia divergir.
+   */
+  const instruir = useCallback((bruto: string, pose: PoseProfessor) => {
+    const texto = sanearInstrucao(bruto);
+    if (!texto) return;
+    canalRef.current?.send({ type: "broadcast", event: "aula", payload: { texto, pose } });
+  }, []);
+
+  /**
    * Manda uma fala. Ela aparece na hora como "enviando" e vira entregue quando
    * volta do servidor — ver `self: true` acima.
    *
@@ -566,8 +600,10 @@ export function useSalaCompartilhada(
     falas,
     falar,
     sessao,
+    instrucao,
     posturas,
     anunciarSessao,
     anunciarPostura,
+    instruir,
   };
 }

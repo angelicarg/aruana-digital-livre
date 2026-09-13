@@ -1,4 +1,5 @@
 import { useMemo, useRef } from "react";
+import type { PoseProfessor } from "@/lib/aula";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -150,11 +151,19 @@ const curto = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 export function Professor({
   sessao,
   amplitude,
+  poseForcada = null,
 }: {
   sessao: SessaoCompartilhada | null;
   /** Multiplica o quanto o corpo se move ao respirar e ao balançar a cabeça.
    *  Ver lib/movimento. */
   amplitude: number;
+  /** Pose ditada por quem está conduzindo a aula, quando há alguém conduzindo.
+   *
+   *  Tem precedência sobre a sessão de respiração porque é decisão de uma
+   *  pessoa e a outra é derivada do relógio: se a instrutora manda ficar de pé,
+   *  o professor fica de pé mesmo com uma sessão rodando. O esmaecer entre as
+   *  poses é o mesmo, então a troca não fica mais brusca por vir de fora. */
+  poseForcada?: PoseProfessor | null;
 }) {
   const emPe = useModeloNoChao("/modelos/professor-em-pe.glb", PROFESSOR.alturaEmPe);
   const sentado = useModeloNoChao("/modelos/professor-sentado.glb", PROFESSOR.alturaSentado);
@@ -164,7 +173,8 @@ export function Professor({
   const grupoSentado = useRef<THREE.Group>(null);
   // Começa na pose certa: quem entra no meio de uma sessão não vê o professor
   // sentar na sua frente.
-  const mistura = useRef(sessao ? 1 : 0);
+  const sentadoAgora = poseForcada ? poseForcada === "sentado" : Boolean(sessao);
+  const mistura = useRef(sentadoAgora ? 1 : 0);
   const suave = useRef(ESCALA.minima);
   const olhar = useRef(0);
 
@@ -175,7 +185,7 @@ export function Professor({
 
   useFrame((estado, delta) => {
     const t = estado.clock.elapsedTime;
-    const alvo = sessao ? 1 : 0;
+    const alvo = sentadoAgora ? 1 : 0;
     const passo = delta / PROFESSOR.troca;
     mistura.current =
       alvo > mistura.current
