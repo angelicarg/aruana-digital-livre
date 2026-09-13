@@ -24,6 +24,25 @@ PORTA = {"larg": 1.1, "alt": 2.15, "desloc": -2.6}   # desloc = posicao em x
 SOL = {"elevacao": 4.0, "rotacao": -35.0, "forca": 2.2}
 LUZ_INTERNA = {"forca": 70.0, "quantidade": 3, "cor": (1.0, 0.80, 0.60)}
 MONTANHAS = {"raio": 42, "altura": 19, "quantidade": 14}
+# Faixas de material na montanha, em fracao da altura. Neve e mata nao sao
+# enfeite: um cone de cor unica some contra o ceu, e sao as duas trocas de
+# valor que devolvem a silhueta a distancia. A mata na base tambem tira o
+# ar de "objeto pousado na grama", que e o que denunciava a montanha.
+SERRA = {"neve": 0.72, "mata": 0.24}
+# Lagoa na distancia media. O vazio entre o gramado e a serra era o que
+# fazia a vista parecer um fundo pintado: sem nada entre 8 e 40 m, o olho
+# nao tem como medir profundidade. A agua preenche essa faixa e ainda
+# devolve a serra refletida, que e o dobro de paisagem pelo mesmo custo.
+# A margem proxima fica a 8 m, logo depois da arvore (y 6,2), e a distante a 28.
+# Comecar longe nao funciona: chao distante comprime, entao com a agua a partir
+# de 10 m o gramado entre o vidro e ela tomava a base inteira da janela e a
+# lagoa virava uma fita. O que enche o quadro e a margem proxima, nao o tamanho
+# do lago. E a margem distante para antes da montanha mais proxima, senao elas
+# nascem dentro da agua.
+LAGOA = {"centro_y": 18.0, "raio_x": 44.0, "raio_y": 10.0, "z": -0.015}
+# A 20 m o barco era um pixel. A 12 m ele vira detalhe que se nota sem virar
+# personagem — e continua pequeno o bastante para dar escala ao lago.
+BARCO = {"y": 12.0, "comprimento": 2.6, "largura": 1.1}
 # y_frente = centro da primeira fileira (+y e o lado do vidro); passo = entre
 # centros na mesma fileira. "tras": 3 alinha as fileiras em vez de intercalar.
 TAPETES = {"frente": 3, "tras": 4, "passo": 1.6, "larg": 0.66, "comp": 1.83,
@@ -205,7 +224,19 @@ parede = material("parede", (0.72, 0.68, 0.62), 0.8)
 piso_mat = material_texturizado("piso_madeira", "piso")
 parede_mat = material_texturizado("parede_reboco", "parede")
 rocha = material("rocha", (0.13, 0.12, 0.13), 0.9)
-grama = material("grama", (0.10, 0.16, 0.09), 0.95)
+# Neve puxada para o quente: ela pega o sol baixo em cheio, e branco neutro
+# no por do sol le como recorte de papel colado no ceu.
+neve = material("neve", (0.74, 0.72, 0.68), 0.6)
+mata = material("mata", (0.045, 0.075, 0.05), 0.95)
+# Agua: rugosidade baixa para espelhar a serra e o ceu. Cor quase preta de
+# proposito — o que se ve num lago calmo e o reflexo, nao a cor da agua.
+agua = material("agua", (0.015, 0.025, 0.035), 0.06)
+casco = material("casco", (0.20, 0.12, 0.07), 0.7)
+tripulante = material("tripulante", (0.16, 0.17, 0.20), 0.8)
+# Oliva quente, e nao o verde-piscina de antes: com a lagoa no quadro, um
+# verde saturado passou a brigar com o azul da agua, e os dois juntos
+# puxavam a cena para o frio no meio de um por do sol.
+grama = material("grama", (0.125, 0.140, 0.060), 0.95)
 tronco_mat = material("tronco", (0.19, 0.13, 0.09), 0.85)
 copa_mat = material("copa", (0.11, 0.24, 0.13), 0.75)
 metal_fosco = material("metal_fosco", (0.35, 0.35, 0.37), 0.35, metal=0.9)
@@ -245,7 +276,10 @@ bpy.context.object.data.materials.append(grama)
 
 for i in range(MONTANHAS["quantidade"]):
     ang = (i / MONTANHAS["quantidade"]) * math.tau + random.uniform(-0.25, 0.25)
-    dist = MONTANHAS["raio"] * random.uniform(0.75, 1.25)
+    # A faixa comecava em 0,75 e a montanha mais proxima caia a 31 m — com 19 m
+    # de altura ela subia acima do vidro e virava parede, nao paisagem. Longe,
+    # o mesmo cone le como serra e sobra distancia media para a agua.
+    dist = MONTANHAS["raio"] * random.uniform(1.05, 1.6)
     alt = MONTANHAS["altura"] * random.uniform(0.55, 1.3)
     bpy.ops.mesh.primitive_cone_add(
         vertices=random.choice([5, 6, 7]),
@@ -267,7 +301,67 @@ for i in range(MONTANHAS["quantidade"]):
     d.strength = alt * random.uniform(0.18, 0.34)
     m.scale = (random.uniform(0.8, 1.4), random.uniform(0.8, 1.4), 1.0)
     bpy.ops.object.shade_flat()
+    # Tres faixas por altura, atribuidas na malha base. O deslocamento e a
+    # subdivisao vem depois como modificadores e herdam o material de cada face,
+    # entao a linha da neve acompanha a crista em vez de cortar reto.
     m.data.materials.append(rocha)
+    m.data.materials.append(neve)
+    m.data.materials.append(mata)
+    # ⚠️ O cone do Blender tem origem no centro: o z local vai de -alt/2 a
+    # +alt/2, e nao de 0 a alt. Tratando como 0..1 a mata comia a montanha
+    # inteira e a neve nunca aparecia — a faixa precisa ser normalizada.
+    for poly in m.data.polygons:
+        f = (poly.center.z + alt / 2) / alt
+        poly.material_index = 1 if f > SERRA["neve"] else 2 if f < SERRA["mata"] else 0
+
+# ------------------------------------------------------------ LAGOA E BARCO ---
+# Elipse e nao circulo: vista da sala, um circulo em perspectiva encurta e vira
+# uma poca. A margem proxima fica a ~10 m, alem da arvore (y 6,2), para a arvore
+# continuar sendo o objeto que da paralaxe quando a pessoa caminha.
+bpy.ops.mesh.primitive_circle_add(vertices=64, radius=1.0,
+                                  location=(0, LAGOA["centro_y"], LAGOA["z"]),
+                                  fill_type="NGON")
+lago = bpy.context.object
+lago.name = "lagoa"
+lago.scale = (LAGOA["raio_x"], LAGOA["raio_y"], 1.0)
+bpy.ops.object.transform_apply(scale=True)
+# A borda circular perfeita entrega o desenho. Um deslocamento fraco so no plano
+# horizontal enruga a margem sem levantar a lamina de agua, que precisa ficar
+# plana para espelhar.
+bpy.ops.object.modifier_add(type="SUBSURF")
+lago.modifiers["Subdivision"].levels = 2
+lago.modifiers["Subdivision"].subdivision_type = "SIMPLE"
+tex_margem = bpy.data.textures.new("ruido_margem", type="CLOUDS")
+tex_margem.noise_scale = 12.0
+dm = lago.modifiers.new("desl_margem", type="DISPLACE")
+dm.texture = tex_margem
+dm.strength = 2.2
+dm.direction = "X"
+lago.data.materials.append(agua)
+
+# Barco pequeno. Fica no .glb parado; o vai e vem e feito no navegador, como a
+# revoada — animar aqui exigiria exportar animacao e o arquivo ja pesa o que
+# pode. O nome e o que o codigo procura.
+bpy.ops.mesh.primitive_uv_sphere_add(segments=10, ring_count=6, radius=0.5,
+                                     location=(0, BARCO["y"], 0.06))
+b_ = bpy.context.object
+b_.name = "barco"
+b_.scale = (BARCO["largura"], BARCO["comprimento"], 0.30)
+bpy.ops.object.transform_apply(scale=True)
+bpy.ops.object.shade_flat()
+b_.data.materials.append(casco)
+
+# Um ocupante, e nao barco vazio: barco vazio andando sozinho nao tem causa.
+# Forma arredondada e sem rosto — as criaturas desta sala sao inventadas, nunca
+# humanos, e a 20 m isto e uma silhueta de qualquer jeito.
+bpy.ops.mesh.primitive_uv_sphere_add(segments=8, ring_count=6, radius=0.26,
+                                     location=(0, BARCO["y"] + 0.15, 0.30))
+oc = bpy.context.object
+oc.name = "barco_tripulante"
+oc.scale = (1.0, 1.0, 1.35)
+bpy.ops.object.transform_apply(scale=True)
+bpy.ops.object.shade_flat()
+oc.data.materials.append(tripulante)
 
 # ----------------------------------------------------------------- ARVORE ---
 # Copas nomeadas copa_0..N de proposito: o balanco ao vento e feito no navegador,
@@ -531,8 +625,30 @@ if "--exportar" in sys.argv:
     )
     print("GLB_ARVORE_OK")
 
+    # Lagoa e barco saem juntos, pela mesma regra da arvore e pelo mesmo motivo
+    # concreto: o codigo procura `lagoa` para mexer na rugosidade conforme o
+    # clima e `barco` para move-lo por quadro. Dentro do glb da sala o passo
+    # `palette` funde as cores chapadas num material so, o `join` junta as
+    # malhas e os nomes somem — foi exatamente o que aconteceu na primeira
+    # tentativa: os nos existiam no export do Blender e nao no arquivo
+    # otimizado. Aqui fora eles sobrevivem com `--join false`.
+    NOMES_LAGO = ("lagoa", "barco")
+
+    def e_lago(o):
+        return any(o.name == n or o.name.startswith(n) for n in NOMES_LAGO)
+
     for o in bpy.data.objects:
-        o.select_set(o.type == "MESH" and not e_arvore(o))
+        o.select_set(o.type == "MESH" and e_lago(o))
+    bpy.ops.export_scene.gltf(
+        filepath=os.path.join(BASE, "lago.glb"),
+        export_format="GLB",
+        use_selection=True,
+        export_apply=True,
+    )
+    print("GLB_LAGO_OK")
+
+    for o in bpy.data.objects:
+        o.select_set(o.type == "MESH" and not e_arvore(o) and not e_lago(o))
     # ⚠️ `export_apply=True` NAO e detalhe: sem ele o exportador ignora os
     # modificadores e grava a malha crua. As montanhas saiam com 8 a 12
     # triangulos cada — o cone limpo, sem o deslocamento por ruido que existe

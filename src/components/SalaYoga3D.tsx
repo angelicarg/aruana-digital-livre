@@ -12,6 +12,7 @@ import { Professor, PROFESSOR } from "./Professor";
 import { useModeloNoChao } from "@/hooks/useModeloNoChao";
 import type { OutraPessoa, SessaoCompartilhada } from "@/hooks/useSalaCompartilhada";
 import { deveEnviarPostura, type Postura } from "@/lib/presenca";
+import { barcoEm } from "@/lib/barco";
 import type { PoseProfessor } from "@/lib/aula";
 import * as THREE from "three";
 
@@ -250,6 +251,87 @@ useGLTF.preload("/modelos/planta.glb", "/draco/");
  * balanca mais que a base. Sem essas duas coisas a copa le como bloco de
  * gelatina, nao como folhagem.
  */
+/**
+ * A lagoa e o barco, na distância média.
+ *
+ * Existem para resolver o vazio entre o gramado e a serra: sem nada entre 8 e
+ * 40 m o olho não tinha como medir profundidade, e a paisagem lia como fundo
+ * pintado. A água ainda devolve a serra refletida, que é o dobro de paisagem
+ * pelo mesmo custo.
+ *
+ * ⚠️ **Arquivo próprio, e não dentro do glb da sala** — mesma regra da árvore, e
+ * pelo mesmo motivo concreto: o passo `palette` do otimizador funde as cores
+ * chapadas num material só, o `join` junta as malhas e os nomes somem. Na
+ * primeira tentativa os nós `lagoa` e `barco` existiam no export do Blender e
+ * **não** no arquivo publicado. Aqui fora, com `--join false`, sobrevivem — e
+ * custam 5,9 KB.
+ */
+function Lago({ clima, amplitude }: { clima: Clima; amplitude: number }) {
+  const { scene } = useGLTF("/modelos/lago.glb", "/draco/");
+
+  const { raiz, pecas, agua } = useMemo((): {
+    raiz: THREE.Object3D;
+    pecas: { no: THREE.Object3D; yOriginal: number }[];
+    // Anotado à mão: a atribuição acontece dentro do `traverse`, e sem isto o
+    // TypeScript estreita o tipo para `null` e recusa a leitura de `roughness`.
+    agua: THREE.MeshStandardMaterial | null;
+  } => {
+    const raiz = scene.clone(true);
+    const pecas: { no: THREE.Object3D; yOriginal: number }[] = [];
+    let agua: THREE.MeshStandardMaterial | null = null;
+
+    raiz.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      if (o.name.startsWith("barco")) {
+        m.castShadow = true;
+        pecas.push({ no: o, yOriginal: o.position.y });
+        return;
+      }
+      if (o.name === "lagoa") {
+        // Clonado porque o cache do useGLTF é global: mexer na rugosidade do
+        // original vazaria para qualquer outro uso do arquivo.
+        agua = (m.material as THREE.MeshStandardMaterial).clone();
+        m.material = agua;
+        // A lâmina não projeta sombra — projetaria uma mancha preta sobre o
+        // próprio gramado — mas recebe, para a serra escurecer a água ao lado.
+        m.castShadow = false;
+        m.receiveShadow = true;
+      }
+    });
+
+    return { raiz, pecas, agua };
+  }, [scene]);
+
+  useFrame((estado, delta) => {
+    const passo = Math.min(delta, 0.05);
+
+    // Posição do relógio, amplitude do perfil de movimento: sob movimento
+    // reduzido o barco fica parado na água em vez de sumir da paisagem.
+    if (pecas.length) {
+      const b = barcoEm(estado.clock.elapsedTime, amplitude);
+      for (const p of pecas) {
+        p.no.position.x = b.x;
+        p.no.position.y = p.yOriginal + b.subida;
+        p.no.rotation.y = b.giro;
+      }
+    }
+
+    // A água acompanha o clima pelo mesmo motivo que todo o resto acompanha:
+    // lâmina espelhada sob céu fechado é a combinação que denuncia o cenário.
+    // Interpolação exponencial e não corte — virar tempestade num quadro lê
+    // como falha de carregamento.
+    if (agua) {
+      const alvo = clima === "chuva" ? 0.38 : 0.06;
+      agua.roughness += (alvo - agua.roughness) * (1 - Math.exp(-passo / 1.6));
+    }
+  });
+
+  return <primitive object={raiz} />;
+}
+
+useGLTF.preload("/modelos/lago.glb", "/draco/");
+
 function Arvore({ vento }: { vento: number }) {
   const { scene } = useGLTF("/modelos/arvore.glb", "/draco/");
   // O vento nao salta de brisa para tempestade num quadro: ele sobe junto com
@@ -844,6 +926,7 @@ function Navegacao({
           <Professor sessao={sessao} amplitude={perfil.amplitudeAvatar} poseForcada={poseProfessor} />
         )}
       </Suspense>
+      <Lago clima={clima} amplitude={perfil.amplitudeAvatar} />
       <Arvore vento={vento} />
       <Avatares
         outras={outras}

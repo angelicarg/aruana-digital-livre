@@ -15,6 +15,12 @@ Blender portátil: `Documents/blender-portatil/Blender Foundation/Blender 5.2/bl
     npx @gltf-transform/cli optimize sala-yoga.glb sala-yoga-web.glb \
       --texture-compress webp --texture-size 512 --compress draco --simplify false
 
+⚠️ **`export_apply=True` no export.** Sem ele o exportador ignora os
+modificadores e grava a malha crua: as montanhas saíam com 8 a 12 triângulos
+cada — cone limpo, sem o deslocamento por ruído — e os tapetes sem o bisel. O
+engano durou semanas porque os **renders do Blender avaliam modificadores**: as
+vistas mostravam montanha e a web recebia pirâmide.
+
 A árvore sai em `arvore.glb` separado e usa **`--join false`**:
 
     npx @gltf-transform/cli optimize arvore.glb arvore-web.glb       --texture-compress webp --texture-size 512 --compress draco --simplify false --join false
@@ -31,7 +37,16 @@ material e apagaria os nós `copa_0..N`, que o balanço ao vento procura pelo no
 E se a árvore ficasse dentro do glb da sala, o passo `palette` fundiria a cor da
 copa com a montanha — animar aquele material faria a montanha balançar.
 
-Separada custa 12 KB e mantém as 7 copas. Junto e sem `join` custaria 277 KB com
+Separada custa 12 KB e mantém as 7 copas.
+
+**`lago.glb` sai pela mesma regra e com os mesmos dois detalhes** (`--join false`
+e `export_apply=True`). O código procura `lagoa` pelo nome para mexer na
+rugosidade conforme o clima, e `barco` / `barco_tripulante` para movê-los por
+quadro. Dentro do glb da sala o passo `palette` funde as cores chapadas num
+material só, o `join` junta as malhas e os três nomes somem — aconteceu na
+primeira tentativa. Fora, custa 5,9 KB.
+
+Regra geral: **o que o código procura por nome não pode morar no glb da sala.** Junto e sem `join` custaria 277 KB com
 90 chamadas de desenho, contra os 203 KB e 12 de hoje.
 
 ## Quadros
