@@ -20,6 +20,7 @@ import { Route as CasesRouteImport } from './routes/cases'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as IntranetNovaSenhaRouteImport } from './routes/intranet/nova-senha'
 import { Route as IntranetLoginRouteImport } from './routes/intranet/login'
 import { Route as FecharIdRouteImport } from './routes/fechar.$id'
 import { Route as ExperienciasSalaYogaRouteImport } from './routes/experiencias.sala-yoga'
@@ -91,6 +92,11 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => BlogRoute,
+} as any)
+const IntranetNovaSenhaRoute = IntranetNovaSenhaRouteImport.update({
+  id: '/intranet/nova-senha',
+  path: '/intranet/nova-senha',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const IntranetLoginRoute = IntranetLoginRouteImport.update({
   id: '/intranet/login',
@@ -195,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
   '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
+  '/intranet/nova-senha': typeof IntranetNovaSenhaRoute
   '/blog/': typeof BlogIndexRoute
   '/intranet/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
   '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
+  '/intranet/nova-senha': typeof IntranetNovaSenhaRoute
   '/blog': typeof BlogIndexRoute
   '/intranet/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/experiencias/sala-yoga': typeof ExperienciasSalaYogaRoute
   '/fechar/$id': typeof FecharIdRoute
   '/intranet/login': typeof IntranetLoginRoute
+  '/intranet/nova-senha': typeof IntranetNovaSenhaRoute
   '/blog/': typeof BlogIndexRoute
   '/intranet/_authed/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/_authed/documentos': typeof IntranetAuthedDocumentosRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/experiencias/sala-yoga'
     | '/fechar/$id'
     | '/intranet/login'
+    | '/intranet/nova-senha'
     | '/blog/'
     | '/intranet/clientes'
     | '/intranet/documentos'
@@ -310,6 +320,7 @@ export interface FileRouteTypes {
     | '/experiencias/sala-yoga'
     | '/fechar/$id'
     | '/intranet/login'
+    | '/intranet/nova-senha'
     | '/blog'
     | '/intranet/clientes'
     | '/intranet/documentos'
@@ -339,6 +350,7 @@ export interface FileRouteTypes {
     | '/experiencias/sala-yoga'
     | '/fechar/$id'
     | '/intranet/login'
+    | '/intranet/nova-senha'
     | '/blog/'
     | '/intranet/_authed/clientes'
     | '/intranet/_authed/documentos'
@@ -368,6 +380,7 @@ export interface RootRouteChildren {
   ExperienciasSalaYogaRoute: typeof ExperienciasSalaYogaRoute
   FecharIdRoute: typeof FecharIdRoute
   IntranetLoginRoute: typeof IntranetLoginRoute
+  IntranetNovaSenhaRoute: typeof IntranetNovaSenhaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -448,6 +461,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/blog/'
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof BlogRoute
+    }
+    '/intranet/nova-senha': {
+      id: '/intranet/nova-senha'
+      path: '/intranet/nova-senha'
+      fullPath: '/intranet/nova-senha'
+      preLoaderRoute: typeof IntranetNovaSenhaRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/intranet/login': {
       id: '/intranet/login'
@@ -619,6 +639,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExperienciasSalaYogaRoute: ExperienciasSalaYogaRoute,
   FecharIdRoute: FecharIdRoute,
   IntranetLoginRoute: IntranetLoginRoute,
+  IntranetNovaSenhaRoute: IntranetNovaSenhaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
