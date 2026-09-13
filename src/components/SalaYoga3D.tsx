@@ -322,7 +322,11 @@ function Lago({ clima, amplitude }: { clima: Clima; amplitude: number }) {
     // Interpolação exponencial e não corte — virar tempestade num quadro lê
     // como falha de carregamento.
     if (agua) {
-      const alvo = clima === "chuva" ? 0.38 : 0.06;
+      // ⚠️ Os dois valores acompanham a rugosidade do material no script do
+      // Blender (0,22). Baixar aqui para quase-espelho foi o erro da primeira
+      // versão: sem reflexo de verdade em tempo real, espelho vira mancha
+      // escura. Na chuva sobe, que é a lâmina picada perdendo o brilho.
+      const alvo = clima === "chuva" ? 0.5 : 0.22;
       agua.roughness += (alvo - agua.roughness) * (1 - Math.exp(-passo / 1.6));
     }
   });

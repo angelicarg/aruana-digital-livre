@@ -228,9 +228,24 @@ rocha = material("rocha", (0.13, 0.12, 0.13), 0.9)
 # no por do sol le como recorte de papel colado no ceu.
 neve = material("neve", (0.74, 0.72, 0.68), 0.6)
 mata = material("mata", (0.045, 0.075, 0.05), 0.95)
-# Agua: rugosidade baixa para espelhar a serra e o ceu. Cor quase preta de
-# proposito — o que se ve num lago calmo e o reflexo, nao a cor da agua.
-agua = material("agua", (0.015, 0.025, 0.035), 0.06)
+# ⚠️ Agua CLARA, e nao quase preta.
+#
+# A primeira versao usava (0.015, 0.025, 0.035) com rugosidade 0.06, pelo
+# argumento de que num lago calmo se ve o reflexo e nao a cor da agua. Isso vale
+# no Cycles, que traca o raio. No navegador nao ha esse reflexo: a iluminacao
+# vem de refletores esparsos, e espelhar aquilo devolve escuro com dois pontos
+# claros. O resultado foi uma mancha escura de borda dura, que lia como sombra
+# no gramado — ela viu de imediato.
+#
+# Em tempo real o caminho e pintar o reflexo em vez de calcula-lo: a lamina
+# recebe a cor palida e fria do ceu que ela deveria estar espelhando, e a luz
+# quente do por do sol a esquenta por cima. Rugosidade media da o brilho
+# difuso da agua parada sem depender do mapa de ambiente.
+agua = material("agua", (0.175, 0.205, 0.235), 0.22)
+# Faixa rasa na margem: a borda reta entre agua e grama era metade do ar de
+# forcado. Um anel um pouco maior por baixo aparece como orla molhada e
+# quebra o corte seco.
+raso = material("raso", (0.30, 0.285, 0.235), 0.85)
 casco = material("casco", (0.20, 0.12, 0.07), 0.7)
 tripulante = material("tripulante", (0.16, 0.17, 0.20), 0.8)
 # Oliva quente, e nao o verde-piscina de antes: com a lagoa no quadro, um
@@ -338,6 +353,20 @@ dm.texture = tex_margem
 dm.strength = 2.2
 dm.direction = "X"
 lago.data.materials.append(agua)
+
+# A orla e uma copia da propria lagoa, 7% maior e um fio abaixo: assim ela
+# acompanha exatamente as ondulacoes da margem, o que um anel desenhado a parte
+# nao faria. Fica por baixo, entao so a franja aparece.
+bpy.ops.object.select_all(action="DESELECT")
+lago.select_set(True)
+bpy.context.view_layer.objects.active = lago
+bpy.ops.object.duplicate()
+orla = bpy.context.object
+orla.name = "lagoa_orla"
+orla.scale = (1.07, 1.07, 1.0)
+orla.location.z -= 0.006
+orla.data.materials.clear()
+orla.data.materials.append(raso)
 
 # Barco pequeno. Fica no .glb parado; o vai e vem e feito no navegador, como a
 # revoada — animar aqui exigiria exportar animacao e o arquivo ja pesa o que
@@ -632,7 +661,7 @@ if "--exportar" in sys.argv:
     # malhas e os nomes somem — foi exatamente o que aconteceu na primeira
     # tentativa: os nos existiam no export do Blender e nao no arquivo
     # otimizado. Aqui fora eles sobrevivem com `--join false`.
-    NOMES_LAGO = ("lagoa", "barco")
+    NOMES_LAGO = ("lagoa", "lagoa_orla", "barco")
 
     def e_lago(o):
         return any(o.name == n or o.name.startswith(n) for n in NOMES_LAGO)
