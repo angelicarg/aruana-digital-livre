@@ -34,6 +34,7 @@ import { Route as IntranetAuthedReunioesRouteImport } from './routes/intranet/_a
 import { Route as IntranetAuthedRelatoriosRouteImport } from './routes/intranet/_authed/relatorios'
 import { Route as IntranetAuthedProjetosRouteImport } from './routes/intranet/_authed/projetos'
 import { Route as IntranetAuthedNegociosRouteImport } from './routes/intranet/_authed/negocios'
+import { Route as IntranetAuthedLeadsRouteImport } from './routes/intranet/_authed/leads'
 import { Route as IntranetAuthedFinanceiroRouteImport } from './routes/intranet/_authed/financeiro'
 import { Route as IntranetAuthedDocumentosRouteImport } from './routes/intranet/_authed/documentos'
 import { Route as IntranetAuthedClientesRouteImport } from './routes/intranet/_authed/clientes'
@@ -164,6 +165,11 @@ const IntranetAuthedNegociosRoute = IntranetAuthedNegociosRouteImport.update({
   path: '/negocios',
   getParentRoute: () => IntranetAuthedRouteRoute,
 } as any)
+const IntranetAuthedLeadsRoute = IntranetAuthedLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => IntranetAuthedRouteRoute,
+} as any)
 const IntranetAuthedFinanceiroRoute =
   IntranetAuthedFinanceiroRouteImport.update({
     id: '/financeiro',
@@ -206,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/intranet/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
   '/intranet/financeiro': typeof IntranetAuthedFinanceiroRoute
+  '/intranet/leads': typeof IntranetAuthedLeadsRoute
   '/intranet/negocios': typeof IntranetAuthedNegociosRoute
   '/intranet/projetos': typeof IntranetAuthedProjetosRoute
   '/intranet/relatorios': typeof IntranetAuthedRelatoriosRoute
@@ -234,6 +241,7 @@ export interface FileRoutesByTo {
   '/intranet/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/documentos': typeof IntranetAuthedDocumentosRoute
   '/intranet/financeiro': typeof IntranetAuthedFinanceiroRoute
+  '/intranet/leads': typeof IntranetAuthedLeadsRoute
   '/intranet/negocios': typeof IntranetAuthedNegociosRoute
   '/intranet/projetos': typeof IntranetAuthedProjetosRoute
   '/intranet/relatorios': typeof IntranetAuthedRelatoriosRoute
@@ -265,6 +273,7 @@ export interface FileRoutesById {
   '/intranet/_authed/clientes': typeof IntranetAuthedClientesRoute
   '/intranet/_authed/documentos': typeof IntranetAuthedDocumentosRoute
   '/intranet/_authed/financeiro': typeof IntranetAuthedFinanceiroRoute
+  '/intranet/_authed/leads': typeof IntranetAuthedLeadsRoute
   '/intranet/_authed/negocios': typeof IntranetAuthedNegociosRoute
   '/intranet/_authed/projetos': typeof IntranetAuthedProjetosRoute
   '/intranet/_authed/relatorios': typeof IntranetAuthedRelatoriosRoute
@@ -297,6 +306,7 @@ export interface FileRouteTypes {
     | '/intranet/clientes'
     | '/intranet/documentos'
     | '/intranet/financeiro'
+    | '/intranet/leads'
     | '/intranet/negocios'
     | '/intranet/projetos'
     | '/intranet/relatorios'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/intranet/clientes'
     | '/intranet/documentos'
     | '/intranet/financeiro'
+    | '/intranet/leads'
     | '/intranet/negocios'
     | '/intranet/projetos'
     | '/intranet/relatorios'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/intranet/_authed/clientes'
     | '/intranet/_authed/documentos'
     | '/intranet/_authed/financeiro'
+    | '/intranet/_authed/leads'
     | '/intranet/_authed/negocios'
     | '/intranet/_authed/projetos'
     | '/intranet/_authed/relatorios'
@@ -560,6 +572,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntranetAuthedNegociosRouteImport
       parentRoute: typeof IntranetAuthedRouteRoute
     }
+    '/intranet/_authed/leads': {
+      id: '/intranet/_authed/leads'
+      path: '/leads'
+      fullPath: '/intranet/leads'
+      preLoaderRoute: typeof IntranetAuthedLeadsRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
     '/intranet/_authed/financeiro': {
       id: '/intranet/_authed/financeiro'
       path: '/financeiro'
@@ -600,6 +619,7 @@ interface IntranetAuthedRouteRouteChildren {
   IntranetAuthedClientesRoute: typeof IntranetAuthedClientesRoute
   IntranetAuthedDocumentosRoute: typeof IntranetAuthedDocumentosRoute
   IntranetAuthedFinanceiroRoute: typeof IntranetAuthedFinanceiroRoute
+  IntranetAuthedLeadsRoute: typeof IntranetAuthedLeadsRoute
   IntranetAuthedNegociosRoute: typeof IntranetAuthedNegociosRoute
   IntranetAuthedProjetosRoute: typeof IntranetAuthedProjetosRoute
   IntranetAuthedRelatoriosRoute: typeof IntranetAuthedRelatoriosRoute
@@ -611,6 +631,7 @@ const IntranetAuthedRouteRouteChildren: IntranetAuthedRouteRouteChildren = {
   IntranetAuthedClientesRoute: IntranetAuthedClientesRoute,
   IntranetAuthedDocumentosRoute: IntranetAuthedDocumentosRoute,
   IntranetAuthedFinanceiroRoute: IntranetAuthedFinanceiroRoute,
+  IntranetAuthedLeadsRoute: IntranetAuthedLeadsRoute,
   IntranetAuthedNegociosRoute: IntranetAuthedNegociosRoute,
   IntranetAuthedProjetosRoute: IntranetAuthedProjetosRoute,
   IntranetAuthedRelatoriosRoute: IntranetAuthedRelatoriosRoute,

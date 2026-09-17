@@ -382,6 +382,7 @@ export type Database = {
           mensagem: string | null
           aceita_novidades: boolean
           aceite_em: string | null
+          cliente_id: string | null
         }
         Insert: {
           id?: string
@@ -400,6 +401,7 @@ export type Database = {
           mensagem?: string | null
           aceita_novidades?: boolean
           aceite_em?: string | null
+          cliente_id?: string | null
         }
         Update: {
           id?: string
@@ -418,6 +420,7 @@ export type Database = {
           mensagem?: string | null
           aceita_novidades?: boolean
           aceite_em?: string | null
+          cliente_id?: string | null
         }
         Relationships: []
       }

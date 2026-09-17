@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/
 import {
   LayoutDashboard,
   Users,
+  Inbox,
   Briefcase,
   Handshake,
   Wallet,
@@ -31,6 +32,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 const NAV_ITEMS = [
   { to: "/intranet", label: "Painel", icon: LayoutDashboard },
+  { to: "/intranet/leads", label: "Leads", icon: Inbox },
   { to: "/intranet/clientes", label: "Clientes", icon: Users },
   { to: "/intranet/projetos", label: "Projetos", icon: Briefcase },
   { to: "/intranet/negocios", label: "Negócios", icon: Handshake },
