@@ -24,6 +24,7 @@ import { AruanaLogo } from "@/components/AruanaLogo";
 import { irParaAncora } from "@/lib/ancora";
 import { trackEvent } from "@/lib/analytics";
 import { submitLead } from "@/lib/api/leads.functions";
+import { AceiteNovidades } from "@/components/AceiteNovidades";
 
 const WHATSAPP_NUMBER = "5534992086611";
 
@@ -159,6 +160,7 @@ function DiagnosticoPage() {
   const [whats, setWhats] = useState("");
   const [email, setEmail] = useState("");
   const [segmento, setSegmento] = useState("");
+  const [aceitaNovidades, setAceitaNovidades] = useState(false);
   const [erros, setErros] = useState<{ nome?: boolean; site?: boolean; whats?: boolean; email?: boolean }>({});
 
   const nomeRef = useRef<HTMLInputElement>(null);
@@ -220,6 +222,7 @@ function DiagnosticoPage() {
         pacoteSugerido: null,
         origem: "diagnostico",
         siteUrl: site.trim(),
+        aceitaNovidades,
       },
     }).catch((err) => console.error("[diagnostico] lead não salvo", err));
   }
@@ -412,6 +415,8 @@ function DiagnosticoPage() {
                   ))}
                 </select>
               </div>
+
+              <AceiteNovidades id="diag-novidades" checked={aceitaNovidades} onChange={setAceitaNovidades} />
 
               <button
                 type="submit"

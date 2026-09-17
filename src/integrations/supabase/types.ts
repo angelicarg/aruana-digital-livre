@@ -376,9 +376,12 @@ export type Database = {
           interesse_avancado: "nenhum" | "loja" | "loja_ia" | "sob_medida" | null
           tem_site: boolean | null
           pacote_sugerido: "essencial" | "profissional" | "avancado" | "sob_medida" | null
-          origem: "banner" | "simulador" | "home_lead_form" | "diagnostico"
+          origem: "banner" | "simulador" | "home_lead_form" | "diagnostico" | "contato"
           status: "novo" | "contatado" | "convertido" | "descartado"
           site_url: string | null
+          mensagem: string | null
+          aceita_novidades: boolean
+          aceite_em: string | null
         }
         Insert: {
           id?: string
@@ -391,9 +394,12 @@ export type Database = {
           interesse_avancado?: "nenhum" | "loja" | "loja_ia" | "sob_medida" | null
           tem_site?: boolean | null
           pacote_sugerido?: "essencial" | "profissional" | "avancado" | "sob_medida" | null
-          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico"
+          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico" | "contato"
           status?: "novo" | "contatado" | "convertido" | "descartado"
           site_url?: string | null
+          mensagem?: string | null
+          aceita_novidades?: boolean
+          aceite_em?: string | null
         }
         Update: {
           id?: string
@@ -406,9 +412,12 @@ export type Database = {
           interesse_avancado?: "nenhum" | "loja" | "loja_ia" | "sob_medida" | null
           tem_site?: boolean | null
           pacote_sugerido?: "essencial" | "profissional" | "avancado" | "sob_medida" | null
-          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico"
+          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico" | "contato"
           status?: "novo" | "contatado" | "convertido" | "descartado"
           site_url?: string | null
+          mensagem?: string | null
+          aceita_novidades?: boolean
+          aceite_em?: string | null
         }
         Relationships: []
       }

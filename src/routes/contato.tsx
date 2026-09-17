@@ -5,6 +5,8 @@ import { PageLayout, PageHero } from "@/components/PageLayout";
 import { MessageCircle, Mail, MapPin, Clock, Instagram, Linkedin, Send, CheckCircle, Star } from "lucide-react";
 import { z } from "zod";
 import { trackEvent } from "@/lib/analytics";
+import { submitLead } from "@/lib/api/leads.functions";
+import { AceiteNovidades } from "@/components/AceiteNovidades";
 import heroFish from "@/assets/hero-fish.jpg";
 
 export const Route = createFileRoute("/contato")({
@@ -70,6 +72,23 @@ function ContatoPage() {
     setErrors({});
     setSending(true);
     setSendError("");
+
+    // Independente do e-mail: se o EmailJS falhar, o contato continua registrado no banco.
+    void submitLead({
+      data: {
+        nome: res.data.name,
+        whatsapp: res.data.phone,
+        email: res.data.email,
+        tipoNegocio: "Não informado",
+        precisaAgendamento: null,
+        interesseAvancado: null,
+        temSite: null,
+        pacoteSugerido: null,
+        origem: "contato",
+        mensagem: res.data.message,
+        aceitaNovidades: fd.get("aceita_novidades") === "on",
+      },
+    }).catch((err) => console.error("[contato] lead não salvo", err));
 
     try {
       await emailjs.sendForm(
@@ -159,6 +178,8 @@ function ContatoPage() {
                     <p className="mt-1 text-xs text-destructive">{errors.message}</p>
                   )}
                 </div>
+
+                <AceiteNovidades id="contato-novidades" name="aceita_novidades" />
 
                 {sendError && (
                   <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, ArrowRight, ArrowLeft, MessageCircle } from "lucide-react";
 import { submitLead } from "@/lib/api/leads.functions";
+import { AceiteNovidades } from "@/components/AceiteNovidades";
 import { PACOTES, precoSetup, precoMensal, isPromoActive, PROMO, type PacoteId, type FaixaPreco } from "@/lib/pricing";
 import { markSimulatorCompleted } from "@/lib/lead-storage";
 import { trackEvent } from "@/lib/analytics";
@@ -69,6 +70,7 @@ export function BudgetSimulator({
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [outroNegocio, setOutroNegocio] = useState("");
+  const [aceitaNovidades, setAceitaNovidades] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -78,6 +80,7 @@ export function BudgetSimulator({
     setStep(0);
     setForm(INITIAL_FORM);
     setOutroNegocio("");
+    setAceitaNovidades(false);
     setSaved(false);
   }
 
@@ -110,6 +113,7 @@ export function BudgetSimulator({
           temSite: form.temSite,
           pacoteSugerido: pacoteId,
           origem,
+          aceitaNovidades,
         },
       });
       setSaved(result.saved);
@@ -345,6 +349,7 @@ export function BudgetSimulator({
                     className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand-green"
                   />
                 </div>
+                <AceiteNovidades id="simulador-novidades" checked={aceitaNovidades} onChange={setAceitaNovidades} />
               </div>
               <button
                 disabled={!canStep3}

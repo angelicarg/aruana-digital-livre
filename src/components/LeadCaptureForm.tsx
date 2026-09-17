@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Mail, MessageCircle, User, ArrowRight } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { submitLead } from "@/lib/api/leads.functions";
+import { AceiteNovidades } from "@/components/AceiteNovidades";
 
 export function LeadCaptureForm() {
   const [step, setStep] = useState(0);
@@ -10,6 +11,7 @@ export function LeadCaptureForm() {
     email: "",
     telefone: "",
   });
+  const [aceitaNovidades, setAceitaNovidades] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -38,11 +40,13 @@ export function LeadCaptureForm() {
           temSite: null,
           pacoteSugerido: "essencial",
           origem: "home_lead_form",
+          aceitaNovidades,
         },
       });
       setSubmitted(true);
       setTimeout(() => {
         setFormData({ nome: "", email: "", telefone: "" });
+        setAceitaNovidades(false);
         setStep(0);
         setSubmitted(false);
       }, 3000);
@@ -137,6 +141,9 @@ export function LeadCaptureForm() {
               className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
               autoFocus
             />
+          </div>
+          <div className="pt-1">
+            <AceiteNovidades id="lead-novidades" checked={aceitaNovidades} onChange={setAceitaNovidades} />
           </div>
         </div>
       )}

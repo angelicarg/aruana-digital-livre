@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-// Persiste os leads capturados pelo simulador de orçamento, pelo formulário da home e pelo diagnóstico gratuito. Roda com o
+// Persiste os leads capturados pelo simulador de orçamento, pelo formulário da home, pelo diagnóstico gratuito e pela página de contato. Roda com o
 // service_role (bypassa RLS) porque este é o único caminho de escrita na
 // tabela `leads` — não existe policy de insert para a chave anon.
 // Se a chave não estiver configurada, falha graciosamente: o simulador
@@ -17,8 +17,11 @@ const leadSchema = z.object({
   interesseAvancado: z.enum(["nenhum", "loja", "loja_ia", "sob_medida"]).nullable(),
   temSite: z.boolean().nullable(),
   pacoteSugerido: z.enum(["essencial", "profissional", "avancado", "sob_medida"]).nullable(),
-  origem: z.enum(["banner", "simulador", "home_lead_form", "diagnostico"]),
+  origem: z.enum(["banner", "simulador", "home_lead_form", "diagnostico", "contato"]),
   siteUrl: z.string().trim().max(300).nullable().optional(),
+  mensagem: z.string().trim().max(1000).nullable().optional(),
+  // Pedir orçamento autoriza responder; e-mail de divulgação só com esta caixa marcada (LGPD).
+  aceitaNovidades: z.boolean().optional(),
 });
 
 export const submitLead = createServerFn({ method: "POST" })
@@ -38,6 +41,9 @@ export const submitLead = createServerFn({ method: "POST" })
         pacote_sugerido: data.pacoteSugerido,
         origem: data.origem,
         site_url: data.siteUrl ?? null,
+        mensagem: data.mensagem ?? null,
+        aceita_novidades: data.aceitaNovidades === true,
+        aceite_em: data.aceitaNovidades ? new Date().toISOString() : null,
       });
 
       if (error) {
