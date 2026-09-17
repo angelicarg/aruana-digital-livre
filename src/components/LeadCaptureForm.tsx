@@ -24,7 +24,6 @@ export function LeadCaptureForm() {
     setLoading(true);
     trackEvent("form_submit", {
       form_type: "lead_capture_home",
-      nome: formData.nome,
     });
 
     try {
