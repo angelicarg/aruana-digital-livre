@@ -372,12 +372,13 @@ export type Database = {
           whatsapp: string
           email: string | null
           tipo_negocio: string
-          precisa_agendamento: boolean
-          interesse_avancado: "nenhum" | "loja" | "loja_ia" | "sob_medida"
+          precisa_agendamento: boolean | null
+          interesse_avancado: "nenhum" | "loja" | "loja_ia" | "sob_medida" | null
           tem_site: boolean | null
-          pacote_sugerido: "essencial" | "profissional" | "avancado" | "sob_medida"
-          origem: "banner" | "simulador"
+          pacote_sugerido: "essencial" | "profissional" | "avancado" | "sob_medida" | null
+          origem: "banner" | "simulador" | "home_lead_form" | "diagnostico"
           status: "novo" | "contatado" | "convertido" | "descartado"
+          site_url: string | null
         }
         Insert: {
           id?: string
@@ -386,12 +387,13 @@ export type Database = {
           whatsapp: string
           email?: string | null
           tipo_negocio: string
-          precisa_agendamento: boolean
-          interesse_avancado: "nenhum" | "loja" | "loja_ia" | "sob_medida"
+          precisa_agendamento?: boolean | null
+          interesse_avancado?: "nenhum" | "loja" | "loja_ia" | "sob_medida" | null
           tem_site?: boolean | null
-          pacote_sugerido: "essencial" | "profissional" | "avancado" | "sob_medida"
-          origem?: "banner" | "simulador"
+          pacote_sugerido?: "essencial" | "profissional" | "avancado" | "sob_medida" | null
+          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico"
           status?: "novo" | "contatado" | "convertido" | "descartado"
+          site_url?: string | null
         }
         Update: {
           id?: string
@@ -400,12 +402,13 @@ export type Database = {
           whatsapp?: string
           email?: string | null
           tipo_negocio?: string
-          precisa_agendamento?: boolean
-          interesse_avancado?: "nenhum" | "loja" | "loja_ia" | "sob_medida"
+          precisa_agendamento?: boolean | null
+          interesse_avancado?: "nenhum" | "loja" | "loja_ia" | "sob_medida" | null
           tem_site?: boolean | null
-          pacote_sugerido?: "essencial" | "profissional" | "avancado" | "sob_medida"
-          origem?: "banner" | "simulador"
+          pacote_sugerido?: "essencial" | "profissional" | "avancado" | "sob_medida" | null
+          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico"
           status?: "novo" | "contatado" | "convertido" | "descartado"
+          site_url?: string | null
         }
         Relationships: []
       }

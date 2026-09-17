@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-// Persiste os leads capturados pelo simulador de orçamento. Roda com o
+// Persiste os leads capturados pelo simulador de orçamento, pelo formulário da home e pelo diagnóstico gratuito. Roda com o
 // service_role (bypassa RLS) porque este é o único caminho de escrita na
 // tabela `leads` — não existe policy de insert para a chave anon.
 // Se a chave não estiver configurada, falha graciosamente: o simulador
@@ -17,7 +17,8 @@ const leadSchema = z.object({
   interesseAvancado: z.enum(["nenhum", "loja", "loja_ia", "sob_medida"]).nullable(),
   temSite: z.boolean().nullable(),
   pacoteSugerido: z.enum(["essencial", "profissional", "avancado", "sob_medida"]).nullable(),
-  origem: z.enum(["banner", "simulador", "home_lead_form"]),
+  origem: z.enum(["banner", "simulador", "home_lead_form", "diagnostico"]),
+  siteUrl: z.string().trim().max(300).nullable().optional(),
 });
 
 export const submitLead = createServerFn({ method: "POST" })
@@ -36,6 +37,7 @@ export const submitLead = createServerFn({ method: "POST" })
         tem_site: data.temSite,
         pacote_sugerido: data.pacoteSugerido,
         origem: data.origem,
+        site_url: data.siteUrl ?? null,
       });
 
       if (error) {

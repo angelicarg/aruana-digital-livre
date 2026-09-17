@@ -23,6 +23,7 @@ import {
 import { AruanaLogo } from "@/components/AruanaLogo";
 import { irParaAncora } from "@/lib/ancora";
 import { trackEvent } from "@/lib/analytics";
+import { submitLead } from "@/lib/api/leads.functions";
 
 const WHATSAPP_NUMBER = "5534992086611";
 
@@ -204,6 +205,23 @@ function DiagnosticoPage() {
       "_blank",
       "noopener",
     );
+
+    // Salva depois de abrir o WhatsApp: esperar o servidor antes faria o navegador bloquear a janela.
+    // Se a mensagem não for enviada, o pedido continua registrado no banco.
+    void submitLead({
+      data: {
+        nome: nome.trim(),
+        whatsapp: whats.trim(),
+        email: email.trim(),
+        tipoNegocio: segmento || "Não informado",
+        precisaAgendamento: null,
+        interesseAvancado: null,
+        temSite: true,
+        pacoteSugerido: null,
+        origem: "diagnostico",
+        siteUrl: site.trim(),
+      },
+    }).catch((err) => console.error("[diagnostico] lead não salvo", err));
   }
 
   const inputClass =
