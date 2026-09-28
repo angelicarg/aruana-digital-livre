@@ -271,7 +271,7 @@ for i in range(MONTANHAS["quantidade"]):
     dist = MONTANHAS["raio"] * random.uniform(1.05, 1.6)
     alt = MONTANHAS["altura"] * random.uniform(0.55, 1.3)
     bpy.ops.mesh.primitive_cone_add(
-        vertices=random.choice([5, 6, 7]),
+        vertices=random.choice([9, 10, 12]),
         radius1=alt * random.uniform(0.7, 1.1),
         depth=alt,
         location=(math.cos(ang) * dist, math.sin(ang) * dist, alt / 2 - 1),
@@ -279,10 +279,14 @@ for i in range(MONTANHAS["quantidade"]):
     m = bpy.context.object
     m.name = f"montanha_{i}"
     m.rotation_euler.z = random.uniform(0, math.tau)
-    # Cone limpo le como piramide. O ruido quebra a silhueta e devolve montanha.
+    # Cone limpo le como piramide — e "SIMPLE" so adiciona triangulo, nao
+    # arredonda nada, entao a base continua angulosa por baixo do ruido
+    # (era o que ainda lia como facetado em 28/09). CATMULL_CLARK arredonda de
+    # verdade a aresta do cone antes do deslocamento; mais lados de base (9-12
+    # em vez de 5-7) evita que o arredondamento vire uma bola sem crista.
     bpy.ops.object.modifier_add(type="SUBSURF")
     m.modifiers["Subdivision"].levels = 2
-    m.modifiers["Subdivision"].subdivision_type = "SIMPLE"
+    m.modifiers["Subdivision"].subdivision_type = "CATMULL_CLARK"
     tex = bpy.data.textures.new(f"ruido_{i}", type="CLOUDS")
     # Serra mais distante e mais alta (28/09): ruído mais grosso (numero menor
     # = blob maior) para a ondulação continuar visível de longe — com a escala
