@@ -31,9 +31,11 @@ import { useModeloNoChao } from "@/hooks/useModeloNoChao";
  * Serve para giro pequeno (até ~25°), que é tudo o que a cena pede.
  */
 export const PROFESSOR = {
-  /** Entre a fileira da frente e o vidro, na esteira própria dela (sala maior
-   *  de 28/09 — mesmo lugar do protótipo aprovado). */
-  posicao: [0, 0, -0.95] as [number, number, number],
+  /** Entre a fileira da frente (z −0,2) e o vidro (z −4), com folga real —
+   *  as esteiras têm 1,83 m, então um gap menor que isso faz as duas se
+   *  sobreporem. Corrigido em 28/09 (a versão de mais cedo, z −0,95, ainda
+   *  encostava na fileira da frente). Mesmo lugar do protótipo aprovado. */
+  posicao: [0, 0, -2.85] as [number, number, number],
   alturaEmPe: 1.15,
   /** Medido pelo rosto nos renders: a geração sentada tem a cabeça maior em
    *  proporção, e com 1,0 os dois rostos saem do mesmo tamanho. */

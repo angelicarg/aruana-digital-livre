@@ -1,126 +1,16 @@
 /**
  * Clima da sala de yoga: dia, entardecer ou chuva.
  *
- * Um controle só muda céu, sol, névoa, vento e som de uma vez. Separar em
- * botões independentes deixaria alguém montar chuva com céu alaranjado, que é
- * a combinação que denuncia o cenário na hora.
- *
- * Aqui ficam só números e cores — nada de three.js. A cena interpola entre a
- * paleta atual e a de destino; nada troca de valor de um quadro para o outro,
- * porque virar tempestade num piscar lê como bug, não como tempo mudando.
- *
- * Valores portados do protótipo "Sala de Yoga Tropical" (Claude Design,
- * 28/09/2026) — três atmosferas com sol, névoa, pendentes e velas próprios.
+ * A chave interna continua "por_do_sol" por razão histórica (renomear mexeria
+ * em meia dúzia de arquivos para nenhum ganho); o rótulo que a pessoa vê é
+ * "Entardecer". As cores, luzes e névoa de cada atmosfera moram em
+ * `EXTERIOR_MOODS` (lib/exteriorScene.ts) e `LIGHT_MOODS`
+ * (lib/iluminacaoScene.ts), portadas do protótipo Claude Design de 28/09/2026
+ * — aqui fica só o que é crítico de acessibilidade e não pode se perder numa
+ * futura reescrita da paisagem: o relâmpago.
  */
 
 export type Clima = "dia" | "por_do_sol" | "chuva";
-
-export type Paleta = {
-  /** As cinco cores do shader do céu. */
-  horizonte: string;
-  meio: string;
-  zenite: string;
-  brilho: string;
-  nuvem: string;
-  /** Multiplica a cobertura de nuvem calculada no shader. */
-  cobertura: number;
-  neblina: { cor: string; perto: number; longe: number };
-  /** O sol direcional — o que projeta sombra. */
-  sol: { intensidade: number; cor: string; direcao: [number, number, number] };
-  hemisferio: { ceu: string; chao: string; intensidade: number };
-  ambiente: number;
-  /** Peso da iluminação por imagem, que é montada com refletores quentes do
-   *  pôr do sol. Baixar aqui é o que tira o calor do teto e do metal na chuva —
-   *  o mapa em si não pode ser refeito na troca, porque regerar o cubo trava a
-   *  cena por alguns quadros bem na frente de quem está olhando. */
-  envIntensidade: number;
-  /** Multiplica o balanço das copas. 1 é a brisa que já existia. */
-  vento: number;
-  /** Quantidade de gotas desenhadas. Zero desliga a chuva por completo. */
-  chuva: number;
-  /** Intensidade dos três pendentes de rattan do teto. Zero é dia claro — a
-   *  sala não precisa de luz artificial acesa com o sol entrando. */
-  pendentes: number;
-  /** Intensidade da chama das velas do altar. Nunca zero — a vela acesa é
-   *  estado, não movimento (o tremular é que respeita movimento reduzido). */
-  velas: number;
-  /** Cor da água da lagoa. */
-  agua: string;
-  /** Exposição do tone mapping (ACESFilmic). Dia expõe mais, chuva menos. */
-  exposicao: number;
-};
-
-export const PALETAS: Record<Clima, Paleta> = {
-  dia: {
-    horizonte: "#e6efe6",
-    meio: "#c7dfe0",
-    zenite: "#8fc3d9",
-    brilho: "#fff6e0",
-    nuvem: "#eef2ef",
-    cobertura: 0.55,
-    neblina: { cor: "#dce8e2", perto: 60, longe: 420 },
-    sol: { intensidade: 3.0, cor: "#fff1dc", direcao: [9, 8, -12] },
-    hemisferio: { ceu: "#dfeeff", chao: "#8a7a5a", intensidade: 1.1 },
-    ambiente: 0.4,
-    envIntensidade: 0.45,
-    vento: 1,
-    chuva: 0,
-    pendentes: 0,
-    velas: 0.3,
-    agua: "#3f8a8c",
-    exposicao: 1.0,
-  },
-  // A chave interna continua "por_do_sol" (mexer nela é mexer em meia dúzia de
-  // outros arquivos para nenhum ganho); o rótulo que a pessoa vê é
-  // "Entardecer", como no protótipo.
-  por_do_sol: {
-    horizonte: "#f3b37a",
-    meio: "#8a7291",
-    zenite: "#4a5d7a",
-    brilho: "#ffd7a3",
-    nuvem: "#cbd3dc",
-    cobertura: 1,
-    neblina: { cor: "#e0a987", perto: 50, longe: 380 },
-    sol: { intensidade: 2.6, cor: "#ffa45c", direcao: [16, 3.4, -6] },
-    hemisferio: { ceu: "#ffc9a0", chao: "#4a3a2a", intensidade: 0.5 },
-    ambiente: 0.35,
-    envIntensidade: 0.18,
-    vento: 1,
-    chuva: 0,
-    pendentes: 6,
-    velas: 1.2,
-    agua: "#3d5f6e",
-    exposicao: 1.05,
-  },
-  chuva: {
-    // Cinza levemente azulado e quase sem separação entre horizonte e zênite:
-    // céu carregado não tem gradiente, é justamente a ausência dele que o faz
-    // parecer baixo e pesado.
-    horizonte: "#9aa2a4",
-    meio: "#7e878f",
-    zenite: "#5b646c",
-    brilho: "#b9c0c6",
-    nuvem: "#6d757c",
-    // Acima de 1 porque o limiar do shader é calibrado para céu limpo: sem
-    // empurrar, a tempestade sai com as mesmas nuvenzinhas espalhadas.
-    cobertura: 2.6,
-    // Névoa mais perto e mais fechada: chuva encurta o alcance da vista, e é o
-    // que apaga as montanhas sem precisar mexer na geometria.
-    neblina: { cor: "#959d9f", perto: 12, longe: 200 },
-    // O sol não some de todo — vira a claridade difusa que atravessa a nuvem,
-    // e é ela que ainda dá alguma sombra ao chão. Zerar aqui achata a sala.
-    sol: { intensidade: 0.5, cor: "#d6dee6", direcao: [4, 14, -8] },
-    hemisferio: { ceu: "#b4bec4", chao: "#3d3a34", intensidade: 0.65 },
-    ambiente: 0.5,
-    envIntensidade: 0.25,
-    vento: 2.8,
-    chuva: 1,
-    pendentes: 4,
-    velas: 1.0,
-    agua: "#4d6264",
-    exposicao: 0.95,
-  },
-};
 
 /* -------------------------------------------------------------------------- */
 /*  Relâmpago                                                                  */

@@ -31,22 +31,10 @@ SOL = {"elevacao": 4.0, "rotacao": -35.0, "forca": 2.2}
 # Pendentes de rattan (substituem as luzes redondas brancas): 3, a 2,6 m do
 # piso, no mesmo x dos corredores entre tapetes.
 LUZ_INTERNA = {"quantidade": 3, "altura": 2.6, "raio": 0.28}
-# A serra daqui não tem neve — são morros tropicais: mata até certa altura,
-# rocha exposta acima, e o topo empalidece na neblina (não embranquece).
-# raio/altura escalados a partir da versão anterior (raio 42/altura 19, lagoa
-# até 51 m) na mesma proporção, para a lagoa maior (até 90 m) não jogar a
-# serra pra dentro d'água nem afastá-la a ponto de virar cenário chapado.
-MONTANHAS = {"raio": 74, "altura": 34, "quantidade": 16}
-SERRA = {"topo": 24.0, "rocha": 12.0, "mata": 4.5, "bagunca": 2.2}
-# Lagoa bem maior e mais distante que a versão anterior, como no protótipo
-# aprovado — a margem próxima ainda passa da árvore (y 6,2).
-LAGOA = {"centro_y": 50.0, "raio_x": 65.0, "raio_y": 40.0, "z": -0.015}
-BARCO = {"y": 16.0, "comprimento": 2.6, "largura": 1.1}
 # 2 fileiras retas (não mais intercaladas), 3 tapetes cada, como no protótipo:
 # x em -2,3/0/2,3, fileiras a 2,3 m de distância uma da outra.
 TAPETES = {"frente": 3, "tras": 3, "passo": 2.3, "larg": 0.61, "comp": 1.83,
            "y_frente": 0.2, "entre_fileiras": 2.3}
-ARVORE = {"x": -3.4, "y": 6.2, "altura": 3.6, "copas": 7}
 QUADROS = 2
 RENDER = {"larg": 900, "alt": 560, "amostras": 48}
 
@@ -215,23 +203,6 @@ bronze = material("bronze", (0.541, 0.451, 0.333), 0.45, metal=0.6)  # #8A7355
 vaso_terra = material("vaso_terra", (0.722, 0.420, 0.294), 0.9)  # #B86B4B
 vela_cera = material("vela_cera", (0.95, 0.91, 0.82), 0.4)
 vela_chama = material("vela_chama", (0.2, 0.08, 0.02), 0.4, emissao=((1.0, 0.6, 0.2), 4.0))
-# Montanha tropical: mata, rocha exposta e um topo que empalidece — sem neve.
-rocha = material("rocha", (0.545, 0.541, 0.502), 0.9)   # #8B8A80
-topo_serra = material("topo_serra", (0.659, 0.651, 0.612), 0.75)  # #A8A69C
-musgo = material("musgo", (0.30, 0.34, 0.22), 0.92)
-mata = material("mata", (0.290, 0.416, 0.247), 0.95)  # #4A6A3F
-# ⚠️ Agua CLARA, e nao quase preta — em tempo real o caminho e pintar o
-# reflexo em vez de calcula-lo (ver luz_tempo_real_vs_cycles). Cor de partida
-# do protótipo (#3F8A8C) é escura demais para refletor esparso; a rugosidade
-# baixa fica, a tonalidade quente vem da imagem por refletores no código.
-agua = material("agua", (0.175, 0.205, 0.235), 0.22)
-raso = material("raso", (0.30, 0.285, 0.235), 0.85)
-casco = material("casco", (0.20, 0.12, 0.07), 0.7)
-tripulante = material("tripulante", (0.16, 0.17, 0.20), 0.8)
-grama = material("grama", (0.486, 0.604, 0.353), 0.95)  # #7C9A5A
-areia = material("areia", (0.902, 0.835, 0.682), 0.9)  # #E6D5AE
-tronco_mat = material("tronco", (0.19, 0.13, 0.09), 0.85)
-copa_mat = material("copa", (0.11, 0.24, 0.13), 0.75)
 metal_fosco = material("metal_fosco", (0.35, 0.35, 0.37), 0.35, metal=0.9)
 
 # ------------------------------------------------------------------- CEU ---
@@ -261,144 +232,14 @@ sol = bpy.data.objects.new("sol", lz)
 col.objects.link(sol)
 sol.rotation_euler = (math.radians(90 - SOL["elevacao"]), 0, math.radians(SOL["rotacao"]))
 
-# ---------------------------------------------------- TERRENO E MONTANHAS ---
-bpy.ops.mesh.primitive_plane_add(size=400, location=(0, 0, -0.02))
-bpy.context.object.name = "terreno"
-bpy.context.object.data.materials.append(grama)
-
-for i in range(MONTANHAS["quantidade"]):
-    ang = (i / MONTANHAS["quantidade"]) * math.tau + random.uniform(-0.25, 0.25)
-    dist = MONTANHAS["raio"] * random.uniform(1.05, 1.6)
-    alt = MONTANHAS["altura"] * random.uniform(0.55, 1.3)
-    bpy.ops.mesh.primitive_cone_add(
-        vertices=random.choice([9, 10, 12]),
-        radius1=alt * random.uniform(0.7, 1.1),
-        depth=alt,
-        location=(math.cos(ang) * dist, math.sin(ang) * dist, alt / 2 - 1),
-    )
-    m = bpy.context.object
-    m.name = f"montanha_{i}"
-    m.rotation_euler.z = random.uniform(0, math.tau)
-    # Cone limpo le como piramide — e "SIMPLE" so adiciona triangulo, nao
-    # arredonda nada, entao a base continua angulosa por baixo do ruido
-    # (era o que ainda lia como facetado em 28/09). CATMULL_CLARK arredonda de
-    # verdade a aresta do cone antes do deslocamento; mais lados de base (9-12
-    # em vez de 5-7) evita que o arredondamento vire uma bola sem crista.
-    bpy.ops.object.modifier_add(type="SUBSURF")
-    m.modifiers["Subdivision"].levels = 2
-    m.modifiers["Subdivision"].subdivision_type = "CATMULL_CLARK"
-    tex = bpy.data.textures.new(f"ruido_{i}", type="CLOUDS")
-    # Serra mais distante e mais alta (28/09): ruído mais grosso (numero menor
-    # = blob maior) para a ondulação continuar visível de longe — com a escala
-    # anterior a montanha lia quase lisa, como pirâmide de novo.
-    tex.noise_scale = random.uniform(2.2, 4.5)
-    d = m.modifiers.new(f"desl_{i}", type="DISPLACE")
-    d.texture = tex
-    d.strength = alt * random.uniform(0.24, 0.40)
-    m.scale = (random.uniform(0.8, 1.4), random.uniform(0.8, 1.4), 1.0)
-    bpy.ops.object.shade_flat()
-    # Tres faixas por altura: mata na base, rocha exposta acima, topo palido no
-    # alto — nada de neve, sao morros tropicais.
-    m.data.materials.append(rocha)
-    m.data.materials.append(topo_serra)
-    m.data.materials.append(mata)
-    m.data.materials.append(musgo)
-    base_mundo = alt / 2 - 1
-    for poly in m.data.polygons:
-        z = poly.center.z + base_mundo
-        onda = (math.sin(poly.center.x * 0.9 + poly.center.y * 1.3)
-                + math.sin(poly.center.x * 2.7 - poly.center.y * 1.9) * 0.5)
-        z += onda * SERRA["bagunca"]
-        poly.material_index = (
-            1 if z > SERRA["topo"]
-            else 0 if z > SERRA["rocha"]
-            else 3 if z > SERRA["mata"]
-            else 2
-        )
-
-# ------------------------------------------------------------ LAGOA E BARCO ---
-bpy.ops.mesh.primitive_circle_add(vertices=64, radius=1.0,
-                                  location=(0, LAGOA["centro_y"], LAGOA["z"]),
-                                  fill_type="NGON")
-lago = bpy.context.object
-lago.name = "lagoa"
-lago.scale = (LAGOA["raio_x"], LAGOA["raio_y"], 1.0)
-bpy.ops.object.transform_apply(scale=True)
-bpy.ops.object.modifier_add(type="SUBSURF")
-lago.modifiers["Subdivision"].levels = 2
-lago.modifiers["Subdivision"].subdivision_type = "SIMPLE"
-tex_margem = bpy.data.textures.new("ruido_margem", type="CLOUDS")
-tex_margem.noise_scale = 12.0
-dm = lago.modifiers.new("desl_margem", type="DISPLACE")
-dm.texture = tex_margem
-dm.strength = 2.2
-dm.direction = "X"
-lago.data.materials.append(agua)
-
-bpy.ops.object.select_all(action="DESELECT")
-lago.select_set(True)
-bpy.context.view_layer.objects.active = lago
-bpy.ops.object.duplicate()
-orla = bpy.context.object
-orla.name = "lagoa_orla"
-orla.scale = (1.07, 1.07, 1.0)
-orla.location.z -= 0.006
-orla.data.materials.clear()
-orla.data.materials.append(raso)
-
-bpy.ops.mesh.primitive_uv_sphere_add(segments=10, ring_count=6, radius=0.5,
-                                     location=(0, BARCO["y"], 0.06))
-b_ = bpy.context.object
-b_.name = "barco"
-b_.scale = (BARCO["largura"], BARCO["comprimento"], 0.30)
-bpy.ops.object.transform_apply(scale=True)
-bpy.ops.object.shade_flat()
-b_.data.materials.append(casco)
-
-bpy.ops.mesh.primitive_uv_sphere_add(segments=8, ring_count=6, radius=0.26,
-                                     location=(0, BARCO["y"] + 0.15, 0.30))
-oc = bpy.context.object
-oc.name = "barco_tripulante"
-oc.scale = (1.0, 1.0, 1.35)
-bpy.ops.object.transform_apply(scale=True)
-bpy.ops.object.shade_flat()
-oc.data.materials.append(tripulante)
-
-# ----------------------------------------------------------------- ARVORE ---
-AX, AY, AH = ARVORE["x"], ARVORE["y"], ARVORE["altura"]
-
-bpy.ops.mesh.primitive_cone_add(vertices=8, radius1=0.26, radius2=0.14, depth=AH,
-                                location=(AX, AY, AH / 2 - 0.1))
-tr = bpy.context.object
-tr.name = "tronco"
-tr.data.materials.append(tronco_mat)
-tr.rotation_euler = (math.radians(2.5), math.radians(-2), 0)
-
-for i in range(3):
-    ang = i * math.tau / 3 + 0.4
-    bpy.ops.mesh.primitive_cone_add(
-        vertices=6, radius1=0.10, radius2=0.045, depth=1.5,
-        location=(AX + math.cos(ang) * 0.42, AY + math.sin(ang) * 0.42, AH * 0.74),
-        rotation=(math.radians(58) * math.sin(ang), math.radians(58) * math.cos(ang), 0),
-    )
-    g = bpy.context.object
-    g.name = f"galho_{i}"
-    g.data.materials.append(tronco_mat)
-
-for i in range(ARVORE["copas"]):
-    ang = (i / ARVORE["copas"]) * math.tau + random.uniform(-0.3, 0.3)
-    raio = random.uniform(0.5, 1.25)
-    alt = AH * random.uniform(0.80, 1.06)
-    bpy.ops.mesh.primitive_ico_sphere_add(
-        subdivisions=2,
-        radius=random.uniform(0.72, 1.15),
-        location=(AX + math.cos(ang) * raio, AY + math.sin(ang) * raio, alt),
-    )
-    c = bpy.context.object
-    c.name = f"copa_{i}"
-    c.scale = (1.0, 1.0, random.uniform(0.62, 0.82))
-    bpy.ops.object.transform_apply(scale=True)
-    c.data.materials.append(copa_mat)
+# ------------------------------------------------ TERRENO, LAGOA, ÁRVORES ---
+# Saíram daqui em 28/09: terreno (cones facetados mesmo suavizados), lagoa,
+# barco e a árvore perto do vidro. A paisagem inteira agora é gerada em
+# tempo real — terreno contínuo com cor por vértice, água refletindo o céu,
+# coqueiros e árvores de copa — porque essa é a técnica que ela aprovou no
+# protótipo Claude Design, não algo que dê para replicar bem com cones
+# esculpidos no Blender. Ver src/lib/exteriorScene.ts (porta quase 1:1 de
+# design_handoff_sala_yoga/exterior.js) e src/lib/iluminacaoScene.ts (luz).
 
 # ------------------------------------------------------------------ SALA ---
 uv_metrico(caixa("piso", (L, P, 0.12), (0, 0, -0.06), piso_mat), metros=2.2)
@@ -580,9 +421,11 @@ for i, (x, y) in enumerate(lugares):
     uv_metrico(t, metros=1.2)
 
 # Esteira da professora, entre a fileira da frente e o vidro (+Y é o lado do
-# vidro). ⚠️ Nome sem o prefixo "tapete": o site acha os lugares sentaveis por
+# vidro). 2,85 m e nao 0,95: as esteiras tem 1,83 m, e um gap menor que isso
+# fazia a dela encostar na fileira da frente (achado dela, 28/09).
+# ⚠️ Nome sem o prefixo "tapete": o site acha os lugares sentaveis por
 # esse prefixo, e a esteira dela nao e um lugar que um visitante possa escolher.
-bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0.95, 0.003))
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 2.85, 0.003))
 tp = bpy.context.object
 tp.name = "esteira_professora"
 tp.scale = (TAPETES["larg"], TAPETES["comp"], 0.006)
@@ -659,38 +502,12 @@ for nome, pos, alvo in ([] if "--exportar" in sys.argv else VISTAS):
     print(f"VISTA_OK {nome}")
 
 if "--exportar" in sys.argv:
-    NOMES_ARVORE = ("tronco", "galho_", "copa_")
-
-    def e_arvore(o):
-        return any(o.name == n or o.name.startswith(n) for n in NOMES_ARVORE)
-
+    # Árvore e lago saíam em arquivo próprio para escapar do `palette` do
+    # otimizador (funde material chapado e apaga nome). Sem eles no script
+    # (paisagem é tempo real agora — ver a nota em TERRENO, LAGOA, ÁRVORES),
+    # é a sala inteira, sem exclusão nenhuma.
     for o in bpy.data.objects:
-        o.select_set(o.type == "MESH" and e_arvore(o))
-    bpy.ops.export_scene.gltf(
-        filepath=os.path.join(BASE, "arvore.glb"),
-        export_format="GLB",
-        use_selection=True,
-        export_apply=True,
-    )
-    print("GLB_ARVORE_OK")
-
-    NOMES_LAGO = ("lagoa", "lagoa_orla", "barco")
-
-    def e_lago(o):
-        return any(o.name == n or o.name.startswith(n) for n in NOMES_LAGO)
-
-    for o in bpy.data.objects:
-        o.select_set(o.type == "MESH" and e_lago(o))
-    bpy.ops.export_scene.gltf(
-        filepath=os.path.join(BASE, "lago.glb"),
-        export_format="GLB",
-        use_selection=True,
-        export_apply=True,
-    )
-    print("GLB_LAGO_OK")
-
-    for o in bpy.data.objects:
-        o.select_set(o.type == "MESH" and not e_arvore(o) and not e_lago(o))
+        o.select_set(o.type == "MESH")
     bpy.ops.export_scene.gltf(
         filepath=os.path.join(BASE, "sala-yoga.glb"),
         export_format="GLB",

@@ -1,10 +1,9 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, type RefObject } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Environment, Lightformer, useGLTF } from "@react-three/drei";
-import { CeuPorDoSol } from "./CeuPorDoSol";
+import { useGLTF } from "@react-three/drei";
 import { Passaros } from "./Passaros";
-import { Chuva } from "./Chuva";
-import { PALETAS, RELAMPAGO, raioDaFatia, relampagoEm, type Clima, type Raio } from "@/lib/clima";
+import { ExteriorELuz } from "./ExteriorELuz";
+import { RELAMPAGO, raioDaFatia, relampagoEm, type Clima, type Raio } from "@/lib/clima";
 import { PERFIS, type Movimento, type Perfil } from "@/lib/movimento";
 import { vidroComGotas, type UniformesGota } from "@/lib/gotas";
 import { Avatares } from "./Avatares";
@@ -13,7 +12,6 @@ import { Personagens } from "./Personagens";
 import { useModeloNoChao } from "@/hooks/useModeloNoChao";
 import type { OutraPessoa, SessaoCompartilhada } from "@/hooks/useSalaCompartilhada";
 import { deveEnviarPostura, type Postura } from "@/lib/presenca";
-import { barcoEm } from "@/lib/barco";
 import type { PoseProfessor } from "@/lib/aula";
 import * as THREE from "three";
 
@@ -46,23 +44,6 @@ const RAIO_CORPO = 0.32;
 // luminária sem precisar de lista de nomes.
 const OBSTACULO = { pisavel: 0.25, teto: 1.7, largura_maxima: 6 };
 
-
-// Blender é Z para cima, glTF é Y para cima: o exportador converte (x, y, z) em
-// (x, z, -y). Estas posições vêm dos pendentes do script e já estão
-// convertidas — um em cima de cada coluna de tapetes.
-const LUMINARIAS: [number, number, number][] = [
-  [-2.3, 2.6, -0.95],
-  [0, 2.6, -0.95],
-  [2.3, 2.6, -0.95],
-];
-
-// As três velas do altar que têm ponto de luz de verdade (das cinco
-// modeladas). Posição vem do script do Blender (ALTAR + o laço das velas).
-const VELAS: [number, number, number][] = [
-  [-4.76, 0.645, -1.4],
-  [-4.76, 0.545, -1.58],
-  [-4.76, 0.545, -0.45],
-];
 
 const CIMA = new THREE.Vector3(0, 1, 0);
 
@@ -124,6 +105,11 @@ type Sala = {
   tapetes: { malha: THREE.Object3D; centro: THREE.Vector3 }[];
   /** Uniforms do vidro, para a cena avançar as gotas por quadro. */
   gotas: UniformesGota;
+  /** Todo material Standard da sala, para a iluminação por atmosfera ajustar
+   *  envMapIntensity (lib/iluminacaoScene.ts). */
+  materiais: THREE.MeshStandardMaterial[];
+  /** A cúpula de rattan dos pendentes, para brilhar um pouco à noite. */
+  materialRattan: THREE.MeshStandardMaterial | null;
 };
 
 /** Prepara a sala e extrai dela o que a navegação precisa.
@@ -203,36 +189,6 @@ function Cenario() {
  * `Perfil`) escala só a oscilação — a vela continua acesa sob movimento
  * reduzido, porque estar acesa é estado, e o que se reduz é o movimento.
  */
-function ChamaVela({
-  posicao,
-  intensidade,
-  chama,
-  fase,
-}: {
-  posicao: [number, number, number];
-  intensidade: number;
-  chama: number;
-  fase: number;
-}) {
-  const luz = useRef<THREE.PointLight>(null);
-  useFrame((estado) => {
-    if (!luz.current) return;
-    const t = estado.clock.elapsedTime;
-    const tremular = 1 + chama * (0.12 * Math.sin(t * 9 + fase) + 0.06 * Math.sin(t * 23 + fase));
-    luz.current.intensity = intensidade * tremular;
-  });
-  return (
-    <pointLight
-      ref={luz}
-      position={posicao}
-      intensity={intensidade}
-      distance={1.6}
-      decay={2}
-      color="#ff9a4a"
-    />
-  );
-}
-
 /**
  * Plantas em vaso esmaltado, modelo dela (Copilot 3D).
  *
@@ -285,173 +241,6 @@ function Plantas() {
 
 useGLTF.preload("/modelos/planta.glb", "/draco/");
 
-/**
- * Arvore do lado de fora, com balanco ao vento.
- *
- * Vem em arquivo proprio porque o pipeline de otimizacao junta malhas por
- * material e funde as cores chapadas numa paleta unica: dentro do glb da sala
- * as copas perderiam os nos individuais e passariam a dividir material com
- * montanha e cacto — animar aquilo faria a montanha balancar.
- *
- * O balanco nao e animacao exportada, e deslocamento por codigo. Cada copa
- * recebe fase propria a partir da posicao original, entao elas nunca se movem
- * em bloco; e amplitude proporcional a altura, porque o topo de uma arvore
- * balanca mais que a base. Sem essas duas coisas a copa le como bloco de
- * gelatina, nao como folhagem.
- */
-/**
- * A lagoa e o barco, na distância média.
- *
- * Existem para resolver o vazio entre o gramado e a serra: sem nada entre 8 e
- * 40 m o olho não tinha como medir profundidade, e a paisagem lia como fundo
- * pintado. A água ainda devolve a serra refletida, que é o dobro de paisagem
- * pelo mesmo custo.
- *
- * ⚠️ **Arquivo próprio, e não dentro do glb da sala** — mesma regra da árvore, e
- * pelo mesmo motivo concreto: o passo `palette` do otimizador funde as cores
- * chapadas num material só, o `join` junta as malhas e os nomes somem. Na
- * primeira tentativa os nós `lagoa` e `barco` existiam no export do Blender e
- * **não** no arquivo publicado. Aqui fora, com `--join false`, sobrevivem — e
- * custam 5,9 KB.
- */
-function Lago({ clima, amplitude }: { clima: Clima; amplitude: number }) {
-  const { scene } = useGLTF("/modelos/lago.glb", "/draco/");
-  const corAlvo = useMemo(() => new THREE.Color(PALETAS[clima].agua), [clima]);
-
-  const { raiz, pecas, agua } = useMemo((): {
-    raiz: THREE.Object3D;
-    pecas: { no: THREE.Object3D; yOriginal: number }[];
-    // Anotado à mão: a atribuição acontece dentro do `traverse`, e sem isto o
-    // TypeScript estreita o tipo para `null` e recusa a leitura de `roughness`.
-    agua: THREE.MeshStandardMaterial | null;
-  } => {
-    const raiz = scene.clone(true);
-    const pecas: { no: THREE.Object3D; yOriginal: number }[] = [];
-    let agua: THREE.MeshStandardMaterial | null = null;
-
-    raiz.traverse((o) => {
-      const m = o as THREE.Mesh;
-      if (!m.isMesh) return;
-      if (o.name.startsWith("barco")) {
-        m.castShadow = true;
-        pecas.push({ no: o, yOriginal: o.position.y });
-        return;
-      }
-      if (o.name === "lagoa") {
-        // Clonado porque o cache do useGLTF é global: mexer na rugosidade do
-        // original vazaria para qualquer outro uso do arquivo.
-        agua = (m.material as THREE.MeshStandardMaterial).clone();
-        m.material = agua;
-        // A lâmina não projeta sombra — projetaria uma mancha preta sobre o
-        // próprio gramado — mas recebe, para a serra escurecer a água ao lado.
-        m.castShadow = false;
-        m.receiveShadow = true;
-      }
-    });
-
-    return { raiz, pecas, agua };
-  }, [scene]);
-
-  useFrame((estado, delta) => {
-    const passo = Math.min(delta, 0.05);
-
-    // Posição do relógio, amplitude do perfil de movimento: sob movimento
-    // reduzido o barco fica parado na água em vez de sumir da paisagem.
-    if (pecas.length) {
-      const b = barcoEm(estado.clock.elapsedTime, amplitude);
-      for (const p of pecas) {
-        p.no.position.x = b.x;
-        p.no.position.y = p.yOriginal + b.subida;
-        p.no.rotation.y = b.giro;
-      }
-    }
-
-    // A água acompanha o clima pelo mesmo motivo que todo o resto acompanha:
-    // lâmina espelhada sob céu fechado é a combinação que denuncia o cenário.
-    // Interpolação exponencial e não corte — virar tempestade num quadro lê
-    // como falha de carregamento.
-    if (agua) {
-      // ⚠️ Os dois valores acompanham a rugosidade do material no script do
-      // Blender (0,22). Baixar aqui para quase-espelho foi o erro da primeira
-      // versão: sem reflexo de verdade em tempo real, espelho vira mancha
-      // escura. Na chuva sobe, que é a lâmina picada perdendo o brilho.
-      const alvo = clima === "chuva" ? 0.5 : 0.22;
-      agua.roughness += (alvo - agua.roughness) * (1 - Math.exp(-passo / 1.6));
-      agua.color.lerp(corAlvo, 1 - Math.exp(-passo / 1.6));
-    }
-  });
-
-  return <primitive object={raiz} />;
-}
-
-useGLTF.preload("/modelos/lago.glb", "/draco/");
-
-function Arvore({ vento }: { vento: number }) {
-  const { scene } = useGLTF("/modelos/arvore.glb", "/draco/");
-  // O vento nao salta de brisa para tempestade num quadro: ele sobe junto com
-  // o resto do clima. Comeca no valor recebido e nao em 1: sob movimento
-  // reduzido o vento chega zerado, e partir de 1 faria a copa balancar um
-  // segundo e meio na abertura justamente para quem pediu que ela nao balance.
-  const ventoAtual = useRef(vento);
-
-  const { raiz, copas } = useMemo(() => {
-    const raiz = scene.clone(true);
-    raiz.updateWorldMatrix(true, true);
-    const copas: { obj: THREE.Object3D; base: THREE.Vector3; fase: number; amp: number }[] = [];
-    const caixa = new THREE.Box3();
-    const centro = new THREE.Vector3();
-
-    raiz.traverse((o) => {
-      const m = o as THREE.Mesh;
-      if (m.isMesh) {
-        m.castShadow = true;
-        m.receiveShadow = false; // folhagem recebendo sombra de si mesma fica suja
-      }
-      if (!o.name.startsWith("copa_")) return;
-
-      // Fase e amplitude saem do CENTRO DA CAIXA, nao de o.position: o
-      // exportador assa a transformacao nos vertices e todos os nos chegam em
-      // (0,0,0). Tirando dali, as sete copas recebiam fase e amplitude
-      // identicas e balancavam em bloco, que e o oposto de folhagem.
-      caixa.setFromObject(o).getCenter(centro);
-      copas.push({
-        obj: o,
-        base: o.position.clone(),
-        fase: centro.x * 1.7 + centro.z * 2.3,
-        // Limiar em 2,9 porque as copas ficam entre 2,99 e 3,74 m — medido no
-        // Blender pela caixa, ja que transform_apply zera a localizacao. Com o
-        // 3,4 de antes so duas das sete passavam do corte e a variacao de
-        // altura sumia.
-        amp: 0.035 + Math.max(0, centro.y - 2.9) * 0.045,
-      });
-    });
-    return { raiz, copas };
-  }, [scene]);
-
-  useFrame((estado, delta) => {
-    const t = estado.clock.elapsedTime;
-    ventoAtual.current += (vento - ventoAtual.current) * (1 - Math.exp(-delta / 1.4));
-    const forca = ventoAtual.current;
-    for (const c of copas) {
-      // Duas senoides de periodo diferente: uma so soa mecanica, e vento nao
-      // tem periodo unico. A lenta faz a arvore inteira ceder, a rapida agita
-      // a folha.
-      const lento = Math.sin(t * 0.42 + c.fase);
-      const rapido = Math.sin(t * 1.35 + c.fase * 2.1);
-      // 1,4 e nao 2,2: com 2,2 a ponta da copa varria 30 cm, que le como vento
-      // firme. Aqui a folhagem so respira. Subir este numero e o caminho se um
-      // dia a cena pedir tempestade.
-      c.obj.position.x = c.base.x + (lento * 0.75 + rapido * 0.25) * c.amp * 1.4 * forca;
-      c.obj.position.z = c.base.z + Math.sin(t * 0.31 + c.fase * 0.7) * c.amp * 1.4 * forca;
-      c.obj.position.y = c.base.y + rapido * c.amp * 0.35 * forca; // vertical e Y aqui
-    }
-  });
-
-  return <primitive object={raiz} />;
-}
-
-useGLTF.preload("/modelos/arvore.glb", "/draco/");
-
 function useSala(): Sala {
   const { scene } = useGLTF("/modelos/sala-yoga.glb", "/draco/");
 
@@ -462,6 +251,12 @@ function useSala(): Sala {
     // Um material de vidro para os três panos, e não um por pano: são uniforms
     // compartilhados, então a cena avança o tempo das gotas uma vez só.
     let vidroGotas: ReturnType<typeof vidroComGotas> | null = null;
+    // Para a iluminação por atmosfera (lib/iluminacaoScene.ts) ajustar
+    // envMapIntensity de todo material da sala, e achar a cúpula de rattan
+    // dos pendentes pelo nome do objeto — não pelo nome do material, que o
+    // `optimize` do gltf-transform funde com outros chapados e renomeia.
+    const materiais: THREE.MeshStandardMaterial[] = [];
+    let materialRattan: THREE.MeshStandardMaterial | null = null;
     raiz.updateWorldMatrix(true, true);
 
     raiz.traverse((o) => {
@@ -491,6 +286,11 @@ function useSala(): Sala {
       if (vidro) {
         vidroGotas ??= vidroComGotas(mat);
         malha.material = vidroGotas.material;
+      } else if (mat && "envMapIntensity" in mat) {
+        materiais.push(mat as unknown as THREE.MeshStandardMaterial);
+        if (o.name.startsWith("pendente") && !materialRattan) {
+          materialRattan = mat as unknown as THREE.MeshStandardMaterial;
+        }
       }
 
       malha.geometry.computeBoundingBox();
@@ -543,9 +343,9 @@ function useSala(): Sala {
     tapetes.sort(
       (a, b) => Math.round(a.centro.z * 10) - Math.round(b.centro.z * 10) || a.centro.x - b.centro.x,
     );
-    // O `!` se sustenta na geometria: o glb tem vidro_frente, vidro_esq e
-    // vidro_dir, e sem vidro nenhum não há sala de vidro para navegar.
-    return { raiz, obstaculos, tapetes, gotas: vidroGotas!.uniformes };
+    // O `!` se sustenta na geometria: o glb tem vidro_frente e vidro_dir, e
+    // sem vidro nenhum não há sala de vidro para navegar.
+    return { raiz, obstaculos, tapetes, gotas: vidroGotas!.uniformes, materiais, materialRattan };
   }, [scene]);
 }
 
@@ -611,9 +411,9 @@ function Navegacao({
   posturas,
   anunciarPostura,
   clima,
-  vento,
   perfil,
-}: Props & { vento: number; perfil: Perfil }) {
+  relampago,
+}: Props & { perfil: Perfil; relampago: RefObject<number> }) {
   const { camera, gl } = useThree();
   const sala = useSala();
 
@@ -989,8 +789,13 @@ function Navegacao({
       {!souOProfessor && (
         <Personagens visivel={outras.length === 0} amplitude={perfil.amplitudeAvatar} />
       )}
-      <Lago clima={clima} amplitude={perfil.amplitudeAvatar} />
-      <Arvore vento={vento} />
+      <ExteriorELuz
+        clima={clima}
+        perfil={perfil}
+        materiais={sala.materiais}
+        materialRattan={sala.materialRattan}
+        relampago={relampago}
+      />
       <Avatares
         outras={outras}
         tapetes={sala.tapetes}
@@ -1003,82 +808,22 @@ function Navegacao({
 }
 
 /**
- * O clima manda em cinco coisas ao mesmo tempo — ceu, sol, nevoa, vento e
- * chuva — e todas atravessam devagar de uma paleta para a outra. Virar
- * tempestade num quadro le como falha de carregamento, nao como tempo mudando.
- *
- * A interpolacao mora aqui, num unico `useFrame`, porque cor de luz e distancia
- * de nevoa nao sao estado do React: mexer nelas por `setState` redesenharia a
- * arvore de componentes sessenta vezes por segundo.
+ * Sobe o relâmpago (com o critério de acessibilidade do WCAG 2.3.1, já
+ * testado em lib/clima.ts) e passa perfil e clima adiante. Céu, terreno,
+ * água, sol, pendentes e velas são todos do `ExteriorELuz`, lá dentro de
+ * `Navegacao` — portado do protótipo Claude Design em 28/09/2026.
  */
 export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
-  const paleta = PALETAS[clima];
   const perfil = PERFIS[movimento];
-  const cena = useThree((estado) => estado.scene);
-  const gl = useThree((estado) => estado.gl);
-
-  const sol = useRef<THREE.DirectionalLight>(null);
-  const hemisferio = useRef<THREE.HemisphereLight>(null);
-  const ambiente = useRef<THREE.AmbientLight>(null);
-  const luzDoRaio = useRef<THREE.DirectionalLight>(null);
   const relampago = useRef(0);
   const ultimaFatia = useRef(-1);
 
-  const alvo = useMemo(
-    () => ({
-      sol: new THREE.Color(paleta.sol.cor),
-      solDirecao: new THREE.Vector3(...paleta.sol.direcao),
-      ceu: new THREE.Color(paleta.hemisferio.ceu),
-      chao: new THREE.Color(paleta.hemisferio.chao),
-      neblina: new THREE.Color(paleta.neblina.cor),
-    }),
-    [paleta],
-  );
-  // Direção do sol também muda por atmosfera (nordeste alto de dia, leste
-  // rasante ao entardecer) — por isso é ref e lerpa junto com cor/intensidade,
-  // em vez de posição fixa. `CeuPorDoSol` lê a mesma ref para o halo acompanhar.
-  const direcaoSol = useRef(new THREE.Vector3(...paleta.sol.direcao));
-
-  useFrame((estado, delta) => {
-    const k = 1 - Math.exp(-delta / 1.2);
-
-    direcaoSol.current.lerp(alvo.solDirecao, k);
-    if (sol.current) {
-      sol.current.intensity += (paleta.sol.intensidade - sol.current.intensity) * k;
-      sol.current.color.lerp(alvo.sol, k);
-      sol.current.position.copy(direcaoSol.current);
-    }
-    if (hemisferio.current) {
-      hemisferio.current.intensity +=
-        (paleta.hemisferio.intensidade - hemisferio.current.intensity) * k;
-      hemisferio.current.color.lerp(alvo.ceu, k);
-      hemisferio.current.groundColor.lerp(alvo.chao, k);
-    }
-    if (ambiente.current) {
-      ambiente.current.intensity += (paleta.ambiente - ambiente.current.intensity) * k;
-    }
-
-    cena.environmentIntensity +=
-      (paleta.envIntensidade - cena.environmentIntensity) * k;
-    gl.toneMappingExposure += (paleta.exposicao - gl.toneMappingExposure) * k;
-
-    const neblina = cena.fog as THREE.Fog | null;
-    if (neblina) {
-      neblina.color.lerp(alvo.neblina, k);
-      neblina.near += (paleta.neblina.perto - neblina.near) * k;
-      neblina.far += (paleta.neblina.longe - neblina.far) * k;
-    }
-
+  useFrame((estado) => {
     const t = estado.clock.elapsedTime;
     // ⚠️ Criterio de acessibilidade, nao preferencia visual. Ver CLAROES_POR_RAIO
     // em lib/clima e o teste de PERFIS em lib/movimento.
     const trovoada = clima === "chuva" && perfil.relampago;
     relampago.current = trovoada ? relampagoEm(t) : 0;
-    // 3,5 e nao 7: medido com o clarao fixo em 0,8, o interior inteiro estourava
-    // para quase branco. Clarao de tela cheia e justamente o caso de risco do
-    // WCAG 2.3.1 — o brilho forte fica no ceu, que ocupa so o recorte do vidro,
-    // e a sala recebe o suficiente para o olho entender de onde veio.
-    if (luzDoRaio.current) luzDoRaio.current.intensity = relampago.current * 3.5;
 
     // Borda de subida do raio: avisa a interface uma vez por fatia, para ela
     // agendar o trovao com o atraso da distancia.
@@ -1094,98 +839,16 @@ export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
 
   return (
     <>
-      <CeuPorDoSol
-        solRef={direcaoSol}
-        paleta={paleta}
-        relampagoRef={relampago}
-        deriva={perfil.nuvens}
-      />
       {/* A revoada sai da arvore inteira em vez de ficar parada no ceu: ave
           imovel a 58 m nao le como ave, le como sujeira no vidro. */}
       {perfil.revoada && <Passaros />}
-      <Chuva
-        intensidade={paleta.chuva * perfil.chuva}
-        neblina={[paleta.neblina.perto, paleta.neblina.longe]}
-      />
-      {/* O clarao entra pelo alto e sem sombra: raio ilumina a nuvem inteira,
-          entao a luz chega difusa, sem uma direcao que projete recorte. */}
-      <directionalLight ref={luzDoRaio} position={[8, 40, -30]} intensity={0} color="#cfe2ff" />
-      {/* A névoa dá profundidade às montanhas, que sem ela ficam recortadas e
-          chapadas contra o céu. Começa longe: dentro da sala não deve aparecer. */}
-      <fog attach="fog" args={["#c98d5e", 30, 190]} />
-
-      {/* O sol do Blender não vem no .glb — mundo e luzes ficam fora do formato.
-          Estas reproduzem a iluminação do render: sol baixo e quente entrando
-          pelo vidro, mais as três luminárias do teto. */}
-      {/* O sol projeta. Com ele a 4 graus do horizonte as sombras saem longas e
-          rasantes, que é justamente o desenho do fim de tarde — mas exigem um
-          tronco ortogonal largo, senão elas somem no meio da sala. */}
-      <directionalLight
-        ref={sol}
-        position={direcaoSol.current.toArray()}
-        intensity={3.4}
-        color="#ffa860"
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-14}
-        shadow-camera-right={14}
-        shadow-camera-top={14}
-        shadow-camera-bottom={-14}
-        shadow-camera-near={1}
-        shadow-camera-far={80}
-        shadow-bias={-0.0004}
-        // normalBias em vez de so bias: a geometria e fina (tapete de 0,6 cm,
-        // painel de 2 cm) e o deslocamento constante a faria vazar a propria
-        // sombra. Valores do protótipo aprovado (28/09).
-        shadow-normalBias={0.03}
-      />
-      {/* A cor de baixo da hemisférica pinta toda superfície virada para o chão —
-          e a face inferior do teto é uma delas. Com marrom escuro ali, o teto
-          ficava pintado de marrom escuro de propósito. Agora ela devolve a cor
-          do piso de madeira iluminado, que é o que uma sala real reflete para
-          cima e que o tempo real não calcula sozinho. */}
-      <hemisphereLight ref={hemisferio} args={["#bcd4f0", "#c69a70", 0.95]} />
-      <ambientLight ref={ambiente} intensity={0.35} />
-
-      {LUMINARIAS.map((p, i) => (
-        <group key={i}>
-          <pointLight position={p} intensity={paleta.pendentes} distance={7} decay={2} color="#ffcc99" />
-          {/* Poça de luz no teto: o corpo do pendente é rattan, não emissivo —
-              esta é a luz que acende a laje logo acima e quebra a faixa chapada. */}
-          <pointLight
-            position={[p[0], p[1] + 0.18, p[2]]}
-            intensity={paleta.pendentes * 0.27}
-            distance={2.6}
-            decay={2}
-            color="#ffd9ac"
-          />
-        </group>
-      ))}
-
-      {/* Velas do altar: chama acesa sob qualquer perfil (estado, não
-          movimento) — só o tremular respeita movimento reduzido. */}
-      {VELAS.map((p, i) => (
-        <ChamaVela key={i} posicao={p} intensidade={paleta.velas} chama={perfil.chama} fase={i * 2.1} />
-      ))}
-
-      {/* Iluminação por imagem, gerada em memória. É o que faz a madeira e o
-          metal responderem como material em vez de cor lisa — sem ela a sala
-          fica com o aspecto chapado que o render do Blender não tem. Nada de
-          CDN: os refletores são geometria, e o mapa é montado no próprio
-          navegador. */}
-      <Environment resolution={128}>
-        <Lightformer intensity={2.4} position={[-6, 2, -9]} scale={[14, 5, 1]} color="#ffb271" />
-        <Lightformer intensity={1.1} position={[0, 6, 0]} scale={[10, 10, 1]} rotation-x={Math.PI / 2} color="#cfe0f5" />
-        <Lightformer intensity={0.7} position={[7, 1.5, 4]} scale={[8, 4, 1]} color="#8fa9c4" />
-      </Environment>
-
       <Navegacao
         {...props}
         clima={clima}
         aoRaio={aoRaio}
         movimento={movimento}
-        vento={paleta.vento * perfil.copas}
         perfil={perfil}
+        relampago={relampago}
       />
     </>
   );

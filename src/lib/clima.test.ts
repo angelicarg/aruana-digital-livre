@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   CLAROES_POR_RAIO,
-  PALETAS,
   RELAMPAGO,
   atrasoDoTrovao,
   raioDaFatia,
@@ -101,23 +100,5 @@ describe("relâmpago e WCAG 2.3.1", () => {
     const raio = raioDaFatia(fatia);
     expect(raio.inicio).toBeGreaterThan((fatia + 1) * RELAMPAGO.fatia - 0.3);
     expect(relampagoEm(raio.inicio + 0.16)).toBeGreaterThan(0.01);
-  });
-});
-
-describe("paletas", () => {
-  it("fecha a vista na chuva em vez de mexer na geometria", () => {
-    expect(PALETAS.chuva.neblina.longe).toBeLessThan(PALETAS.por_do_sol.neblina.longe);
-    expect(PALETAS.chuva.neblina.perto).toBeLessThan(PALETAS.por_do_sol.neblina.perto);
-  });
-
-  it("apaga o sol sem zerar, para a sala não achatar", () => {
-    expect(PALETAS.chuva.sol.intensidade).toBeLessThan(PALETAS.por_do_sol.sol.intensidade / 4);
-    expect(PALETAS.chuva.sol.intensidade).toBeGreaterThan(0);
-  });
-
-  it("só desenha gota e vento forte na chuva", () => {
-    expect(PALETAS.por_do_sol.chuva).toBe(0);
-    expect(PALETAS.chuva.chuva).toBeGreaterThan(0);
-    expect(PALETAS.chuva.vento).toBeGreaterThan(PALETAS.por_do_sol.vento);
   });
 });
