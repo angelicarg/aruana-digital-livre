@@ -54,6 +54,9 @@ export type Perfil = {
    *  também não é fonte de desconforto vestibular — o risco ali é campo largo e
    *  câmera, não gesto pequeno e distante. Então: reduzido, não removido. */
   amplitudeAvatar: number;
+  /** Multiplica a oscilação da chama das velas do altar. A vela continua acesa
+   *  sob movimento reduzido (estado, não movimento) — só o tremular some. */
+  chama: number;
 };
 
 export const PERFIS: Record<Movimento, Perfil> = {
@@ -69,6 +72,7 @@ export const PERFIS: Record<Movimento, Perfil> = {
     tauPasso: 0.19,
     escorrimento: 1,
     amplitudeAvatar: 1,
+    chama: 1,
   },
   reduzido: {
     chuva: 0,
@@ -80,6 +84,7 @@ export const PERFIS: Record<Movimento, Perfil> = {
     tauPasso: 0,
     escorrimento: 0,
     amplitudeAvatar: 0.45,
+    chama: 0,
   },
 };
 

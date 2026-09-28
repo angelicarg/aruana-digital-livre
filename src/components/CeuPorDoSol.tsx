@@ -105,7 +105,11 @@ const FRAGMENTO = /* glsl */ `
 `;
 
 type Props = {
-  sol: [number, number, number];
+  /** Direção do sol, que agora muda por atmosfera (nordeste alto de dia, leste
+   *  rasante ao entardecer). Por referência, como `relampagoRef`: muda a cada
+   *  quadro (lerp em `CenaSala`), e passar por propriedade redesenharia a
+   *  árvore inteira sessenta vezes por segundo por causa de um uniform. */
+  solRef: RefObject<THREE.Vector3>;
   paleta: Paleta;
   /** Brilho do clarao, 0 a 1.
    *
@@ -121,7 +125,7 @@ type Props = {
  *  vez le como falha de carregamento; o tempo mudando devagar le como tempo. */
 const TRANSICAO = 3.5;
 
-export function CeuPorDoSol({ sol, paleta, relampagoRef, deriva }: Props) {
+export function CeuPorDoSol({ solRef, paleta, relampagoRef, deriva }: Props) {
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -137,14 +141,15 @@ export function CeuPorDoSol({ sol, paleta, relampagoRef, deriva }: Props) {
           uMeio: { value: new THREE.Color("#9fb0bd") },
           uZenite: { value: new THREE.Color("#33455f") },
           uBrilho: { value: new THREE.Color("#ffd7a3") },
-          uSol: { value: new THREE.Vector3(...sol) },
+          uSol: { value: new THREE.Vector3(...solRef.current.toArray()) },
           uNuvem: { value: new THREE.Color("#cbd3dc") },
           uTempo: { value: 0 },
           uCobertura: { value: 1 },
           uRelampago: { value: 0 },
         },
       }),
-    [sol],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   const alvo = useMemo(
@@ -177,6 +182,9 @@ export function CeuPorDoSol({ sol, paleta, relampagoRef, deriva }: Props) {
     (u.uBrilho.value as THREE.Color).lerp(alvo.brilho, k);
     (u.uNuvem.value as THREE.Color).lerp(alvo.nuvem, k);
     u.uCobertura.value += (paleta.cobertura - u.uCobertura.value) * k;
+    // A direção já chega lerpada de CenaSala — aqui é só copiar para o halo
+    // do sol acompanhar a mesma posição da luz direcional.
+    (u.uSol.value as THREE.Vector3).copy(solRef.current);
 
     // O clarao nao e interpolado: ele e o unico valor da cena que precisa
     // chegar inteiro no quadro em que acontece.

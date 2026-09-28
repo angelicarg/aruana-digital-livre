@@ -80,6 +80,7 @@ describe("perfil de movimento", () => {
       tauPasso: 0.19,
       escorrimento: 1,
       amplitudeAvatar: 1,
+      chama: 1,
     });
   });
 });

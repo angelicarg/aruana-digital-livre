@@ -1,16 +1,19 @@
 /**
- * Clima da sala de yoga: pôr do sol ou chuva.
+ * Clima da sala de yoga: dia, entardecer ou chuva.
  *
- * Um controle só muda céu, luz, névoa, vento e som de uma vez. Separar em
+ * Um controle só muda céu, sol, névoa, vento e som de uma vez. Separar em
  * botões independentes deixaria alguém montar chuva com céu alaranjado, que é
  * a combinação que denuncia o cenário na hora.
  *
  * Aqui ficam só números e cores — nada de three.js. A cena interpola entre a
  * paleta atual e a de destino; nada troca de valor de um quadro para o outro,
  * porque virar tempestade num piscar lê como bug, não como tempo mudando.
+ *
+ * Valores portados do protótipo "Sala de Yoga Tropical" (Claude Design,
+ * 28/09/2026) — três atmosferas com sol, névoa, pendentes e velas próprios.
  */
 
-export type Clima = "por_do_sol" | "chuva";
+export type Clima = "dia" | "por_do_sol" | "chuva";
 
 export type Paleta = {
   /** As cinco cores do shader do céu. */
@@ -23,7 +26,7 @@ export type Paleta = {
   cobertura: number;
   neblina: { cor: string; perto: number; longe: number };
   /** O sol direcional — o que projeta sombra. */
-  sol: { intensidade: number; cor: string };
+  sol: { intensidade: number; cor: string; direcao: [number, number, number] };
   hemisferio: { ceu: string; chao: string; intensidade: number };
   ambiente: number;
   /** Peso da iluminação por imagem, que é montada com refletores quentes do
@@ -35,31 +38,67 @@ export type Paleta = {
   vento: number;
   /** Quantidade de gotas desenhadas. Zero desliga a chuva por completo. */
   chuva: number;
+  /** Intensidade dos três pendentes de rattan do teto. Zero é dia claro — a
+   *  sala não precisa de luz artificial acesa com o sol entrando. */
+  pendentes: number;
+  /** Intensidade da chama das velas do altar. Nunca zero — a vela acesa é
+   *  estado, não movimento (o tremular é que respeita movimento reduzido). */
+  velas: number;
+  /** Cor da água da lagoa. */
+  agua: string;
+  /** Exposição do tone mapping (ACESFilmic). Dia expõe mais, chuva menos. */
+  exposicao: number;
 };
 
 export const PALETAS: Record<Clima, Paleta> = {
+  dia: {
+    horizonte: "#e6efe6",
+    meio: "#c7dfe0",
+    zenite: "#8fc3d9",
+    brilho: "#fff6e0",
+    nuvem: "#eef2ef",
+    cobertura: 0.55,
+    neblina: { cor: "#dce8e2", perto: 60, longe: 420 },
+    sol: { intensidade: 3.0, cor: "#fff1dc", direcao: [9, 8, -12] },
+    hemisferio: { ceu: "#dfeeff", chao: "#8a7a5a", intensidade: 1.1 },
+    ambiente: 0.4,
+    envIntensidade: 0.45,
+    vento: 1,
+    chuva: 0,
+    pendentes: 0,
+    velas: 0.3,
+    agua: "#3f8a8c",
+    exposicao: 1.0,
+  },
+  // A chave interna continua "por_do_sol" (mexer nela é mexer em meia dúzia de
+  // outros arquivos para nenhum ganho); o rótulo que a pessoa vê é
+  // "Entardecer", como no protótipo.
   por_do_sol: {
-    horizonte: "#e9b07a",
-    meio: "#9fb0bd",
-    zenite: "#33455f",
+    horizonte: "#f3b37a",
+    meio: "#8a7291",
+    zenite: "#4a5d7a",
     brilho: "#ffd7a3",
     nuvem: "#cbd3dc",
     cobertura: 1,
-    neblina: { cor: "#c98d5e", perto: 30, longe: 190 },
-    sol: { intensidade: 3.4, cor: "#ffa860" },
-    hemisferio: { ceu: "#bcd4f0", chao: "#c69a70", intensidade: 0.95 },
+    neblina: { cor: "#e0a987", perto: 50, longe: 380 },
+    sol: { intensidade: 2.6, cor: "#ffa45c", direcao: [16, 3.4, -6] },
+    hemisferio: { ceu: "#ffc9a0", chao: "#4a3a2a", intensidade: 0.5 },
     ambiente: 0.35,
-    envIntensidade: 1,
+    envIntensidade: 0.18,
     vento: 1,
     chuva: 0,
+    pendentes: 6,
+    velas: 1.2,
+    agua: "#3d5f6e",
+    exposicao: 1.05,
   },
   chuva: {
     // Cinza levemente azulado e quase sem separação entre horizonte e zênite:
     // céu carregado não tem gradiente, é justamente a ausência dele que o faz
     // parecer baixo e pesado.
-    horizonte: "#9aa3ab",
+    horizonte: "#9aa2a4",
     meio: "#7e878f",
-    zenite: "#5c666f",
+    zenite: "#5b646c",
     brilho: "#b9c0c6",
     nuvem: "#6d757c",
     // Acima de 1 porque o limiar do shader é calibrado para céu limpo: sem
@@ -67,17 +106,19 @@ export const PALETAS: Record<Clima, Paleta> = {
     cobertura: 2.6,
     // Névoa mais perto e mais fechada: chuva encurta o alcance da vista, e é o
     // que apaga as montanhas sem precisar mexer na geometria.
-    neblina: { cor: "#8d959c", perto: 14, longe: 110 },
+    neblina: { cor: "#959d9f", perto: 12, longe: 200 },
     // O sol não some de todo — vira a claridade difusa que atravessa a nuvem,
     // e é ela que ainda dá alguma sombra ao chão. Zerar aqui achata a sala.
-    sol: { intensidade: 0.55, cor: "#aebac6" },
-    // O chão continua sendo madeira, então a cor de baixo não vira cinza puro —
-    // mas puxada para o frio, senão o teto fica bronzeado sob céu fechado.
-    hemisferio: { ceu: "#9fb2c4", chao: "#6d6862", intensidade: 1.05 },
+    sol: { intensidade: 0.5, cor: "#d6dee6", direcao: [4, 14, -8] },
+    hemisferio: { ceu: "#b4bec4", chao: "#3d3a34", intensidade: 0.65 },
     ambiente: 0.5,
-    envIntensidade: 0.45,
+    envIntensidade: 0.25,
     vento: 2.8,
     chuva: 1,
+    pendentes: 4,
+    velas: 1.0,
+    agua: "#4d6264",
+    exposicao: 0.95,
   },
 };
 
@@ -86,14 +127,17 @@ export const PALETAS: Record<Clima, Paleta> = {
 /* -------------------------------------------------------------------------- */
 
 export const RELAMPAGO = {
-  /** Um raio por fatia de tempo, em segundo sorteado dentro dela. */
-  fatia: 26,
+  /** Um raio por fatia de tempo, em segundo sorteado dentro dela. Fatia de
+   *  12 s dá intervalo típico de 7 a 17 s entre raios, como no protótipo. */
+  fatia: 12,
   /** Constante de queda do clarão principal, em segundos. */
   queda: 0.055,
   /** Atraso e força do segundo clarão. */
   eco: { atraso: 0.15, forca: 0.55, queda: 0.045 },
-  /** Distância do raio, em metros — define força do clarão e atraso do trovão. */
-  distancia: { perto: 380, longe: 4200 },
+  /** Distância do raio, em metros — define força do clarão e atraso do
+   *  trovão. Faixa calibrada para o trovão chegar entre 0,4 e 2 s depois do
+   *  clarão (140/343 ≈ 0,41 s; 680/343 ≈ 1,98 s), como no protótipo. */
+  distancia: { perto: 140, longe: 680 },
   /** Velocidade do som, para o atraso do trovão. */
   som: 343,
 } as const;

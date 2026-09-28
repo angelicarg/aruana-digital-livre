@@ -64,7 +64,8 @@ export const ambientesDe = (
 ];
 
 export const CLIMAS: { id: Clima; nome: string; descricao: string }[] = [
-  { id: "por_do_sol", nome: "Pôr do sol", descricao: "céu aberto, sol baixo e pássaros" },
+  { id: "dia", nome: "Dia", descricao: "céu claro, sol alto e pássaros" },
+  { id: "por_do_sol", nome: "Entardecer", descricao: "céu aberto, sol baixo e pássaros" },
   { id: "chuva", nome: "Chuva", descricao: "céu fechado, vento forte e trovão ao longe" },
 ];
 
@@ -76,7 +77,7 @@ function useAmbientAudio() {
   const [ambiente, setAmbiente] = useState<Ambiente>("harmonia");
   const ambienteRef = useRef<Ambiente>("harmonia");
   const passaroRef = useRef<number | null>(null);
-  const climaRef = useRef<Clima>("por_do_sol");
+  const climaRef = useRef<Clima>("dia");
   const trovaoRef = useRef<number[]>([]);
 
   const ensureContext = () => {
@@ -223,7 +224,7 @@ function useAmbientAudio() {
   const agendarPassaros = (ctx: AudioContext, destino: GainNode) => {
     const proximo = () => {
       passaroRef.current = window.setTimeout(() => {
-        if (ambienteRef.current !== "natureza" || climaRef.current !== "por_do_sol") return;
+        if (ambienteRef.current !== "natureza" || climaRef.current === "chuva") return;
         cantar(ctx, destino);
         proximo();
       }, 4000 + Math.random() * 11000);
@@ -1280,7 +1281,7 @@ function SalaYogaPage() {
   const [totalTapetes, setTotalTapetes] = useState(0);
   const { volume, setVolume, toggleMute, tocarSino, ambiente, trocarAmbiente, aoRaio, avisarClima } =
     useAmbientAudio();
-  const [clima, setClima] = useState<Clima>("por_do_sol");
+  const [clima, setClima] = useState<Clima>("dia");
   // Comeca na preferencia do sistema, mas nao termina nela: ha quem precise e
   // nunca tenha mexido no ajuste do sistema, e ha quem o tenha ligado no
   // aparelho inteiro e queira a sala completa mesmo assim. Por isso o controle
@@ -1450,7 +1451,10 @@ function SalaYogaPage() {
     <div ref={containerRef} className="relative h-dvh w-full overflow-hidden bg-[#1a1512]">
       {mounted && entrou && (
         <Canvas
-          camera={{ position: [0, 1.6, 2.8], fov: 60 }}
+          // FOV 50° (era 60°) e posição de entrada da sala maior de 28/09 — a
+          // Navegacao substitui isso no primeiro quadro, mas alinhado evita um
+          // salto visível antes da hidratação.
+          camera={{ position: [3.4, 1.6, 3.4], fov: 50 }}
           dpr={[1, 1.75]}
           gl={{ antialias: true }}
           // Sombra é o que assenta os objetos no chão; sem ela tudo parece

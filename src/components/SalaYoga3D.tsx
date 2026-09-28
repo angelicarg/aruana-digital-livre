@@ -9,6 +9,7 @@ import { PERFIS, type Movimento, type Perfil } from "@/lib/movimento";
 import { vidroComGotas, type UniformesGota } from "@/lib/gotas";
 import { Avatares } from "./Avatares";
 import { Professor, PROFESSOR } from "./Professor";
+import { Personagens } from "./Personagens";
 import { useModeloNoChao } from "@/hooks/useModeloNoChao";
 import type { OutraPessoa, SessaoCompartilhada } from "@/hooks/useSalaCompartilhada";
 import { deveEnviarPostura, type Postura } from "@/lib/presenca";
@@ -22,9 +23,10 @@ import * as THREE from "three";
  *  React causaria uma re-renderização por frame. */
 export const controleSala = { frente: 0, lado: 0 };
 
-// A sala tem 9 x 7,5 m. O passeio para meio metro das paredes: encostar o olho
-// no vidro atravessa o plano e mostra o lado de fora da geometria.
-const LIMITE = { x: 4.0, z: 3.2 };
+// A sala tem 10 x 8 m (28/09/2026). O passeio para a 30 cm das paredes — como
+// no protótipo — encostar o olho no vidro atravessa o plano e mostra o lado de
+// fora da geometria.
+const LIMITE = { x: 4.7, z: 3.7 };
 const ALTURA_OLHOS = 1.6;
 const ALTURA_SENTADO = 0.95; // olhos de quem está de pernas cruzadas no chão
 const VELOCIDADE = 2.2; // m/s — passo de caminhada tranquila
@@ -46,15 +48,21 @@ const OBSTACULO = { pisavel: 0.25, teto: 1.7, largura_maxima: 6 };
 
 
 // Blender é Z para cima, glTF é Y para cima: o exportador converte (x, y, z) em
-// (x, z, -y). Estas posições vêm das luminárias do script e já estão convertidas.
+// (x, z, -y). Estas posições vêm dos pendentes do script e já estão
+// convertidas — um em cima de cada coluna de tapetes.
 const LUMINARIAS: [number, number, number][] = [
-  [-3, 2.85, 0.94],
-  [0, 2.85, 0.94],
-  [3, 2.85, 0.94],
+  [-2.3, 2.6, -0.95],
+  [0, 2.6, -0.95],
+  [2.3, 2.6, -0.95],
 ];
 
-// O sol está baixo e do lado do vidro (-Z), que é para onde a paisagem aparece.
-const SOL: [number, number, number] = [-26, 3.2, -38];
+// As três velas do altar que têm ponto de luz de verdade (das cinco
+// modeladas). Posição vem do script do Blender (ALTAR + o laço das velas).
+const VELAS: [number, number, number][] = [
+  [-4.76, 0.645, -1.4],
+  [-4.76, 0.545, -1.58],
+  [-4.76, 0.545, -0.45],
+];
 
 const CIMA = new THREE.Vector3(0, 1, 0);
 
@@ -188,6 +196,44 @@ function Cenario() {
 }
 
 /**
+ * Chama de uma vela do altar: PointLight + leve tremular.
+ *
+ * A cera e o pavio são geometria do `.glb` (script do Blender); só a luz e o
+ * bruxulear vivem em código, como a lanterna de `Cenario()`. `chama` (de
+ * `Perfil`) escala só a oscilação — a vela continua acesa sob movimento
+ * reduzido, porque estar acesa é estado, e o que se reduz é o movimento.
+ */
+function ChamaVela({
+  posicao,
+  intensidade,
+  chama,
+  fase,
+}: {
+  posicao: [number, number, number];
+  intensidade: number;
+  chama: number;
+  fase: number;
+}) {
+  const luz = useRef<THREE.PointLight>(null);
+  useFrame((estado) => {
+    if (!luz.current) return;
+    const t = estado.clock.elapsedTime;
+    const tremular = 1 + chama * (0.12 * Math.sin(t * 9 + fase) + 0.06 * Math.sin(t * 23 + fase));
+    luz.current.intensity = intensidade * tremular;
+  });
+  return (
+    <pointLight
+      ref={luz}
+      position={posicao}
+      intensity={intensidade}
+      distance={1.6}
+      decay={2}
+      color="#ff9a4a"
+    />
+  );
+}
+
+/**
  * Plantas em vaso esmaltado, modelo dela (Copilot 3D).
  *
  * Substituíram os cactos, que nasciam no `.glb` da sala. Três destas quatro
@@ -213,11 +259,13 @@ export const PLANTAS = {
   /** Raio do que é sólido: o vaso, medido no render (~0,41 m de diâmetro na
    *  altura 0,75), e não a copa — passar raspando na folha é de se esperar. */
   raio: 0.24,
+  // Duas flanqueiam o altar na parede oeste (28/09) — como as bananeiras do
+  // protótipo, só que com o vaso esmaltado que já existe, sem modelo novo.
   onde: [
-    { pos: [3.45, 0, 1.9], giro: 0.6, escala: 0.96 },
-    { pos: [-3.6, 0, -2.85], giro: -1.1, escala: 1.05 },
-    { pos: [3.6, 0, -2.85], giro: 2.3, escala: 0.9 },
-    { pos: [3.6, 0, -0.6], giro: 3.9, escala: 1.0 },
+    { pos: [-4.55, 0, -2.25], giro: 0.6, escala: 1.05 },
+    { pos: [-4.55, 0, 0.25], giro: -1.1, escala: 1.0 },
+    { pos: [4.4, 0, -3.3], giro: 2.3, escala: 0.9 },
+    { pos: [4.4, 0, 3.3], giro: 3.9, escala: 1.0 },
   ] as { pos: [number, number, number]; giro: number; escala: number }[],
 };
 
@@ -268,6 +316,7 @@ useGLTF.preload("/modelos/planta.glb", "/draco/");
  */
 function Lago({ clima, amplitude }: { clima: Clima; amplitude: number }) {
   const { scene } = useGLTF("/modelos/lago.glb", "/draco/");
+  const corAlvo = useMemo(() => new THREE.Color(PALETAS[clima].agua), [clima]);
 
   const { raiz, pecas, agua } = useMemo((): {
     raiz: THREE.Object3D;
@@ -328,6 +377,7 @@ function Lago({ clima, amplitude }: { clima: Clima; amplitude: number }) {
       // escura. Na chuva sobe, que é a lâmina picada perdendo o brilho.
       const alvo = clima === "chuva" ? 0.5 : 0.22;
       agua.roughness += (alvo - agua.roughness) * (1 - Math.exp(-passo / 1.6));
+      agua.color.lerp(corAlvo, 1 - Math.exp(-passo / 1.6));
     }
   });
 
@@ -657,12 +707,15 @@ function Navegacao({
       giro.current.yaw = Math.PI;
       giro.current.pitch = -0.08;
     } else {
-      // Entrada perto da porta, olhando para a paisagem com o queixo um pouco
-      // baixo: de frente e na horizontal os tapetes caem abaixo do quadro, e a
-      // instrução manda tocar num tapete que ninguém está vendo.
-      camera.position.set(0, ALTURA_OLHOS, 2.8);
+      // Entrada perto da porta (28/09: sala maior, porta a leste), olhando na
+      // direção do altar e da paisagem com o queixo um pouco baixo — de frente
+      // e na horizontal os tapetes caem abaixo do quadro. Altura real de quem
+      // está em pé (1,6 m), não a câmera alta do protótipo (que usava
+      // OrbitControls, sem esse compromisso).
+      camera.position.set(3.4, ALTURA_OLHOS, 3.4);
       camera.rotation.order = "YXZ";
-      giro.current.pitch = -0.14;
+      giro.current.yaw = 0.6;
+      giro.current.pitch = -0.12;
     }
 
     const tela = gl.domElement;
@@ -926,10 +979,16 @@ function Navegacao({
           planta, e eles aparecem quando chegarem. */}
       <Suspense fallback={null}>
         <Plantas />
-        {!souOProfessor && (
+        {/* Sozinho (outras.length === 0), a professora e a turma são o elenco
+            de ambientação; com gente de verdade, some o elenco e volta o
+            modelo real do professor — nunca os dois ao mesmo tempo. */}
+        {!souOProfessor && outras.length > 0 && (
           <Professor sessao={sessao} amplitude={perfil.amplitudeAvatar} poseForcada={poseProfessor} />
         )}
       </Suspense>
+      {!souOProfessor && (
+        <Personagens visivel={outras.length === 0} amplitude={perfil.amplitudeAvatar} />
+      )}
       <Lago clima={clima} amplitude={perfil.amplitudeAvatar} />
       <Arvore vento={vento} />
       <Avatares
@@ -956,6 +1015,7 @@ export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
   const paleta = PALETAS[clima];
   const perfil = PERFIS[movimento];
   const cena = useThree((estado) => estado.scene);
+  const gl = useThree((estado) => estado.gl);
 
   const sol = useRef<THREE.DirectionalLight>(null);
   const hemisferio = useRef<THREE.HemisphereLight>(null);
@@ -967,19 +1027,26 @@ export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
   const alvo = useMemo(
     () => ({
       sol: new THREE.Color(paleta.sol.cor),
+      solDirecao: new THREE.Vector3(...paleta.sol.direcao),
       ceu: new THREE.Color(paleta.hemisferio.ceu),
       chao: new THREE.Color(paleta.hemisferio.chao),
       neblina: new THREE.Color(paleta.neblina.cor),
     }),
     [paleta],
   );
+  // Direção do sol também muda por atmosfera (nordeste alto de dia, leste
+  // rasante ao entardecer) — por isso é ref e lerpa junto com cor/intensidade,
+  // em vez de posição fixa. `CeuPorDoSol` lê a mesma ref para o halo acompanhar.
+  const direcaoSol = useRef(new THREE.Vector3(...paleta.sol.direcao));
 
   useFrame((estado, delta) => {
     const k = 1 - Math.exp(-delta / 1.2);
 
+    direcaoSol.current.lerp(alvo.solDirecao, k);
     if (sol.current) {
       sol.current.intensity += (paleta.sol.intensidade - sol.current.intensity) * k;
       sol.current.color.lerp(alvo.sol, k);
+      sol.current.position.copy(direcaoSol.current);
     }
     if (hemisferio.current) {
       hemisferio.current.intensity +=
@@ -993,6 +1060,7 @@ export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
 
     cena.environmentIntensity +=
       (paleta.envIntensidade - cena.environmentIntensity) * k;
+    gl.toneMappingExposure += (paleta.exposicao - gl.toneMappingExposure) * k;
 
     const neblina = cena.fog as THREE.Fog | null;
     if (neblina) {
@@ -1027,7 +1095,7 @@ export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
   return (
     <>
       <CeuPorDoSol
-        sol={SOL}
+        solRef={direcaoSol}
         paleta={paleta}
         relampagoRef={relampago}
         deriva={perfil.nuvens}
@@ -1054,7 +1122,7 @@ export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
           tronco ortogonal largo, senão elas somem no meio da sala. */}
       <directionalLight
         ref={sol}
-        position={SOL}
+        position={direcaoSol.current.toArray()}
         intensity={3.4}
         color="#ffa860"
         castShadow
@@ -1064,10 +1132,12 @@ export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
         shadow-camera-top={14}
         shadow-camera-bottom={-14}
         shadow-camera-near={1}
-        shadow-camera-far={90}
-        // normalBias em vez de bias: a geometria é fina (tapete de 5 cm, painel
-        // de 2 cm) e o deslocamento constante a faria vazar a própria sombra.
-        shadow-normalBias={0.04}
+        shadow-camera-far={80}
+        shadow-bias={-0.0004}
+        // normalBias em vez de so bias: a geometria e fina (tapete de 0,6 cm,
+        // painel de 2 cm) e o deslocamento constante a faria vazar a propria
+        // sombra. Valores do protótipo aprovado (28/09).
+        shadow-normalBias={0.03}
       />
       {/* A cor de baixo da hemisférica pinta toda superfície virada para o chão —
           e a face inferior do teto é uma delas. Com marrom escuro ali, o teto
@@ -1079,18 +1149,23 @@ export function CenaSala({ clima, aoRaio, movimento, ...props }: Props) {
 
       {LUMINARIAS.map((p, i) => (
         <group key={i}>
-          <pointLight position={p} intensity={9} distance={9} decay={2} color="#ffcc99" />
-          {/* Poça de luz no teto: o corpo da luminária é emissivo, mas emissivo
-              não ilumina o vizinho sem luz indireta. Esta acende a laje logo
-              acima e quebra a faixa chapada. */}
+          <pointLight position={p} intensity={paleta.pendentes} distance={7} decay={2} color="#ffcc99" />
+          {/* Poça de luz no teto: o corpo do pendente é rattan, não emissivo —
+              esta é a luz que acende a laje logo acima e quebra a faixa chapada. */}
           <pointLight
             position={[p[0], p[1] + 0.18, p[2]]}
-            intensity={2.4}
+            intensity={paleta.pendentes * 0.27}
             distance={2.6}
             decay={2}
             color="#ffd9ac"
           />
         </group>
+      ))}
+
+      {/* Velas do altar: chama acesa sob qualquer perfil (estado, não
+          movimento) — só o tremular respeita movimento reduzido. */}
+      {VELAS.map((p, i) => (
+        <ChamaVela key={i} posicao={p} intensidade={paleta.velas} chama={perfil.chama} fase={i * 2.1} />
       ))}
 
       {/* Iluminação por imagem, gerada em memória. É o que faz a madeira e o

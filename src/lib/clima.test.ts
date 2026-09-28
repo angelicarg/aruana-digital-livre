@@ -55,14 +55,16 @@ describe("relâmpago e WCAG 2.3.1", () => {
   });
 
   it("deixa o céu apagado quase o tempo todo", () => {
-    // Clarão contínuo cansa e vira estroboscópio. Aqui: menos de 1% do tempo.
+    // Clarão contínuo cansa e vira estroboscópio. A fatia caiu de 26 para 12 s
+    // em 28/09 (raio a cada 7–17 s, como no protótipo), então o teto subiu na
+    // mesma proporção — ainda assim o céu fica apagado a maior parte do tempo.
     let acesos = 0;
     let total = 0;
     for (let t = 0; t < 400; t += 0.01) {
       total++;
       if (relampagoEm(t) >= 0.05) acesos++;
     }
-    expect(acesos / total).toBeLessThan(0.01);
+    expect(acesos / total).toBeLessThan(0.025);
   });
 
   it("faz o trovão do raio distante demorar mais que o do perto", () => {
@@ -70,10 +72,10 @@ describe("relâmpago e WCAG 2.3.1", () => {
     const forte = raios.reduce((a, b) => (a.forca > b.forca ? a : b));
     const fraco = raios.reduce((a, b) => (a.forca < b.forca ? a : b));
     expect(atrasoDoTrovao(forte)).toBeLessThan(atrasoDoTrovao(fraco));
-    // Nem instantâneo nem eterno: entre 1 e 13 segundos.
+    // Recalibrado em 28/09 para bater com o protótipo: 0,4 a 2 s.
     for (const raio of raios) {
-      expect(atrasoDoTrovao(raio)).toBeGreaterThan(1);
-      expect(atrasoDoTrovao(raio)).toBeLessThan(13);
+      expect(atrasoDoTrovao(raio)).toBeGreaterThan(0.35);
+      expect(atrasoDoTrovao(raio)).toBeLessThan(2.1);
     }
   });
 
