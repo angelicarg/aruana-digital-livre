@@ -345,12 +345,12 @@ export function SalaDeEspera({
                     <img
                       src={miniaturas.get(f)}
                       alt=""
-                      width={44}
-                      height={44}
-                      className="h-11 w-11 rounded-lg bg-black/25 object-cover"
+                      width={52}
+                      height={52}
+                      className="h-[52px] w-[52px] rounded-lg bg-black/25 object-cover"
                     />
                   ) : (
-                    <span className="grid h-11 w-11 place-items-center">
+                    <span className="grid h-[52px] w-[52px] place-items-center">
                       <span
                         aria-hidden="true"
                         className="h-3.5 w-3.5 rounded-full"

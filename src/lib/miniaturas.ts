@@ -46,16 +46,26 @@ export async function gerarMiniaturas(estilos: readonly string[]): Promise<Map<s
   contorno.position.set(-3, 2.5, -3);
   cena.add(contorno);
 
-  // Da cintura para cima: é o rosto e o acessório que distinguem uma criatura.
-  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 20);
-  camera.position.set(0.35, 1.36, 1.1);
-  camera.lookAt(0, 1.16, 0);
+  // Do peito para cima: é o rosto e o acessório que distinguem uma criatura.
+  const FOV = 30;
+  const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 20);
+  /** Altura, em metros, do trecho que cabe no quadro. */
+  const TRECHO = 0.85;
+  const distancia = TRECHO / 2 / Math.tan((FOV / 2) * (Math.PI / 180));
 
   try {
     for (const estilo of estilos) {
       const avatar = createAvatar(THREE, { style: estilo });
       avatar.applyPose("emPe");
       cena.add(avatar.group);
+      // Enquadra pelo topo real de cada criatura (chifre, folhas, chapéu têm
+      // alturas diferentes) e pelo centro dela em X, para não sair cortada
+      // nem fora do meio.
+      const caixa = new THREE.Box3().setFromObject(avatar.group);
+      const centroX = (caixa.min.x + caixa.max.x) / 2;
+      const alvoY = caixa.max.y - TRECHO / 2 + 0.06;
+      camera.position.set(centroX + distancia * 0.3, alvoY + 0.05, distancia * 0.95);
+      camera.lookAt(centroX, alvoY, 0);
       gl.render(cena, camera);
       const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/png"));
       if (blob) urls.set(estilo, URL.createObjectURL(blob));
