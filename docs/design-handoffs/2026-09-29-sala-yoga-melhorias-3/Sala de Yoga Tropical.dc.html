@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f0e8;color:#2a2620;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#4f6b4a}a:hover{color:#2f4a2c}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<div style="max-width:1240px;margin:0 auto;padding:32px 20px 80px;display:flex;flex-direction:column;gap:28px">
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#7a7163">Aruanã Digital · Sala de Yoga &amp; Relaxamento</div>
+    <h1 style="margin:0;font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-.02em;line-height:1.05">Proposta visual: sala tropical</h1>
+    <p style="margin:0;max-width:640px;font-size:16px;line-height:1.5;color:#5a5347;text-wrap:pretty">Três atmosferas para a mesma sala. Arraste para olhar em volta e use a roda do mouse ou dois dedos para aproximar. As medidas e cores estão logo abaixo, prontas para passar ao Claude Code.</p>
+  </header>
+
+  <div style="position:relative;width:100%;height:min(74vh,720px);min-height:420px;border-radius:16px;overflow:hidden;background:#d9d2c4">
+    <div ref="{{ mountRef }}" style="position:absolute;inset:0;touch-action:none"></div>
+    <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:#5a5347">{{ loadingText }}</div>
+    </sc-if>
+    <div style="position:absolute;top:14px;left:14px;display:flex;gap:6px;padding:5px;border-radius:999px;background:rgba(30,27,22,.55);backdrop-filter:blur(10px)">
+      <sc-for list="{{ moods }}" as="m" hint-placeholder-count="2">
+        <button onClick="{{ m.onClick }}" style="display:flex;align-items:center;gap:8px;border:0;cursor:pointer;padding:9px 16px 9px 10px;border-radius:999px;font:600 14px Manrope,sans-serif;background:{{ m.bg }};color:{{ m.fg }}">
+          <span style="font:500 11px 'JetBrains Mono',monospace;padding:2px 6px;border-radius:6px;background:rgba(127,127,127,.22)">{{ m.badge }}</span>{{ m.label }}
+        </button>
+      </sc-for>
+    </div>
+    <sc-if value="{{ isRain }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ toggleSound }}" style="position:absolute;top:14px;right:14px;border:0;cursor:pointer;padding:10px 16px;border-radius:999px;font:600 13px Manrope,sans-serif;background:rgba(30,27,22,.55);color:#f4f0e8;backdrop-filter:blur(10px)">{{ soundLabel }}</button>
+    </sc-if>
+    <div style="position:absolute;left:14px;right:14px;bottom:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+      <sc-for list="{{ cams }}" as="c" hint-placeholder-count="4">
+        <button onClick="{{ c.onClick }}" style="border:0;cursor:pointer;padding:9px 14px;border-radius:999px;font:500 13px Manrope,sans-serif;backdrop-filter:blur(10px);background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }}</button>
+      </sc-for>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:6px;padding:5px 5px 5px 14px;border-radius:999px;background:rgba(30,27,22,.55);backdrop-filter:blur(10px);color:#f4f0e8">
+        <span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;opacity:.8">Postura</span>
+        <span style="font:600 13px Manrope,sans-serif">{{ poseLabel }}</span>
+        <button onClick="{{ togglePlay }}" style="border:0;cursor:pointer;padding:7px 12px;border-radius:999px;font:600 12px Manrope,sans-serif;background:#f4f0e8;color:#2a2620">{{ playLabel }}</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:-12px">
+    <button onClick="{{ recordVideo }}" style="border:0;cursor:pointer;padding:11px 18px;border-radius:999px;font:600 14px Manrope,sans-serif;color:#f4f0e8;background:{{ recBg }}">{{ recLabel }}</button>
+    <span style="font-size:13px;color:#7a7163">A câmera passa sozinha pelas três atmosferas e por cinco pontos de vista. Quando termina, o vídeo é baixado.</span>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <h2 style="margin:0;font-size:22px;font-weight:600;letter-spacing:-.01em">O que mudou em relação à versão atual</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
+      <div style="padding:16px;border-radius:12px;background:#ebe5d9;display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:#7a7163;text-decoration:line-through">Teto preto brilhante, lâmpadas estouradas</div><div style="font-size:15px;font-weight:500;line-height:1.4">Teto de ripas de madeira clara e pendentes de rattan com luz quente</div></div>
+      <div style="padding:16px;border-radius:12px;background:#ebe5d9;display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:#7a7163;text-decoration:line-through">Montanhas em forma de pirâmide</div><div style="font-size:15px;font-weight:500;line-height:1.4">Vale aberto: lagoa com praia de areia, coqueiros, árvores de copa e montanhas que somem na névoa</div></div>
+      <div style="padding:16px;border-radius:12px;background:#ebe5d9;display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:#7a7163;text-decoration:line-through">Plantas feitas de “cubinhos”</div><div style="font-size:15px;font-weight:500;line-height:1.4">Plantas com folhas de verdade, em vasos de barro e cestos</div></div>
+      <div style="padding:16px;border-radius:12px;background:#ebe5d9;display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:#7a7163;text-decoration:line-through">Piso marrom liso, sem textura</div><div style="font-size:15px;font-weight:500;line-height:1.4">Tábuas de carvalho claro de 18 cm, com veios</div></div>
+      <div style="padding:16px;border-radius:12px;background:#ebe5d9;display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:#7a7163;text-decoration:line-through">Tapetes grossos, cores saturadas</div><div style="font-size:15px;font-weight:500;line-height:1.4">Tapetes de 6 mm com cantos arredondados, com zafu, bolster e blocos</div></div>
+      <div style="padding:16px;border-radius:12px;background:#ebe5d9;display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:#7a7163;text-decoration:line-through">Câmera grande-angular, que distorce</div><div style="font-size:15px;font-weight:500;line-height:1.4">Campo de visão de 50° e altura dos olhos real (em pé e sentado)</div></div>
+      <div style="padding:16px;border-radius:12px;background:#ebe5d9;display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:#7a7163;text-decoration:line-through">Sem ponto focal</div><div style="font-size:15px;font-weight:500;line-height:1.4">Altar na parede oeste: estátua, velas, incenso e duas plantas altas</div></div>
+      <div style="padding:16px;border-radius:12px;background:#ebe5d9;display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:#7a7163;text-decoration:line-through">No celular, o painel “Como usar” cobre a sala</div><div style="font-size:15px;font-weight:500;line-height:1.4">Sugestão: mostrar o painel só na primeira visita e depois deixá-lo recolhido</div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+      <h2 style="margin:0;font-size:22px;font-weight:600;letter-spacing:-.01em">Especificação para o Claude Code</h2>
+      <button onClick="{{ copySpec }}" style="border:0;cursor:pointer;padding:11px 18px;border-radius:999px;font:600 14px Manrope,sans-serif;background:#2a2620;color:#f4f0e8">{{ copyLabel }}</button>
+    </div>
+    <p style="margin:0;font-size:14px;color:#5a5347;line-height:1.5">Copie e cole esta especificação no Claude Code. Escala: 1 unidade do three.js = 1 metro.</p>
+    <div ref="{{ specRef }}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px;font-size:14px;line-height:1.55">
+      <div style="padding:20px;border-radius:12px;background:#fbf9f5;border:1px solid #e3dccf">
+        <h3 style="margin:0 0 10px;font-size:15px;font-weight:600">1. Sala</h3>
+        <div>Sala de 10 × 8 m, com pé-direito de 3,2 m. Piso em y = 0.</div>
+        <div>Paredes norte e leste: vidro do piso ao teto, com montantes a cada 2 m (6 × 8 cm, bronze escuro #2B2723).</div>
+        <div>Parede oeste (sólida): altar no centro.</div>
+        <div>Parede sul (sólida): porta de 0,9 × 2,1 m perto do canto leste e estante no lado oeste.</div>
+        <div>Teto: fundo #E9DFCF com ripas de 4,5 × 7 cm a cada 25 cm, no sentido norte–sul.</div>
+        <div>Lado de fora: deck de 2,5 m e uma faixa de areia de cerca de 5 m (#E6D5AE) até a lagoa. A lagoa é uma elipse de 130 × 80 m (água #3F8A8C, rugosidade 0,06, refletindo o céu). Montanhas de 60 a 90 m cercam a lagoa, a partir de uns 90 m de distância, com encostas verdes e topo de pedra. Coqueiros na beira da praia, árvores de copa no gramado e mata nas encostas. Não há plantas grandes do lado de fora.</div>
+      </div>
+      <div style="padding:20px;border-radius:12px;background:#fbf9f5;border:1px solid #e3dccf">
+        <h3 style="margin:0 0 10px;font-size:15px;font-weight:600">2. Objetos (tamanho real)</h3>
+        <div>Tapete: 183 × 61 × 0,6 cm, cantos com raio de 5 cm. São 6, em 2 fileiras, com 2,2 m entre os centros, voltados para a vista norte.</div>
+        <div>Zafu (almofada redonda): Ø 38 × 13 cm · Bolster (almofada longa): Ø 22 × 64 cm · Bloco de cortiça: 23 × 15 × 8 cm</div>
+        <div>Altar: mesa baixa de 140 × 45 × 42 cm · Estátua de bronze com cerca de 40 cm · Velas de Ø 7 cm, com 10, 15 e 20 cm de altura</div>
+        <div>Pendentes de rattan: Ø 56 cm, pendurados a 2,6 m do piso, 3 unidades</div>
+        <div>Estante: 160 × 35 × 90 cm, com tapetes enrolados e blocos</div>
+        <div>Plantas em vaso: de 1,2 a 1,9 m de altura, vasos de Ø 40 a 50 cm</div>
+      </div>
+      <div style="padding:20px;border-radius:12px;background:#fbf9f5;border:1px solid #e3dccf">
+        <h3 style="margin:0 0 10px;font-size:15px;font-weight:600">3. Materiais (MeshStandardMaterial)</h3>
+        <div>Piso: carvalho claro, tábuas de 18 cm, #C9A27A, rugosidade 0,55</div>
+        <div>Paredes: reboco de cal #EFE6D8, rugosidade 0,95</div>
+        <div>Ripas do teto e estante: madeira mel #B98D62, rugosidade 0,7</div>
+        <div>Altar e porta: madeira escura #5A3D2B, rugosidade 0,6</div>
+        <div>Tapetes: sálvia #8FA58A, terracota #C47A5A, areia #D9C3A0, argila #A86B56, oliva #7F8A5E; rugosidade 0,9</div>
+        <div>Rattan #C9A06A · Cortiça #B88A5A · Bronze #8A7355 (metalness 0,6, rugosidade 0,45)</div>
+        <div>Folhas: #3D6E3F e #2F5A34, dupla face (DoubleSide) · Vaso de barro #B86B4B</div>
+      </div>
+      <div style="padding:20px;border-radius:12px;background:#fbf9f5;border:1px solid #e3dccf">
+        <h3 style="margin:0 0 10px;font-size:15px;font-weight:600">4. Iluminação</h3>
+        <div><strong style="font-weight:600">1a Dia tropical:</strong> céu de #8FC3D9 (topo) a #E6EFE6 (horizonte). Sol #FFF1DC com intensidade 3,0, vindo do nordeste a 28° de altura. Luz ambiente (hemisfério) #DFEEFF / #8A7A5A, intensidade 1,1. Pendentes apagados. Exposição 1,0.</div>
+        <div><strong style="font-weight:600">1b Entardecer:</strong> céu de #4A5D7A (topo) a #F3B37A (horizonte). Sol #FFA45C com intensidade 2,6, vindo do leste a 11°. Hemisfério #FFC9A0 / #4A3A2A, intensidade 0,5. Pendentes #FFCF99 com intensidade 6. Velas #FF9A4A com intensidade 1,2 e leve tremulação. Névoa #D99F78.</div>
+        <div><strong style="font-weight:600">1c Chuva e trovões:</strong> céu de #5B646C (topo) a #9AA2A4 (horizonte). Névoa #959D9F, começando a 12 m e fechando a 200 m. Sol fraco (0,5). Pendentes com intensidade 4. Cerca de 6 mil gotas de chuva do lado de fora, caindo a 13–19 m/s. Relâmpago a cada 7–17 s, com dois clarões rápidos (a luz ambiente sobe 4× por cerca de 0,7 s), seguido do trovão 0,4 a 2 s depois. Som: chiado de chuva contínuo e trovão grave.</div>
+        <div>Renderização: ACESFilmic, sRGB, sombras PCFSoft de 2048 px. Remover as luzes redondas brancas do teto.</div>
+      </div>
+      <div style="padding:20px;border-radius:12px;background:#fbf9f5;border:1px solid #e3dccf">
+        <h3 style="margin:0 0 10px;font-size:15px;font-weight:600">5. Câmera</h3>
+        <div>Campo de visão (FOV) de 50°. A versão atual parece usar cerca de 75°, o que distorce as bordas.</div>
+        <div>Altura dos olhos: 1,6 m em pé e 0,95 m sentado no tapete.</div>
+        <div>Posição inicial na entrada (3.6, 2.05, 3.7), olhando para (−0.8, 0.7, −2.3).</div>
+        <div>Posição sentado no tapete (0, 0.95, 2.6), olhando para a vista norte.</div>
+        <div>Manter a câmera sempre dentro da sala, a 30 cm das paredes.</div>
+      </div>
+      <div style="padding:20px;border-radius:12px;background:#fbf9f5;border:1px solid #e3dccf">
+        <h3 style="margin:0 0 10px;font-size:15px;font-weight:600">7. Personagens</h3>
+        <div>Os personagens são montados em código no arquivo personagens.js. Cada um é um boneco com articulações (quadril, joelhos, ombros, cotovelos, pescoço) e mede de 1,55 a 1,7 m de altura.</div>
+        <div>A professora é a personagem rosa de capuz, que conduz a aula. Os alunos são a gota azul, a gota pêssego, o broto, o origami e o roxo. O tapete do meio, no fundo, fica vazio para o visitante.</div>
+        <div>A aula repete em ciclo: respiração sentada, braços ao alto, montanha, saudação ao alto, árvore e estrela. Os alunos acompanham com um pequeno atraso, e todos respiram e balançam levemente a cabeça.</div>
+        <div>Materiais: acabamento de vinil macio (MeshPhysicalMaterial com sheen e clearcoat). O origami tem faces chapadas, como papel dobrado.</div>
+        <div>Próximo passo para ficar mais realista: esculpir os personagens no Blender, montar o esqueleto (rig) e exportar em GLB com as animações.</div>
+      </div>
+      <div style="padding:20px;border-radius:12px;background:#fbf9f5;border:1px solid #e3dccf">
+        <h3 style="margin:0 0 10px;font-size:15px;font-weight:600">6. Próximos passos no Blender e three.js</h3>
+        <div>Modelar no Blender a estátua, as almofadas e as plantas (costela-de-adão, bananeira e palmeira) e exportar em GLB com compressão Draco.</div>
+        <div>Trocar o fundo por um HDRI tropical (4K) ou por mata em camadas com névoa.</div>
+        <div>No celular: “assar” (bake) a luz num lightmap de 1K e usar texturas de 1K. No computador: 2K.</div>
+        <div>Meta de desempenho no celular: até cerca de 150 mil triângulos e menos de 100 draw calls. Usar InstancedMesh para repetir folhas, ripas e tapetes.</div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;mood&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dia&quot;,&quot;entardecer&quot;,&quot;chuva&quot;],&quot;default&quot;:&quot;dia&quot;,&quot;tsType&quot;:&quot;'dia'|'entardecer'|'chuva'&quot;},&quot;autoRotate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = { mood: this.props.mood ?? 'dia', cam: 'entrada', loading: true, loadingText: 'Carregando a sala 3D…', copied: false, sound: true, playing: true, poseLabel: '' };
+  mountRef = React.createRef();
+  specRef = React.createRef();
+
+  async componentDidMount() {
+    try {
+      const THREE = await import('https://esm.sh/three@0.160.0');
+      const { OrbitControls } = await import('https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js');
+      const { RoomEnvironment } = await import('https://esm.sh/three@0.160.0/examples/jsm/environments/RoomEnvironment.js');
+      this.castMod = await import(new URL('personagens.js', location.href).href);
+      if (!this.mountRef.current) return;
+      this.build(THREE, OrbitControls, RoomEnvironment);
+      this.setState({ loading: false });
+    } catch (e) {
+      console.error(e);
+      this.setState({ loadingText: 'Não foi possível carregar o 3D: ' + e.message });
+    }
+  }
+  componentWillUnmount() {
+    cancelAnimationFrame(this.raf);
+    this.ro && this.ro.disconnect();
+    this.renderer && this.renderer.dispose();
+  }
+  componentDidUpdate(pp) {
+    if (pp.mood !== this.props.mood && this.props.mood) this.setMood(this.props.mood);
+    if (this.controls) this.controls.autoRotate = !!this.props.autoRotate;
+  }
+
+  build(THREE, OrbitControls, RoomEnvironment) {
+    const el = this.mountRef.current;
+    const R = new THREE.WebGLRenderer({ antialias: true });
+    R.setPixelRatio(Math.min(devicePixelRatio, 2));
+    R.toneMapping = THREE.ACESFilmicToneMapping;
+    R.outputColorSpace = THREE.SRGBColorSpace;
+    R.shadowMap.enabled = true;
+    R.shadowMap.type = THREE.PCFSoftShadowMap;
+    el.appendChild(R.domElement);
+    R.domElement.style.cssText = 'width:100%;height:100%;display:block';
+    this.renderer = R;
+    const scene = new THREE.Scene();
+    const pm = new THREE.PMREMGenerator(R);
+    scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    const cam = new THREE.PerspectiveCamera(50, 1, 0.05, 600);
+    this.cam = cam; this.T = THREE;
+
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const mats = [];
+    const M = (o) => { const m = new THREE.MeshStandardMaterial(Object.assign({ roughness: 0.8 }, o)); mats.push(m); return m; };
+    const add = (geo, mat, x, y, z, parent) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; (parent || scene).add(m); return m; };
+    const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+
+    const canvasTex = (w, h, draw, rep) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; if (rep) t.repeat.set(rep[0], rep[1]); t.anisotropy = 8; return t; };
+    const floorTex = canvasTex(1024, 1024, (x, w, h) => {
+      const rows = 16, rh = h / rows;
+      for (let r = 0; r < rows; r++) {
+        let px = -rnd() * 500;
+        while (px < w) {
+          const pw = 380 + rnd() * 420, l = 60 + rnd() * 10, hue = 30 + rnd() * 6;
+          x.fillStyle = `hsl(${hue},${38 + rnd() * 10}%,${l}%)`; x.fillRect(px, r * rh, pw, rh);
+          for (let k = 0; k < 9; k++) { x.strokeStyle = `rgba(90,55,25,${0.04 + rnd() * 0.07})`; x.lineWidth = 1 + rnd() * 1.5; x.beginPath(); const yy = r * rh + rnd() * rh; x.moveTo(px, yy); x.bezierCurveTo(px + pw * .3, yy + (rnd() - .5) * 8, px + pw * .7, yy + (rnd() - .5) * 8, px + pw, yy + (rnd() - .5) * 4); x.stroke(); }
+          x.fillStyle = 'rgba(60,35,15,.45)'; x.fillRect(px, r * rh, 2, rh);
+          px += pw;
+        }
+        x.fillStyle = 'rgba(60,35,15,.5)'; x.fillRect(0, r * rh, w, 2);
+      }
+    }, [10 / 2.88, 8 / 2.88]);
+    const plasterTex = canvasTex(512, 512, (x, w, h) => { x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); for (let i = 0; i < 9000; i++) { x.fillStyle = `rgba(120,100,70,${rnd() * 0.05})`; const s = 1 + rnd() * 3; x.fillRect(rnd() * w, rnd() * h, s, s); } }, [4, 2]);
+    const rattanTex = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#d9b37c'; x.fillRect(0, 0, w, h); x.strokeStyle = 'rgba(90,60,25,.55)'; x.lineWidth = 3; for (let i = -w; i < w * 2; i += 16) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + h, h); x.stroke(); x.beginPath(); x.moveTo(i, h); x.lineTo(i + h, 0); x.stroke(); } }, [6, 3]);
+
+    const mFloor = M({ map: floorTex, roughness: 0.55 });
+    const mWall = M({ color: 0xefe6d8, map: plasterTex, roughness: 0.95 });
+    const mCeil = M({ color: 0xe9dfcf, roughness: 0.95 });
+    const mWood = M({ color: 0xb98d62, roughness: 0.7 });
+    const mDark = M({ color: 0x5a3d2b, roughness: 0.6 });
+    const mFrame = M({ color: 0x2b2723, roughness: 0.5, metalness: 0.4 });
+    const mRattan = M({ map: rattanTex, color: 0xc9a06a, roughness: 0.85, emissive: 0xffa860, emissiveIntensity: 0, side: THREE.DoubleSide });
+    const mCork = M({ color: 0xb88a5a, roughness: 0.95 });
+    const mBronze = M({ color: 0x8a7355, metalness: 0.6, roughness: 0.45 });
+    const mTerra = M({ color: 0xb86b4b, roughness: 0.9 });
+    const mBasket = M({ map: rattanTex, color: 0xb8925f, roughness: 0.9 });
+    const mCream = M({ color: 0xf1e6cf, roughness: 0.6 });
+    const leafMats = [0x3d6e3f, 0x2f5a34, 0x4a7a44, 0x355f33].map(c => M({ color: c, roughness: 0.65, side: THREE.DoubleSide }));
+    const mTrunk = M({ color: 0x7a6650, roughness: 0.95 });
+    const mGround = M({ color: 0x7c9a5a, roughness: 1 });
+    const mHill = M({ color: 0x55734c, roughness: 1 });
+
+    // Floor, ceiling
+    const floor = add(new THREE.PlaneGeometry(10, 8).rotateX(-Math.PI / 2), mFloor, 0, 0.001, 0); floor.castShadow = false;
+    add(new THREE.PlaneGeometry(10.2, 8.2).rotateX(Math.PI / 2), mCeil, 0, 3.2, 0);
+    add(box(10.4, 0.25, 8.4), mCeil, 0, 3.33, 0);
+    const bat = new THREE.InstancedMesh(box(0.045, 0.07, 8), mWood, 40); const dm = new THREE.Object3D(); let bi = 0;
+    for (let x = -4.85; x <= 4.86 && bi < 40; x += 0.25) { dm.position.set(x, 3.165, 0); dm.updateMatrix(); bat.setMatrixAt(bi++, dm.matrix); }
+    bat.count = bi; bat.castShadow = true; scene.add(bat);
+
+    // Walls
+    add(box(0.2, 3.2, 8.4), mWall, -5.1, 1.6, 0);
+    add(box(7.9, 3.2, 0.2), mWall, -1.15, 1.6, 4.1);
+    add(box(1.2, 3.2, 0.2), mWall, 4.5, 1.6, 4.1);
+    add(box(0.9, 1.1, 0.2), mWall, 3.45, 2.65, 4.1);
+    add(box(0.9, 2.1, 0.05), mDark, 3.45, 1.05, 4.02);
+    add(box(0.04, 0.04, 0.12), mBronze, 3.1, 1.0, 3.96);
+    add(box(10, 0.08, 0.03), mWood, 0, 0.04, 3.99); add(box(0.03, 0.08, 8), mWood, -4.99, 0.04, 0);
+
+    // Glass walls
+    const mGlass = new THREE.MeshPhysicalMaterial({ color: 0xdfeee8, transparent: true, opacity: 0.08, roughness: 0.05, metalness: 0, depthWrite: false });
+    const g1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 3.2), mGlass); g1.position.set(0, 1.6, -4); scene.add(g1);
+    const g2 = new THREE.Mesh(new THREE.PlaneGeometry(8, 3.2), mGlass); g2.rotation.y = -Math.PI / 2; g2.position.set(5, 1.6, 0); scene.add(g2);
+    for (let x = -5; x <= 5; x += 2) add(box(0.06, 3.2, 0.08), mFrame, x, 1.6, -4);
+    for (let z = -4; z <= 4; z += 2) add(box(0.08, 3.2, 0.06), mFrame, 5, 1.6, z);
+    add(box(10.1, 0.08, 0.1), mFrame, 0, 3.16, -4); add(box(10.1, 0.05, 0.1), mFrame, 0, 0.025, -4);
+    add(box(0.1, 0.08, 8.1), mFrame, 5, 3.16, 0); add(box(0.1, 0.05, 8.1), mFrame, 5, 0.025, 0);
+
+    // Outside: deck, ground, sky, hills
+    const deckTex = floorTex.clone(); deckTex.repeat.set(12 / 2.88, 2.5 / 2.88); deckTex.needsUpdate = true;
+    add(new THREE.PlaneGeometry(12, 2.5).rotateX(-Math.PI / 2), M({ map: deckTex, color: 0xb59478, roughness: 0.8 }), 1, -0.02, -5.25).castShadow = false;
+    const skyGeo = new THREE.SphereGeometry(400, 32, 20); skyGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(skyGeo.attributes.position.count * 3), 3));
+    const skyMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false });
+    const sky = new THREE.Mesh(skyGeo, skyMat); scene.add(sky);
+    this.envScene = new THREE.Scene(); this.envScene.add(new THREE.Mesh(skyGeo, skyMat)); this.pm = pm;
+
+    // Terrain: lagoon in a valley, beach at the shore, mountains around
+    const LX = 15, LZ = -50, RX = 65, RZ = 40;
+    const eOf = (x, z) => Math.hypot((x - LX) / RX, (z - LZ) / RZ);
+    const ss = (a, b, v) => { const t = Math.max(0, Math.min(1, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
+    const hOf = (x, z) => {
+      const e = eOf(x, z); if (e < 1) return -0.1 - 4 * (1 - e);
+      const n = Math.sin(x * 0.021 + 1.3) * Math.cos(z * 0.017) + 0.5 * Math.sin(x * 0.047 + z * 0.031) + 0.25 * Math.sin(x * 0.11 - z * 0.09) + 0.12 * Math.sin(x * 0.23 + z * 0.19);
+      const ridge = 1 - Math.abs(Math.sin(x * 0.013 + z * 0.009));
+      const room = ss(20, 70, Math.hypot(x, z));
+      return -0.1 + Math.max(0, ss(1.7, 3.4, e) * (30 + 14 * n + 18 * ridge)) * room + ss(1.14, 1.7, e) * (1.5 + n) * ss(8, 30, Math.hypot(x, z));
+    };
+    this.hOf = hOf;
+    const tg = new THREE.PlaneGeometry(760, 760, 240, 240).rotateX(-Math.PI / 2); tg.translate(LX, 0, -40);
+    const tp = tg.attributes.position, tc = new Float32Array(tp.count * 3), cc = new THREE.Color();
+    const C_sandW = new THREE.Color(0xb9a47c), C_sand = new THREE.Color(0xe6d5ae), C_grass = new THREE.Color(0x7c9a5a), C_forest = new THREE.Color(0x4a6a3f), C_rock = new THREE.Color(0x8b8a80), C_top = new THREE.Color(0xa8a69c);
+    for (let i = 0; i < tp.count; i++) {
+      const x = tp.getX(i), z = tp.getZ(i), h = hOf(x, z), e = eOf(x, z), w = 0.5 + 0.5 * Math.sin(x * 0.3 + z * 0.21) * Math.cos(z * 0.17);
+      tp.setY(i, h);
+      if (e < 1) cc.copy(C_sandW);
+      else if (e < 1.14 && h < 0.8) cc.copy(C_sand).lerp(C_grass, ss(1.1, 1.14, e));
+      else { cc.copy(C_grass).lerp(C_forest, ss(2, 18, h) * (0.7 + 0.3 * w)); cc.lerp(C_rock, ss(16, 32, h + w * 8)); cc.lerp(C_top, ss(36, 50, h)); }
+      tc.set([cc.r, cc.g, cc.b], i * 3);
+    }
+    tg.setAttribute('color', new THREE.BufferAttribute(tc, 3)); tg.computeVertexNormals();
+    const terrain = new THREE.Mesh(tg, M({ vertexColors: true, roughness: 1 })); terrain.receiveShadow = true; scene.add(terrain);
+    const rippleTex = canvasTex(256, 256, (x, w, h) => { x.fillStyle = '#808080'; x.fillRect(0, 0, w, h); for (let i = 0; i < 500; i++) { x.fillStyle = `rgba(${rnd() > .5 ? 255 : 0},${rnd() > .5 ? 255 : 0},${rnd() > .5 ? 255 : 0},.06)`; x.beginPath(); x.ellipse(rnd() * w, rnd() * h, 6 + rnd() * 18, 2 + rnd() * 4, 0, 0, Math.PI * 2); x.fill(); } }, [60, 60]);
+    rippleTex.colorSpace = THREE.NoColorSpace;
+    const water = new THREE.Mesh(new THREE.CircleGeometry(1, 128).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x3f8a8c, roughness: 0.06, metalness: 0.15, bumpMap: rippleTex, bumpScale: 0.6 }));
+    water.scale.set(RX * 1.01, 1, RZ * 1.01); water.position.set(LX, -0.15, LZ); water.receiveShadow = true; scene.add(water);
+    this.water = water; this.rippleTex = rippleTex;
+
+    // Leaf geometry
+    const leafGeo = (len, wid, bend, fold) => {
+      const s = new THREE.Shape(); s.moveTo(0, 0);
+      s.bezierCurveTo(wid * 0.55, len * 0.15, wid * 0.55, len * 0.7, 0, len);
+      s.bezierCurveTo(-wid * 0.55, len * 0.7, -wid * 0.55, len * 0.15, 0, 0);
+      const g = new THREE.ShapeGeometry(s, 12); const p = g.attributes.position;
+      for (let i = 0; i < p.count; i++) { const t = p.getY(i) / len; p.setZ(i, bend * t * t * len + Math.abs(p.getX(i)) * (fold ?? 0.25)); }
+      g.computeVertexNormals(); return g;
+    };
+    const frondGeo = (() => { const g = new THREE.PlaneGeometry(0.9, 3.4, 18, 14); g.translate(0, 1.7, 0); const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), t = y / 3.4; const w = Math.sin(Math.PI * Math.min(1, t * 1.05)) * 0.9 + 0.04; p.setX(i, x * w); p.setZ(i, 0.55 * t * t * 3.4 + Math.abs(x * w) * 0.35); } g.computeVertexNormals(); return g; })();
+    const LG = { monstera: leafGeo(0.55, 0.62, 0.25), banana: leafGeo(1.3, 0.42, 0.18, 0.12), small: leafGeo(0.32, 0.2, 0.3), bush: leafGeo(1.1, 0.55, 0.4) };
+    const leaves = (parent, geo, n, tilt, spread, y, sc, shadow = true) => {
+      for (let i = 0; i < n; i++) {
+        const piv = new THREE.Group(); piv.position.y = y + rnd() * 0.08; piv.rotation.y = (i / n) * Math.PI * 2 + rnd() * 0.6;
+        const l = new THREE.Mesh(geo, leafMats[Math.floor(rnd() * 4)]); l.rotation.x = tilt + (rnd() - 0.5) * spread; const s = sc * (0.8 + rnd() * 0.4); l.scale.set(s, s, s); l.castShadow = shadow; l.receiveShadow = true;
+        piv.add(l); parent.add(piv);
+      }
+    };
+    const pot = (r, h, mat) => new THREE.LatheGeometry([[0, 0], [r * 0.72, 0], [r * 0.8, h * 0.1], [r, h * 0.92], [r * 1.04, h], [r * 0.96, h], [r * 0.9, h * 0.95]].map(p => new THREE.Vector2(p[0], p[1])), 28);
+    const plant = (kind, x, z, s = 1) => {
+      const g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(s); scene.add(g);
+      if (kind === 'monstera') { add(pot(0.24, 0.42, mTerra), mTerra, 0, 0, 0, g); leaves(g, LG.monstera, 11, 0.55, 0.7, 0.4, 1.3); leaves(g, LG.monstera, 5, 0.2, 0.3, 0.45, 1.5); }
+      else if (kind === 'banana') { add(pot(0.26, 0.5, mBasket), mBasket, 0, 0, 0, g); add(new THREE.CylinderGeometry(0.03, 0.05, 0.9, 8), mTrunk, 0, 0.9, 0, g); leaves(g, LG.banana, 9, 0.35, 0.4, 0.55, 1.0); leaves(g, LG.banana, 4, 0.12, 0.2, 1.1, 0.8); }
+      else if (kind === 'small') { add(pot(0.12, 0.2, mTerra), mTerra, 0, 0, 0, g); leaves(g, LG.small, 14, 0.9, 0.8, 0.18, 1); }
+      return g;
+    };
+    const palm = (x, z, h) => {
+      const lean = new THREE.Vector3((rnd() - 0.5) * 1.6, 0, (rnd() - 0.5) * 1.6);
+      const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(0, 0, 0), new THREE.Vector3(lean.x * 0.3, h * 0.5, lean.z * 0.3), new THREE.Vector3(lean.x, h, lean.z)]);
+      const g = new THREE.Group(); g.position.set(x, hOf(x, z) - 0.1, z); scene.add(g);
+      const tr = new THREE.Mesh(new THREE.TubeGeometry(curve, 12, 0.15, 8), mTrunk); tr.castShadow = true; g.add(tr);
+      const top = new THREE.Group(); top.position.copy(curve.getPoint(1)); g.add(top);
+      for (let i = 0; i < 11; i++) { const piv = new THREE.Group(); piv.rotation.y = i / 11 * Math.PI * 2 + rnd() * 0.3; const f = new THREE.Mesh(frondGeo, leafMats[i % 4]); f.rotation.x = 0.9 + rnd() * 0.6; f.castShadow = true; piv.add(f); top.add(piv); }
+    };
+    const bush = (x, z, s) => { const g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(s); scene.add(g); leaves(g, LG.bush, 12, 0.7, 0.9, 0, 1, s < 2); };
+
+    // Outside: palms on the beach, canopy trees on the grass, instanced forest on the slopes
+    const clear = (x, z) => (z < -7 || x > 8) && !(x > -7 && x < 8 && z > -7 && z < 6);
+    for (let n = 0, k = 0; n < 26 && k < 400; k++) {
+      const th = rnd() * Math.PI * 2, e = 1.04 + rnd() * 0.12, x = LX + RX * e * Math.cos(th), z = LZ + RZ * e * Math.sin(th);
+      const d = Math.hypot(x, z);
+      if (d < 70 && clear(x, z)) { palm(x, z, d < 25 ? 3.5 + rnd() * 2 : 5 + rnd() * 4); n++; }
+    }
+    palm(-6, -8.5, 4.2); palm(9, -6.5, 5);
+    const canopyGeo = (() => { const g = new THREE.SphereGeometry(1, 18, 12), p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), k = 1 + 0.12 * Math.sin(x * 5 + y * 3) + 0.08 * Math.sin(z * 7 - y * 4); p.setXYZ(i, x * k, y * k * 0.8, z * k); } g.computeVertexNormals(); return g; })();
+    const trunkGeo = new THREE.CylinderGeometry(0.12, 0.22, 3, 8).translate(0, 1.5, 0);
+    const mCanopy = [0x4d7a3e, 0x5f8a45, 0x3f6a38, 0x6a9150].map(c => M({ color: c, roughness: 0.9 }));
+    const tree = (x, z, s) => {
+      const g = new THREE.Group(); g.position.set(x, hOf(x, z) - 0.1, z); g.scale.setScalar(s); g.rotation.y = rnd() * 6; scene.add(g);
+      const near = Math.hypot(x, z) < 40; const t = new THREE.Mesh(trunkGeo, mTrunk); t.castShadow = near; g.add(t);
+      const cm = mCanopy[Math.floor(rnd() * 4)];
+      for (let k = 0; k < 6; k++) { const c = new THREE.Mesh(canopyGeo, cm); const a = k / 6 * Math.PI * 2; c.position.set(Math.cos(a) * (k ? 1 : 0), 3.3 + (k ? rnd() * 0.8 : 1.1), Math.sin(a) * (k ? 1 : 0)); c.scale.setScalar(1.1 + rnd() * 0.6); c.castShadow = near; g.add(c); }
+    };
+    for (let n = 0, k = 0; n < 34 && k < 800; k++) {
+      const x = -50 + rnd() * 140, z = -140 + rnd() * 150, e = eOf(x, z);
+      if (e > 1.2 && hOf(x, z) < 12 && clear(x, z) && Math.hypot(x, z) > 12 && Math.abs(Math.atan2(x, -z)) > 0.35) { tree(x, z, 0.9 + rnd() * 0.8); n++; }
+    }
+    const forest = new THREE.InstancedMesh(canopyGeo, M({ roughness: 1 }), 320); let fi = 0; const fc = new THREE.Color();
+    for (let k = 0; k < 9000 && fi < 320; k++) {
+      const x = -250 + rnd() * 520, z = -330 + rnd() * 420, h = hOf(x, z);
+      if (eOf(x, z) > 1.5 && h > 3 && h < 20 && Math.hypot(x, z) > 110) { const s = 2 + rnd() * 2; dm.position.set(x, h + s * 0.2, z); dm.scale.set(s, s * 1.2, s); dm.rotation.y = rnd() * 6; dm.updateMatrix(); forest.setMatrixAt(fi, dm.matrix); forest.setColorAt(fi, fc.setHSL(0.27 + rnd() * 0.05, 0.3, 0.12 + rnd() * 0.05)); fi++; }
+    }
+    forest.count = fi; scene.add(forest);
+
+    // Rain
+    const RN = 6000, rp = new Float32Array(RN * 6), rv = new Float32Array(RN);
+    const spawn = (i, top) => { let x, z; do { x = -25 + rnd() * 55; z = -35 + rnd() * 45; } while (x > -5.4 && x < 5.4 && z > -4.4 && z < 4.4); const y = top ? 20 + rnd() * 3 : rnd() * 22; rp.set([x, y, z, x + 0.03, y + 0.5, z], i * 6); rv[i] = 13 + rnd() * 6; };
+    for (let i = 0; i < RN; i++) spawn(i, false);
+    const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(rp, 3));
+    const rain = new THREE.LineSegments(rg, new THREE.LineBasicMaterial({ color: 0xd4dce0, transparent: true, opacity: 0.4 })); rain.visible = false; rain.frustumCulled = false; scene.add(rain);
+    this.rain = rain; this.rainSpawn = spawn; this.rp = rp; this.rv = rv;
+
+    // Mats + props
+    const rr = (w, h, r) => { const s = new THREE.Shape(); s.moveTo(-w / 2 + r, -h / 2); s.lineTo(w / 2 - r, -h / 2); s.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r); s.lineTo(w / 2, h / 2 - r); s.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2); s.lineTo(-w / 2 + r, h / 2); s.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r); s.lineTo(-w / 2, -h / 2 + r); s.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2); return s; };
+    const matGeo = new THREE.ExtrudeGeometry(rr(0.61, 1.83, 0.05), { depth: 0.004, bevelEnabled: true, bevelThickness: 0.001, bevelSize: 0.002, bevelSegments: 2, curveSegments: 6 }).rotateX(-Math.PI / 2);
+    const matCols = [0x8fa58a, 0xc47a5a, 0xd9c3a0, 0xa86b56, 0x7f8a5e, 0xd9c3a0];
+    const zafuGeo = new THREE.LatheGeometry([[0, 0], [0.17, 0], [0.19, 0.03], [0.195, 0.07], [0.18, 0.11], [0.12, 0.13], [0, 0.135]].map(p => new THREE.Vector2(p[0], p[1])), 32);
+    const bolGeo = new THREE.CapsuleGeometry(0.11, 0.42, 6, 18).rotateX(Math.PI / 2);
+    const blockGeo = box(0.23, 0.08, 0.15);
+    const cushCols = [0x6f7d5a, 0x9c5a44, 0xcdb48c, 0x6f7d5a, 0x9c5a44, 0xcdb48c].map(c => M({ color: c, roughness: 0.95 }));
+    let mi = 0;
+    [-0.2, 2.1].forEach((z, row) => [-2.3, 0, 2.3].forEach((x, col) => {
+      const xo = x + (row ? 0 : 0); const m = add(matGeo, M({ color: matCols[mi], roughness: 0.9 }), xo, 0.001, z); m.castShadow = false;
+      add(zafuGeo, cushCols[mi], xo, 0.008, z + 0.72);
+      if (mi % 2 === 0) add(bolGeo, cushCols[(mi + 1) % 6], xo + 0.52, 0.11, z + 0.2);
+      else { const b1 = add(blockGeo, mCork, xo + 0.5, 0.04, z + 0.5); b1.rotation.y = 0.2; const b2 = add(blockGeo, mCork, xo + 0.5, 0.12, z + 0.5); b2.rotation.y = -0.1; }
+      mi++;
+    }));
+    add(matGeo, M({ color: 0xc9a27a, roughness: 0.9 }), 0, 0.001, -2.75).castShadow = false;
+    this.cast = this.castMod.createCast(THREE, [
+      { style: 'professor', x: 0, z: -2.85, rot: 0 },
+      { style: 'gotaAzul', x: -2.3, z: 0.05, rot: Math.PI }, { style: 'broto', x: 0, z: 0.05, rot: Math.PI }, { style: 'gotaPessego', x: 2.3, z: 0.05, rot: Math.PI },
+      { style: 'origami', x: -2.3, z: 2.35, rot: Math.PI }, { style: 'roxo', x: 2.3, z: 2.35, rot: Math.PI },
+      ...(() => { try { const a = JSON.parse(localStorage.getItem('aruana-avatar') || 'null'); return a && a.style ? [{ style: a.style, x: 0, z: 2.35, rot: Math.PI, tint: a.tint, acc: a.acc }] : []; } catch (e) { return []; } })()
+    ]);
+    scene.add(this.cast.group); this.classT = 0;
+
+    // Altar (west wall)
+    const ax = -4.72, az = -1;
+    add(box(0.45, 0.05, 1.4), mDark, ax, 0.4, az);
+    [[-0.18, -0.64], [0.18, -0.64], [-0.18, 0.64], [0.18, 0.64]].forEach(([dx, dz]) => add(box(0.05, 0.38, 0.05), mDark, ax + dx, 0.19, az + dz));
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(0.5, 48), mBasket); disc.rotation.y = Math.PI / 2; disc.position.set(-4.995, 1.45, az); scene.add(disc);
+    const st = new THREE.Group(); st.position.set(ax - 0.02, 0.425, az); scene.add(st);
+    add(new THREE.CylinderGeometry(0.17, 0.18, 0.04, 32), mBronze, 0, 0.02, 0, st);
+    add(new THREE.LatheGeometry([[0, 0], [0.16, 0], [0.165, 0.035], [0.14, 0.07], [0.1, 0.1], [0.085, 0.18], [0.075, 0.24], [0.05, 0.27], [0.025, 0.28], [0, 0.28]].map(p => new THREE.Vector2(p[0], p[1])), 32), mBronze, 0, 0.04, 0, st);
+    add(new THREE.SphereGeometry(0.055, 24, 16), mBronze, 0, 0.375, 0, st);
+    add(new THREE.CylinderGeometry(0.02, 0.022, 0.03, 12), mBronze, 0, 0.325, 0, st);
+    this.flames = []; this.candleLights = [];
+    const mFlame = new THREE.MeshBasicMaterial({ color: 0xffc070 });
+    [[0.4, 0.2], [0.5, 0.15], [0.58, 0.1], [-0.45, 0.15], [-0.55, 0.1]].forEach(([dz, h], i) => {
+      const x = ax + (i % 2 ? 0.08 : -0.04), y = 0.425;
+      add(new THREE.CylinderGeometry(0.035, 0.035, h, 20), mCream, x, y + h / 2, az + dz);
+      const f = new THREE.Mesh(new THREE.SphereGeometry(0.012, 10, 8), mFlame); f.scale.y = 2.2; f.position.set(x, y + h + 0.025, az + dz); scene.add(f); this.flames.push(f);
+      if (i % 2 === 0) { const L = new THREE.PointLight(0xff9a4a, 1, 4, 2); L.position.set(x + 0.1, y + h + 0.08, az + dz); scene.add(L); this.candleLights.push(L); }
+    });
+    add(box(0.05, 0.015, 0.2), mDark, ax + 0.1, 0.432, az - 0.3);
+    const inc = add(new THREE.CylinderGeometry(0.002, 0.002, 0.24, 4), M({ color: 0x6b3a2a }), ax + 0.1, 0.54, az - 0.36); inc.rotation.x = 0.35;
+    plant('banana', -4.55, az - 1.25, 1.1); plant('banana', -4.55, az + 1.25, 1.0);
+
+    // Shelf (south wall)
+    const sx = -3, sz = 3.78;
+    [0.02, 0.45, 0.88].forEach(y => add(box(1.6, 0.03, 0.35), mWood, sx, y, sz));
+    [-0.79, 0, 0.79].forEach(dx => add(box(0.03, 0.9, 0.35), mWood, sx + dx, 0.45, sz));
+    const rollGeo = new THREE.CylinderGeometry(0.055, 0.055, 0.61, 20).rotateZ(Math.PI / 2);
+    [0x8fa58a, 0xc47a5a, 0xd9c3a0, 0xa86b56].forEach((c, i) => add(rollGeo.clone().rotateY(Math.PI / 2), M({ color: c, roughness: 0.9 }), sx - 0.6 + (i % 2) * 0.12 + (i > 1 ? 0.24 : 0), 0.09 + (i % 2) * 0.1, sz));
+    for (let i = 0; i < 4; i++) add(blockGeo, mCork, sx + 0.4, 0.075 + i * 0.08, sz).rotation.y = (rnd() - 0.5) * 0.2;
+    add(pot(0.16, 0.26, mBasket), mBasket, sx - 0.4, 0.465, sz);
+    plant('small', sx + 0.4, sz, 1).position.y = 0.465;
+
+    // Corner plants
+    plant('monstera', 4.4, -3.4, 1.35); plant('monstera', -4.4, -3.4, 1.2); plant('banana', 4.4, 3.3, 1.2); plant('monstera', 1.8, 3.5, 1.0); plant('small', 4.6, 0.0, 1.4);
+
+    // Pendants
+    this.pendantLights = []; this.bulbs = [];
+    const shadeGeo = new THREE.LatheGeometry([[0.01, 0.2], [0.12, 0.19], [0.22, 0.12], [0.27, 0.02], [0.28, -0.05]].map(p => new THREE.Vector2(p[0], p[1])), 40);
+    const mBulb = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffd9a8, emissiveIntensity: 0 });
+    [-2.3, 0, 2.3].forEach(x => {
+      const y = 2.6, z = 0.95;
+      add(new THREE.CylinderGeometry(0.004, 0.004, 3.2 - y - 0.2, 6), mFrame, x, (3.2 + y + 0.2) / 2, z);
+      add(shadeGeo, mRattan, x, y, z).castShadow = false;
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 12), mBulb); b.position.set(x, y + 0.06, z); scene.add(b);
+      const L = new THREE.PointLight(0xffcf99, 0, 7, 2); L.position.set(x, y - 0.05, z); scene.add(L); this.pendantLights.push(L);
+    });
+    this.mBulb = mBulb; this.mRattan = mRattan;
+
+    // Lights
+    this.hemi = new THREE.HemisphereLight(0xdfeeff, 0x8a7a5a, 1); scene.add(this.hemi);
+    const sun = new THREE.DirectionalLight(0xffffff, 3); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+    Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 80 }); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+    scene.add(sun); scene.add(sun.target); this.sun = sun;
+    scene.fog = new THREE.Fog(0xd9e6dc, 30, 170);
+    this.scene = scene; this.sky = sky; this.mats = mats;
+
+    // Controls
+    const ctl = new OrbitControls(cam, R.domElement);
+    ctl.enableDamping = true; ctl.dampingFactor = 0.08; ctl.rotateSpeed = -0.35; ctl.enablePan = false; ctl.minDistance = 0.05; ctl.maxDistance = 6; ctl.autoRotate = !!this.props.autoRotate; ctl.autoRotateSpeed = 0.4;
+    this.controls = ctl;
+    this.CAMS = { entrada: [[3.6, 2.05, 3.7], [-0.8, 0.7, -2.3]], tapete: [[0, 0.95, 2.75], [0, 1.0, -4]], altar: [[-2.4, 1.3, -0.4], [-4.8, 0.8, -1]], geral: [[4.3, 2.4, 3.6], [-1.2, 0.5, -1]], professor: [[0.9, 1.35, -0.7], [0, 0.8, -2.85]] };
+    const c0 = this.CAMS[this.state.cam]; cam.position.set(...c0[0]); ctl.target.set(...c0[1]);
+    // Keep orbit-target close so dragging "looks around"
+    this.setMood(this.state.mood, true);
+
+    const resize = () => { const w = el.clientWidth, h = el.clientHeight; if (!w || !h) return; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
+    this.ro = new ResizeObserver(resize); this.ro.observe(el); resize();
+
+    const clock = new THREE.Clock(); let t = 0; this.nextFlash = 3; this.flashT = -99;
+    const loop = () => {
+      this.raf = requestAnimationFrame(loop);
+      const dt = Math.min(clock.getDelta(), 0.05); t += dt;
+      this.rippleTex.offset.set(t * 0.004 * (this.C?.rain ? 3 : 1), t * 0.006);
+      if (this.rain.visible) {
+        const rp = this.rp, rv = this.rv;
+        for (let i = 0; i < rv.length; i++) { const d = rv[i] * dt; rp[i * 6 + 1] -= d; rp[i * 6 + 4] -= d; if (rp[i * 6 + 1] < 0) this.rainSpawn(i, true); }
+        this.rain.geometry.attributes.position.needsUpdate = true;
+        if (t > this.nextFlash) { this.flashT = t; this.nextFlash = t + 7 + Math.random() * 10; this.thunder(0.4 + Math.random() * 1.6); }
+      }
+      const ft = t - this.flashT, fl = ft < 0 ? 0 : ft < 0.08 ? 1 : ft < 0.16 ? 0.15 : ft < 0.26 ? 0.8 : ft < 0.7 ? 0.5 * (1 - (ft - 0.26) / 0.44) : 0;
+      if (this.C) { this.hemi.intensity = this.C.hi + fl * 4; R.toneMappingExposure = this.C.exp + fl * 0.7; }
+      if (this.tween) {
+        const k = Math.min(1, (performance.now() - this.tween.t0) / 1100), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+        cam.position.lerpVectors(this.tween.p0, this.tween.p1, e); ctl.target.lerpVectors(this.tween.q0, this.tween.q1, e);
+        if (k >= 1) this.tween = null;
+      }
+      ctl.update();
+      if (this.cast) { if (this.state.playing) this.classT += dt; const lbl = this.cast.update(this.classT, t); if (lbl !== this.lastLbl) { this.lastLbl = lbl; this.setState({ poseLabel: lbl }); } }
+      cam.position.x = Math.max(-4.7, Math.min(4.7, cam.position.x)); cam.position.z = Math.max(-3.7, Math.min(3.7, cam.position.z)); cam.position.y = Math.max(0.3, Math.min(3.0, cam.position.y));
+      const f = this.flameAmt || 0;
+      this.candleLights.forEach((L, i) => { L.intensity = f * (0.85 + 0.15 * Math.sin(t * 9 + i * 2) + 0.08 * Math.sin(t * 23 + i)); });
+      this.flames.forEach((m, i) => { m.scale.y = 2.2 + 0.25 * Math.sin(t * 11 + i * 1.7); });
+      R.render(scene, cam);
+    };
+    loop();
+  }
+
+  setMood(id, instant) {
+    this.setState({ mood: id });
+    if (!this.scene) return;
+    const T = this.T;
+    const MOODS = {
+      dia: { top: 0x8fc3d9, hor: 0xe6efe6, fog: 0xdce8e2, fn: 60, ff: 420, water: 0x3f8a8c, hs: 0xdfeeff, hg: 0x8a7a5a, hi: 1.1, sun: 0xfff1dc, si: 3.0, sp: [9, 8, -12], pend: 0, bulb: 0, rattan: 0, candle: 0.3, exp: 1.0, env: 0.45 },
+      entardecer: { top: 0x4a5d7a, hor: 0xf3b37a, fog: 0xe0a987, fn: 50, ff: 380, water: 0x3d5f6e, hs: 0xffc9a0, hg: 0x4a3a2a, hi: 0.5, sun: 0xffa45c, si: 2.6, sp: [16, 3.4, -6], pend: 6, bulb: 2.2, rattan: 0.35, candle: 1.2, exp: 1.05, env: 0.18 },
+      chuva: { top: 0x5b646c, hor: 0x9aa2a4, fog: 0x959d9f, fn: 12, ff: 200, water: 0x4d6264, hs: 0xb4bec4, hg: 0x3d3a34, hi: 0.65, sun: 0xd6dee6, si: 0.5, sp: [4, 14, -8], pend: 4, bulb: 1.6, rattan: 0.25, candle: 1.0, exp: 0.95, env: 0.25, rain: true }
+    };
+    const C = MOODS[id] || MOODS.dia; this.C = C;
+    this.scene.fog.near = C.fn; this.scene.fog.far = C.ff;
+    this.water.material.color.set(C.water);
+    this.rain.visible = !!C.rain;
+    this.updateRainAudio();
+    const top = new T.Color(C.top), hor = new T.Color(C.hor), p = this.sky.geometry.attributes.position, col = this.sky.geometry.attributes.color, tmp = new T.Color();
+    for (let i = 0; i < p.count; i++) { const k = Math.max(0, Math.min(1, p.getY(i) / 400 * 2.2)); tmp.copy(hor).lerp(top, Math.pow(k, 0.7)); col.setXYZ(i, tmp.r, tmp.g, tmp.b); }
+    col.needsUpdate = true;
+    this.scene.fog.color.set(C.fog);
+    this.hemi.color.set(C.hs); this.hemi.groundColor.set(C.hg); this.hemi.intensity = C.hi;
+    this.sun.color.set(C.sun); this.sun.intensity = C.si; this.sun.position.set(...C.sp);
+    this.pendantLights.forEach(L => L.intensity = C.pend);
+    this.mBulb.emissiveIntensity = C.bulb; this.mRattan.emissiveIntensity = C.rattan;
+    this.flameAmt = C.candle;
+    this.renderer.toneMappingExposure = C.exp;
+    this.mats.forEach(m => m.envMapIntensity = C.env);
+    if (this.skyRT) this.skyRT.dispose();
+    this.skyRT = this.pm.fromScene(this.envScene, 0);
+    this.water.material.envMap = this.skyRT.texture; this.water.material.envMapIntensity = 1; this.water.material.needsUpdate = true;
+  }
+
+  audio() {
+    if (!this.ac) {
+      const ac = this.ac = new (window.AudioContext || window.webkitAudioContext)(), sr = ac.sampleRate;
+      const white = ac.createBuffer(1, sr * 3, sr), wd = white.getChannelData(0); for (let i = 0; i < wd.length; i++) wd[i] = Math.random() * 2 - 1;
+      const brown = ac.createBuffer(1, sr * 6, sr), bd = brown.getChannelData(0); let last = 0; for (let i = 0; i < bd.length; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; bd[i] = last * 3.5; }
+      this.brown = brown;
+      const src = ac.createBufferSource(); src.buffer = white; src.loop = true;
+      const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 0.4;
+      const hp = ac.createBiquadFilter(); hp.type = 'lowpass'; hp.frequency.value = 5000;
+      this.rainGain = ac.createGain(); this.rainGain.gain.value = 0;
+      src.connect(bp).connect(hp).connect(this.rainGain).connect(ac.destination); src.start();
+    }
+    this.ac.resume();
+  }
+  updateRainAudio() {
+    if (!this.rainGain) return;
+    const on = this.C?.rain && this.state.sound;
+    this.rainGain.gain.setTargetAtTime(on ? 0.14 : 0, this.ac.currentTime, 0.6);
+  }
+  thunder(delay) {
+    if (!this.ac || !this.state.sound) return;
+    const ac = this.ac, t0 = ac.currentTime + delay;
+    const s = ac.createBufferSource(); s.buffer = this.brown; s.playbackRate.value = 0.7 + Math.random() * 0.4;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(900, t0); lp.frequency.exponentialRampToValueAtTime(140, t0 + 1.5);
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.9, t0 + 0.06); g.gain.exponentialRampToValueAtTime(0.35, t0 + 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 4.5);
+    s.connect(lp).connect(g).connect(ac.destination); s.start(t0); s.stop(t0 + 5);
+  }
+
+  recordVideo() {
+    if (!this.renderer || this.state.rec) return;
+    const cv = this.renderer.domElement, stream = cv.captureStream(30);
+    const type = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+    if (!type) { alert('Este navegador não grava vídeo. Tente no Chrome.'); return; }
+    const rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 8e6 }), chunks = [];
+    rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    rec.onstop = () => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(chunks, { type })); a.download = 'sala-de-yoga-tour.' + (type.includes('mp4') ? 'mp4' : 'webm'); a.click();
+      this.setState({ rec: 0 });
+    };
+    const tour = [['dia', 'entrada'], ['dia', 'professor'], ['dia', 'tapete'], ['entardecer', 'geral'], ['entardecer', 'altar'], ['chuva', 'tapete'], ['chuva', 'entrada']];
+    const STEP = 5, total = tour.length * STEP;
+    this.setState({ playing: true }); this.classT = 20;
+    tour.forEach(([m, c], i) => setTimeout(() => { if (m === 'chuva') this.nextFlash = 0; this.setMood(m); this.goCam(c); }, i * STEP * 1000));
+    let left = total; this.setState({ rec: left });
+    const tick = setInterval(() => { left--; this.setState({ rec: Math.max(left, 1) }); if (left <= 0) { clearInterval(tick); rec.stop(); } }, 1000);
+    rec.start(500);
+  }
+
+  goCam(id) {
+    this.setState({ cam: id });
+    if (!this.cam) return;
+    const [p, q] = this.CAMS[id], V = this.T.Vector3;
+    this.tween = { t0: performance.now(), p0: this.cam.position.clone(), q0: this.controls.target.clone(), p1: new V(...p), q1: new V(...q) };
+  }
+
+  renderVals() {
+    const { mood, cam } = this.state;
+    const moods = [{ id: 'dia', badge: '1a', label: 'Dia tropical' }, { id: 'entardecer', badge: '1b', label: 'Entardecer' }, { id: 'chuva', badge: '1c', label: 'Chuva e trovões' }].map(m => ({
+      ...m, bg: m.id === mood ? '#f4f0e8' : 'transparent', fg: m.id === mood ? '#2a2620' : '#f4f0e8',
+      onClick: () => { if (m.id === 'chuva') { try { this.audio(); } catch (e) {} this.nextFlash = 0; } this.setMood(m.id); }
+    }));
+    const cams = [{ id: 'entrada', label: 'Entrada' }, { id: 'tapete', label: 'Sentado no tapete' }, { id: 'altar', label: 'Altar' }, { id: 'geral', label: 'Visão geral' }, { id: 'professor', label: 'Professor' }].map(c => ({
+      ...c, bg: c.id === cam ? 'rgba(244,240,232,.95)' : 'rgba(30,27,22,.55)', fg: c.id === cam ? '#2a2620' : '#f4f0e8', onClick: () => this.goCam(c.id)
+    }));
+    return {
+      mountRef: this.mountRef, specRef: this.specRef, moods, cams,
+      loading: this.state.loading, loadingText: this.state.loadingText,
+      poseLabel: this.state.poseLabel || '—', playLabel: this.state.playing ? 'Pausar aula' : 'Continuar aula',
+      togglePlay: () => this.setState(s => ({ playing: !s.playing })),
+      recLabel: this.state.rec ? `Gravando… ${this.state.rec} s` : 'Gravar vídeo do tour (35 s)',
+      recBg: this.state.rec ? '#c0492f' : '#2a2620',
+      recordVideo: () => this.recordVideo(),
+      isRain: mood === 'chuva', soundLabel: this.state.sound ? 'Som ligado' : 'Som desligado',
+      toggleSound: () => { try { this.audio(); } catch (e) {} this.setState(s => ({ sound: !s.sound }), () => this.updateRainAudio()); },
+      copyLabel: this.state.copied ? 'Copiado ✓' : 'Copiar especificação',
+      copySpec: () => {
+        const txt = 'Especificação visual: Sala de Yoga Tropical (1 unidade = 1 m)\n\n' + this.specRef.current.innerText;
+        navigator.clipboard.writeText(txt).then(() => { this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 2000); });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

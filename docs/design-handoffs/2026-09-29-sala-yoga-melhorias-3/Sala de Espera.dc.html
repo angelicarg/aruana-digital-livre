@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#17130f;color:#f4efe8;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#19c9a6}a:hover{color:#6fe3cb}
+*{box-sizing:border-box}
+input::placeholder{color:#6f665c}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-wrap:wrap;background:#17130f">
+
+  <div style="flex:1 1 560px;position:sticky;top:0;height:min(100vh,max(460px,64vw));min-height:460px;overflow:hidden;background:#1b1612">
+    <div style="position:absolute;inset:0;background:radial-gradient(55% 48% at 50% 58%, {{ glow }} 0%, rgba(23,19,15,0) 72%);transition:background .6s"></div>
+    <div ref="{{ mountRef }}" style="position:absolute;inset:0;touch-action:none;cursor:grab"></div>
+    <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 13px 'JetBrains Mono',monospace;color:#a59b8f">{{ loadingText }}</div>
+    </sc-if>
+    <div ref="{{ tagRef }}" style="position:absolute;left:0;top:0;pointer-events:none;opacity:0;transition:opacity .3s;will-change:transform">
+      <div style="transform:translate(-50%,-100%);display:flex;align-items:center;gap:8px;padding:7px 14px 7px 10px;border-radius:999px;background:rgba(23,19,15,.72);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);white-space:nowrap">
+        <span style="width:10px;height:10px;border-radius:50%;background:{{ intentHex }};box-shadow:0 0 12px {{ intentHex }}"></span>
+        <span style="font:700 14px Manrope,sans-serif;color:#f4efe8">{{ tagName }}</span>
+        <span style="font:500 11px 'JetBrains Mono',monospace;color:#a59b8f;text-transform:uppercase;letter-spacing:.06em">{{ intentLabel }}</span>
+      </div>
+    </div>
+    <div style="position:absolute;top:20px;left:24px;right:24px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="font:500 12px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#a59b8f">Aruanã Digital · Sala de espera</div>
+      <button onClick="{{ randomize }}" style="border:1px solid rgba(255,255,255,.12);cursor:pointer;padding:9px 16px;border-radius:999px;font:600 13px Manrope,sans-serif;background:rgba(23,19,15,.55);color:#f4efe8;backdrop-filter:blur(10px)" style-hover="background:rgba(255,255,255,.1)">Me surpreenda</button>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:22px;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none">
+      <div style="display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(23,19,15,.6);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);pointer-events:auto">
+        <sc-for list="{{ poses }}" as="p" hint-placeholder-count="2">
+          <button onClick="{{ p.onClick }}" style="border:0;cursor:pointer;padding:8px 16px;border-radius:999px;font:600 13px Manrope,sans-serif;background:{{ p.bg }};color:{{ p.fg }}">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#7d746a">Arraste para girar</div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 420px;max-width:540px;margin:0 auto;padding:44px 36px 56px;display:flex;flex-direction:column;gap:30px">
+    <header style="display:flex;flex-direction:column;gap:10px">
+      <h1 style="margin:0;font-size:clamp(28px,3.2vw,38px);font-weight:800;letter-spacing:-.025em;line-height:1.05">Sala de Yoga &amp; Relaxamento</h1>
+      <p style="margin:0;font-size:16px;line-height:1.5;color:#c9c0b5;text-wrap:pretty">Antes de entrar, escolha como você vai aparecer. Ninguém vê seu rosto nem seu nome real, só a criatura que você montar aqui.</p>
+    </header>
+
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:#211c18;border:1px solid #342d27">
+      <div style="display:flex;flex-shrink:0">
+        <sc-for list="{{ occupants }}" as="o" hint-placeholder-count="0">
+          <div style="width:34px;height:34px;border-radius:50%;margin-left:-8px;border:2px solid #211c18;background:{{ o.hex }};overflow:hidden;display:flex">
+            <div style="width:100%;height:100%;background-image:{{ o.img }};background-size:cover;background-position:center"></div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ empty }}" hint-placeholder-val="{{ true }}">
+          <div style="width:34px;height:34px;border-radius:50%;border:1.5px dashed #5a5147"></div>
+        </sc-if>
+      </div>
+      <div style="font-size:14px;line-height:1.45;color:#c9c0b5;text-wrap:pretty"><strong style="color:#f4efe8">{{ roomTitle }}</strong> {{ roomSub }}</div>
+    </div>
+
+    <section style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font:500 12px 'JetBrains Mono',monospace;color:#19c9a6">01</span><span style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a59b8f">Sua criatura</span><span style="margin-left:auto;font-size:13px;color:#f4efe8;font-weight:600">{{ creatureName }}</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+        <sc-for list="{{ creatures }}" as="c" hint-placeholder-count="6">
+          <button onClick="{{ c.onClick }}" style="position:relative;cursor:pointer;padding:0;border-radius:14px;overflow:hidden;aspect-ratio:1/1;background:#211c18;border:2px solid {{ c.border }};display:flex;flex-direction:column;align-items:stretch" style-hover="background:#29231e">
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:0">
+              <sc-if value="{{ c.thumb }}" hint-placeholder-val="{{ false }}"><div style="width:100%;height:100%;background-image:{{ c.img }};background-size:cover;background-position:center"></div></sc-if>
+              <sc-if value="{{ c.noThumb }}" hint-placeholder-val="{{ true }}"><div style="width:40%;aspect-ratio:1/1;border-radius:50%;background:{{ c.hex }};opacity:.7"></div></sc-if>
+            </div>
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:6px 8px;font:600 12px Manrope,sans-serif;color:#f4efe8;background:linear-gradient(0deg,rgba(23,19,15,.85),rgba(23,19,15,0));text-align:left">{{ c.label }}</div>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font:500 12px 'JetBrains Mono',monospace;color:#19c9a6">02</span><span style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a59b8f">Cores</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#c9c0b5"><span>Roupa</span><span style="color:#f4efe8;font-weight:600">{{ tintName }}</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <sc-for list="{{ tints }}" as="t" hint-placeholder-count="6">
+            <button onClick="{{ t.onClick }}" title="{{ t.label }}" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:2px solid #17130f;background:{{ t.hex }};box-shadow:0 0 0 2px {{ t.ring }}"></button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#c9c0b5"><span>Seu tapete</span><span style="color:#f4efe8;font-weight:600">{{ matName }}</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <sc-for list="{{ mats }}" as="t" hint-placeholder-count="5">
+            <button onClick="{{ t.onClick }}" title="{{ t.label }}" style="width:48px;height:22px;border-radius:6px;cursor:pointer;border:2px solid #17130f;background:{{ t.hex }};box-shadow:0 0 0 2px {{ t.ring }}"></button>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font:500 12px 'JetBrains Mono',monospace;color:#19c9a6">03</span><span style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a59b8f">Acessórios</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13px;color:#c9c0b5">Na cabeça</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ heads }}" as="a" hint-placeholder-count="7">
+            <button onClick="{{ a.onClick }}" style="cursor:pointer;padding:9px 14px;border-radius:999px;font:600 13px Manrope,sans-serif;border:1px solid {{ a.border }};background:{{ a.bg }};color:{{ a.fg }}">{{ a.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13px;color:#c9c0b5">No rosto e no pescoço</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ faces }}" as="a" hint-placeholder-count="4">
+            <button onClick="{{ a.onClick }}" style="cursor:pointer;padding:9px 14px;border-radius:999px;font:600 13px Manrope,sans-serif;border:1px solid {{ a.border }};background:{{ a.bg }};color:{{ a.fg }}">{{ a.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#c9c0b5"><span>Cor dos acessórios</span><span style="color:#f4efe8;font-weight:600">{{ accName }}</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <sc-for list="{{ accCols }}" as="t" hint-placeholder-count="5">
+            <button onClick="{{ t.onClick }}" title="{{ t.label }}" style="width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid #17130f;background:{{ t.hex }};box-shadow:0 0 0 2px {{ t.ring }}"></button>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font:500 12px 'JetBrains Mono',monospace;color:#19c9a6">04</span><span style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a59b8f">Presença</span></div>
+      <label style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;color:#c9c0b5">Apelido na sala <span style="color:#7d746a">(opcional)</span></span>
+        <input value="{{ nick }}" onChange="{{ onNick }}" maxlength="16" placeholder="Ex.: Maré, Brisa, Pé de Ipê" style="width:100%;padding:13px 14px;border-radius:12px;border:1px solid #342d27;background:#110e0b;color:#f4efe8;font:600 15px Manrope,sans-serif;outline:none" style-focus="border-color:#19c9a6"></input>
+      </label>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13px;color:#c9c0b5">Intenção de hoje</div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          <sc-for list="{{ intents }}" as="i" hint-placeholder-count="4">
+            <button onClick="{{ i.onClick }}" style="cursor:pointer;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid {{ i.border }};background:{{ i.bg }};display:flex;flex-direction:column;gap:4px">
+              <span style="display:flex;align-items:center;gap:8px;font:700 14px Manrope,sans-serif;color:#f4efe8"><span style="width:10px;height:10px;border-radius:50%;background:{{ i.hex }};box-shadow:0 0 10px {{ i.hex }}"></span>{{ i.label }}</span>
+              <span style="font-size:12px;line-height:1.35;color:#a59b8f">{{ i.desc }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="font-size:12px;line-height:1.45;color:#7d746a">A intenção vira um halo de luz em volta do seu tapete. As outras pessoas veem a cor, mas não sabem quem você é.</div>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font:500 12px 'JetBrains Mono',monospace;color:#19c9a6">05</span><span style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a59b8f">Entrar</span></div>
+      <label style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;color:#c9c0b5">Código da sala</span>
+        <input value="{{ code }}" onChange="{{ onCode }}" style="width:100%;padding:13px 14px;border-radius:12px;border:1px solid #342d27;background:#110e0b;color:#f4efe8;font:600 15px 'JetBrains Mono',monospace;outline:none" style-focus="border-color:#19c9a6"></input>
+        <span style="font-size:12px;line-height:1.45;color:#7d746a">Quem abrir o link com o mesmo código cai na mesma sala. Sem código, você entra na sala pública.</span>
+      </label>
+
+      <div style="display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:16px;background:#211c18;border:1px solid #342d27">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:13px;color:#c9c0b5">Escolha seu tapete</span><span style="font-size:13px;font-weight:700;color:#f4efe8">{{ spotLabel }}</span></div>
+        <div style="display:flex;justify-content:center"><div style="width:30%;height:14px;border-radius:4px;background:#c9a27a;opacity:.55"></div></div>
+        <div style="font:500 10px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#7d746a;text-align:center;margin-top:-4px">Professora</div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 14px">
+          <sc-for list="{{ spots }}" as="s" hint-placeholder-count="6">
+            <button onClick="{{ s.onClick }}" disabled="{{ s.taken }}" title="{{ s.title }}" style="position:relative;height:34px;padding:0;border-radius:6px;background:{{ s.bg }};border:1.5px {{ s.borderStyle }} {{ s.border }};display:flex;align-items:center;justify-content:center;cursor:{{ s.cursor }}" style-hover="border-color:{{ s.hover }}">
+              <sc-if value="{{ s.thumb }}" hint-placeholder-val="{{ false }}"><div style="width:26px;height:26px;border-radius:50%;background-color:#17130f;background-image:{{ s.img }};background-size:cover;background-position:center"></div></sc-if>
+              <sc-if value="{{ s.mine }}" hint-placeholder-val="{{ false }}"><span style="font:800 11px Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#17130f">Você</span></sc-if>
+              <sc-if value="{{ s.free }}" hint-placeholder-val="{{ false }}"><span style="font:600 11px Manrope,sans-serif;color:#7d746a">Livre</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <a href="Sala de Yoga Tropical.dc.html" onClick="{{ enter }}" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:17px 20px;border-radius:999px;background:#19c9a6;color:#0d1f1a;font:800 16px Manrope,sans-serif;text-decoration:none" style-hover="background:#3fd8b8;color:#0d1f1a">{{ enterLabel }}</a>
+      <p style="margin:0;font-size:12px;line-height:1.5;color:#7d746a;text-wrap:pretty">Quem chegou antes já está no seu tapete. Escolha um dos livres. Se outra pessoa pegar o mesmo antes de você entrar, você vai para o livre mais próximo. Com a sala cheia você entra em pé e continua vendo e ouvindo tudo. Suas escolhas ficam salvas neste aparelho.</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;pessoasNaSala&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:2,&quot;min&quot;:0,&quot;max&quot;:6,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Simulação&quot;}}">
+const CREATURES = [
+  { id: 'gotaAzul', label: 'Gota', hex: '#afcbea' },
+  { id: 'gotaPessego', label: 'Pêssego', hex: '#f3b891' },
+  { id: 'broto', label: 'Broto', hex: '#62bb6e' },
+  { id: 'origami', label: 'Origami', hex: '#3d88d4' },
+  { id: 'roxo', label: 'Noite', hex: '#5b3aa0' },
+  { id: 'cinza', label: 'Faísca', hex: '#f5821f' },
+];
+const TINTS = [
+  { label: 'Original', v: null }, { label: 'Sálvia', hex: '#8fb39a' }, { label: 'Terracota', hex: '#d08a64' },
+  { label: 'Lavanda', hex: '#b3a3dc' }, { label: 'Areia', hex: '#e3c9a2' }, { label: 'Oceano', hex: '#4f8fb3' }, { label: 'Carvão', hex: '#4a4540' },
+];
+const MATS = [
+  { label: 'Musgo', hex: '#8fa58a' }, { label: 'Barro', hex: '#c47a5a' }, { label: 'Linho', hex: '#d9c3a0' },
+  { label: 'Canela', hex: '#a86b56' }, { label: 'Oliva', hex: '#7f8a5e' },
+];
+const HEADS = [
+  { id: null, label: 'Nada' }, { id: 'laco', label: 'Laço' }, { id: 'chapeu', label: 'Chapéu de palha' }, { id: 'coque', label: 'Coque' },
+  { id: 'faixa', label: 'Faixa' }, { id: 'coroa', label: 'Coroa de flores' }, { id: 'fone', label: 'Fone' },
+];
+const FACES = [{ id: null, label: 'Nada' }, { id: 'oculos', label: 'Óculos redondos' }, { id: 'echarpe', label: 'Echarpe' }, { id: 'colar', label: 'Colar de contas' }];
+const ACC = [
+  { label: 'Coral', hex: '#e8604c' }, { label: 'Mostarda', hex: '#f2c14e' }, { label: 'Anil', hex: '#3f7fbf' },
+  { label: 'Menta', hex: '#19c9a6' }, { label: 'Creme', hex: '#f6efe4' }, { label: 'Grafite', hex: '#2e2a28' },
+];
+const INTENTS = [
+  { id: 'calma', label: 'Calma', hex: '#7fb8e0', desc: 'Desacelerar e soltar o dia' },
+  { id: 'foco', label: 'Foco', hex: '#f0b14a', desc: 'Voltar a atenção para o agora' },
+  { id: 'gratidao', label: 'Gratidão', hex: '#ef8fb1', desc: 'Agradecer por estar aqui' },
+  { id: 'leveza', label: 'Leveza', hex: '#8fd19e', desc: 'Mover o corpo sem pressa' },
+];
+const OTHERS = ['gotaAzul', 'broto', 'gotaPessego', 'origami', 'roxo', 'cinza'];
+const KEY = 'aruana-avatar';
+const hexN = (h) => parseInt(h.slice(1), 16);
+const rgba = (h, a) => { const n = hexN(h); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+
+class Component extends DCLogic {
+  mountRef = React.createRef();
+  tagRef = React.createRef();
+  constructor(p) {
+    super(p);
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}').ui || {}; } catch (e) {}
+    this.state = Object.assign({ creature: 1, tint: 0, mat: 0, head: 1, face: 0, acc: 0, intent: 0, nick: '', code: 'publica', pose: 'pe', spot: 4, loading: true, loadingText: 'Preparando sua criatura…', thumbs: {}, entering: false }, saved, { loading: true, thumbs: {}, entering: false });
+  }
+  async componentDidMount() {
+    try {
+      const THREE = await import('https://esm.sh/three@0.160.0');
+      const { OrbitControls } = await import('https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js');
+      const { RoomEnvironment } = await import('https://esm.sh/three@0.160.0/examples/jsm/environments/RoomEnvironment.js');
+      this.mod = await import(new URL('personagens.js', location.href).href);
+      if (!this.mountRef.current) return;
+      this.THREE = THREE; this.init(OrbitControls, RoomEnvironment);
+      this.setState({ loading: false });
+      const idle = window.requestIdleCallback || ((f) => setTimeout(f, 400)); idle(() => { try { this.makeThumbs(); } catch (e) { console.error('thumbs', e && e.message); } });
+    } catch (e) { console.error('init', e && e.message, e && e.stack); this.setState({ loadingText: 'Não foi possível carregar o 3D.' }); }
+  }
+  componentWillUnmount() { this.dead = true; cancelAnimationFrame(this.raf); this.ro && this.ro.disconnect(); this.renderer && this.renderer.dispose(); }
+  sync() {
+    const s = this.state, ps = this.applied || s; this.applied = Object.assign({}, s);
+    if (this.saveNow) { this.saveNow = false; try { localStorage.setItem(KEY, JSON.stringify(Object.assign({ ui: s }, this.avatar()))); } catch (e) {} }
+    if (!this.THREE || !['creature', 'tint', 'mat', 'head', 'face', 'acc', 'intent', 'nick', 'code', 'pose', 'spot'].some(k => ps[k] !== s[k])) return;
+    if (['creature', 'tint', 'head', 'face', 'acc'].some(k => ps[k] !== s[k])) this.rebuild().catch(e => console.error('rebuild', e && e.message));
+    if (ps.mat !== s.mat) this.matMesh.material.color.set(MATS[s.mat].hex);
+    if (ps.intent !== s.intent) this.haloMat.color.set(INTENTS[s.intent].hex);
+    if (ps.pose !== s.pose) { this.classT = s.pose === 'pe' ? 17.5 : 0.5; this.hold = s.pose === 'pe' ? 21.5 : 7.5; this.targetY = s.pose === 'pe' ? 0.8 : 0.55; }
+    const ui = {}; ['creature', 'tint', 'mat', 'head', 'face', 'acc', 'intent', 'nick', 'code', 'pose', 'spot'].forEach(k => ui[k] = s[k]);
+    try { localStorage.setItem(KEY, JSON.stringify(Object.assign({ ui }, this.avatar()))); } catch (e) {}
+  }
+  avatar() {
+    const s = this.state, t = TINTS[s.tint];
+    return { style: CREATURES[s.creature].id, tint: t.hex ? hexN(t.hex) : null, acc: { head: HEADS[s.head].id, face: FACES[s.face].id, color: hexN(ACC[s.acc].hex) }, mat: MATS[s.mat].hex, intent: INTENTS[s.intent].id, nick: s.nick.trim() };
+  }
+  init(OrbitControls, RoomEnvironment) {
+    const THREE = this.THREE, el = this.mountRef.current;
+    const r = this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 0.9; r.outputColorSpace = THREE.SRGBColorSpace;
+    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.setClearColor(0x000000, 0);
+    el.appendChild(r.domElement); r.domElement.style.display = 'block';
+    const scene = this.scene = new THREE.Scene();
+    const pm = new THREE.PMREMGenerator(r); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.add(new THREE.HemisphereLight(0xfff1e0, 0x3a2c22, 0.7));
+    const key = new THREE.DirectionalLight(0xffe6c8, 1.8); key.position.set(2.5, 4, 3); key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -2, right: 2, top: 2.5, bottom: -1, near: 0.5, far: 12 }); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02; scene.add(key);
+    const rim = new THREE.DirectionalLight(0x9fe8d8, 1.3); rim.position.set(-3, 2.5, -3); scene.add(rim);
+    const sh = new THREE.Shape(), w = 0.61, l = 1.83, rr = 0.05;
+    sh.moveTo(-w / 2 + rr, -l / 2); sh.lineTo(w / 2 - rr, -l / 2); sh.quadraticCurveTo(w / 2, -l / 2, w / 2, -l / 2 + rr); sh.lineTo(w / 2, l / 2 - rr); sh.quadraticCurveTo(w / 2, l / 2, w / 2 - rr, l / 2); sh.lineTo(-w / 2 + rr, l / 2); sh.quadraticCurveTo(-w / 2, l / 2, -w / 2, l / 2 - rr); sh.lineTo(-w / 2, -l / 2 + rr); sh.quadraticCurveTo(-w / 2, -l / 2, -w / 2 + rr, -l / 2);
+    const mg = new THREE.ExtrudeGeometry(sh, { depth: 0.006, bevelEnabled: false }); mg.rotateX(-Math.PI / 2);
+    this.matMesh = new THREE.Mesh(mg, new THREE.MeshStandardMaterial({ color: MATS[this.state.mat].hex, roughness: 0.95, envMapIntensity: 0.3 })); this.matMesh.receiveShadow = true; this.matMesh.position.z = 0.35; scene.add(this.matMesh);
+    const shadow = new THREE.Mesh(new THREE.CircleGeometry(3, 48).rotateX(-Math.PI / 2), new THREE.ShadowMaterial({ opacity: 0.35 })); shadow.receiveShadow = true; shadow.position.y = -0.001; scene.add(shadow);
+    this.haloMat = new THREE.MeshBasicMaterial({ color: INTENTS[this.state.intent].hex, transparent: true, opacity: 0.6, depthWrite: false, toneMapped: false });
+    this.halo = new THREE.Mesh(new THREE.RingGeometry(0.62, 0.66, 96).rotateX(-Math.PI / 2), this.haloMat); this.halo.position.y = 0.01; scene.add(this.halo);
+    const cam = this.cam = new THREE.PerspectiveCamera(32, 1, 0.1, 50); cam.position.set(1.4, 1.55, 5.8);
+    const ctl = this.ctl = new OrbitControls(cam, r.domElement);
+    Object.assign(ctl, { enablePan: false, enableDamping: true, dampingFactor: 0.08, minDistance: 3, maxDistance: 7, minPolarAngle: 0.9, maxPolarAngle: 1.5, autoRotate: true, autoRotateSpeed: 0.9 });
+    this.targetY = this.state.pose === 'pe' ? 0.8 : 0.55; ctl.target.set(0, this.targetY, 0);
+    ctl.addEventListener('start', () => { ctl.autoRotate = false; clearTimeout(this.art); el.style.cursor = 'grabbing'; });
+    ctl.addEventListener('end', () => { el.style.cursor = 'grab'; this.art = setTimeout(() => ctl.autoRotate = true, 3500); });
+    const size = () => { const W = el.clientWidth, H = el.clientHeight; r.setSize(W, H); cam.aspect = W / H; cam.updateProjectionMatrix(); };
+    this.ro = new ResizeObserver(size); this.ro.observe(el); size();
+    this.classT = this.state.pose === 'pe' ? 21.5 : 7.5; this.hold = this.classT;
+    this.rebuild().catch(e => console.error('rebuild', e && e.message)); this.applied = Object.assign({}, this.state); this.saveNow = true;
+    const clock = new THREE.Clock(), v = new THREE.Vector3();
+    const loop = () => {
+      if (this.dead) return; this.raf = requestAnimationFrame(loop);
+      const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+      this.classT = Math.min(this.hold, this.classT + dt);
+      ctl.target.y += (this.targetY - ctl.target.y) * 0.06;
+      this.sync();
+      if (this.cast) { this.cast.update(this.classT, t); if (this.pop < 1) { this.pop = Math.min(1, this.pop + dt * 5); const k = 1 - Math.pow(1 - this.pop, 3), sc = 0.94 + 0.06 * k; this.cast.group.scale.setScalar(sc); } }
+      this.haloMat.opacity = 0.55 + 0.25 * Math.sin(t * 1.2); const hs = 1 + 0.04 * Math.sin(t * 1.2); this.halo.scale.set(hs, 1, hs);
+      ctl.update(); r.render(scene, cam);
+      const tag = this.tagRef.current;
+      if (tag && this.cast) { this.cast.chars[0].head.getWorldPosition(v); v.y += 0.5; v.project(cam); tag.style.transform = `translate(${(v.x * 0.5 + 0.5) * el.clientWidth}px,${(-v.y * 0.5 + 0.5) * el.clientHeight}px)`; tag.style.opacity = 1; }
+    };
+    loop();
+  }
+  async rebuild() {
+    const THREE = this.THREE, a = this.avatar(), token = this.buildToken = (this.buildToken || 0) + 1;
+    const next = this.mod.createCast(THREE, [{ style: a.style, x: 0, z: 0, rot: 0, tint: a.tint, acc: a.acc }]);
+    next.group.traverse(o => { if (o.material && o.material.envMapIntensity !== undefined) o.material.envMapIntensity = 0.5; });
+    next.update(this.classT, 0);
+    if (this.cast) { try { if (this.renderer.compileAsync) await Promise.race([this.renderer.compileAsync(next.group, this.cam, this.scene), new Promise(r => setTimeout(r, 250))]); } catch (e) {} }
+    if (token !== this.buildToken || this.dead) { next.group.traverse(o => o.geometry && o.geometry.dispose()); return; }
+    if (this.cast) { this.scene.remove(this.cast.group); this.cast.group.traverse(o => { o.geometry && o.geometry.dispose(); }); }
+    this.cast = next; this.pop = 0; this.scene.add(next.group);
+  }
+  makeThumbs() {
+    const THREE = this.THREE; if (!THREE || this.dead) return;
+    const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    r.setSize(200, 200); r.setPixelRatio(1); r.toneMapping = THREE.ACESFilmicToneMapping; r.outputColorSpace = THREE.SRGBColorSpace; r.setClearColor(0x2a231e, 1);
+    const sc = new THREE.Scene(); sc.environment = this.scene.environment;
+    sc.add(new THREE.HemisphereLight(0xfff1e0, 0x3a2c22, 1.1)); const k = new THREE.DirectionalLight(0xffe6c8, 2.4); k.position.set(2, 3, 3); sc.add(k);
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 20); cam.position.set(0.55, 1.5, 1.75); cam.lookAt(0, 1.24, 0);
+    const thumbs = {};
+    CREATURES.forEach(c => { const cast = this.mod.createCast(THREE, [{ style: c.id, x: 0, z: 0, rot: 0 }]); cast.update(21.5, 0); sc.add(cast.group); r.render(sc, cam); const d = r.domElement.toDataURL('image/png'), b = atob(d.split(',')[1]), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i);
+      thumbs[c.id] = URL.createObjectURL(new Blob([u], { type: 'image/png' })); sc.remove(cast.group); });
+    r.dispose(); this.setState({ thumbs });
+  }
+  renderVals() {
+    const s = this.state, th = s.thumbs, set = (k, v) => () => this.setState({ [k]: v });
+    const sel = (on) => ({ border: on ? '#19c9a6' : '#342d27', bg: on ? 'rgba(25,201,166,.14)' : '#211c18', fg: on ? '#f4efe8' : '#c9c0b5' });
+    const n = Math.max(0, Math.min(6, this.props.pessoasNaSala ?? 2));
+    const mine = OTHERS.filter(id => id !== CREATURES[s.creature].id);
+    const occ = mine.slice(0, n), ORDER = [1, 3, 5, 0, 4, 2], takenAt = {}; ORDER.slice(0, n).forEach((pos, k) => takenAt[pos] = occ[k]);
+    const free = [0, 1, 2, 3, 4, 5].filter(i => !(i in takenAt)), my = free.includes(s.spot) ? s.spot : (free.includes(4) ? 4 : free[0]);
+    const cr = CREATURES[s.creature], tint = TINTS[s.tint];
+    const spots = [0, 1, 2, 3, 4, 5].map(i => {
+      const o = takenAt[i] || null, me = i === my;
+      return { taken: !!o, free: !o && !me, title: o ? 'Ocupado' : me ? 'Seu tapete' : 'Escolher este tapete', cursor: o ? 'default' : 'pointer', hover: o ? '#3a322b' : me ? MATS[s.mat].hex : '#19c9a6', onClick: () => { if (!o) this.setState({ spot: i }); }, thumb: !!(o && th[o]), img: o && th[o] ? 'url(' + th[o] + ')' : 'none', mine: me, bg: me ? MATS[s.mat].hex : (o ? '#3a322b' : 'transparent'), border: me ? MATS[s.mat].hex : (o ? '#3a322b' : '#4a4138'), borderStyle: o || me ? 'solid' : 'dashed' };
+    });
+    const pos = ['Frente, à esquerda', 'Frente, no meio', 'Frente, à direita', 'Fundo, à esquerda', 'Fundo, no meio', 'Fundo, à direita'];
+    return {
+      mountRef: this.mountRef, tagRef: this.tagRef, loading: s.loading, loadingText: s.loadingText,
+      glow: rgba(INTENTS[s.intent].hex, 0.26),
+      intentHex: INTENTS[s.intent].hex, intentLabel: INTENTS[s.intent].label, tagName: s.nick.trim() || cr.label,
+      randomize: () => { const R = (a) => Math.floor(Math.random() * a.length); this.setState({ creature: R(CREATURES), tint: R(TINTS), mat: R(MATS), head: R(HEADS), face: R(FACES), acc: R(ACC), intent: R(INTENTS) }); },
+      poses: [['pe', 'Em pé'], ['sentado', 'Sentada']].map(([id, label]) => ({ label, onClick: set('pose', id), bg: s.pose === id ? '#f4efe8' : 'transparent', fg: s.pose === id ? '#17130f' : '#c9c0b5' })),
+      occupants: occ.map(id => ({ img: th[id] ? 'url(' + th[id] + ')' : 'none', hex: CREATURES.find(c => c.id === id).hex })),
+      empty: n === 0,
+      roomTitle: n === 0 ? 'A sala está vazia.' : n >= 6 ? 'Os seis tapetes estão ocupados.' : `${n} ${n === 1 ? 'pessoa já está' : 'pessoas já estão'} na sala.`,
+      roomSub: n === 0 ? 'Você será a primeira pessoa a entrar.' : n >= 6 ? 'Você entra em pé, perto da porta.' : 'A aula começa quando a professora chegar ao tapete.',
+      creatureName: cr.label,
+      creatures: CREATURES.map((c, i) => ({ label: c.label, hex: c.hex, thumb: !!th[c.id], img: th[c.id] ? 'url(' + th[c.id] + ')' : 'none', noThumb: !th[c.id], onClick: set('creature', i), border: s.creature === i ? '#19c9a6' : 'transparent' })),
+      tintName: tint.label,
+      tints: TINTS.map((t, i) => ({ label: t.label, hex: t.hex || cr.hex, onClick: set('tint', i), ring: s.tint === i ? '#f4efe8' : 'transparent' })),
+      matName: MATS[s.mat].label,
+      mats: MATS.map((t, i) => ({ label: t.label, hex: t.hex, onClick: set('mat', i), ring: s.mat === i ? '#f4efe8' : 'transparent' })),
+      heads: HEADS.map((a, i) => Object.assign({ label: a.label, onClick: set('head', i) }, sel(s.head === i))),
+      faces: FACES.map((a, i) => Object.assign({ label: a.label, onClick: set('face', i) }, sel(s.face === i))),
+      accName: ACC[s.acc].label,
+      accCols: ACC.map((t, i) => ({ label: t.label, hex: t.hex, onClick: set('acc', i), ring: s.acc === i ? '#f4efe8' : 'transparent' })),
+      nick: s.nick, onNick: (e) => this.setState({ nick: e.target.value.slice(0, 16) }),
+      intents: INTENTS.map((it, i) => ({ label: it.label, desc: it.desc, hex: it.hex, onClick: set('intent', i), border: s.intent === i ? it.hex : '#342d27', bg: s.intent === i ? rgba(it.hex, 0.1) : '#211c18' })),
+      code: s.code, onCode: (e) => this.setState({ code: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }),
+      spots, spotLabel: n >= 6 ? 'Em pé, perto da porta' : pos[my],
+      enterLabel: s.entering ? 'Entrando…' : `Entrar como ${s.nick.trim() || cr.label}`,
+      enter: () => this.setState({ entering: true }),
+    };
+  }
+}
+</script>
+</body>
+</html>

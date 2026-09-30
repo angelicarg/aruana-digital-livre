@@ -1,9 +1,16 @@
 // Personagens da Sala de Yoga — rig procedural em three.js (1 unidade = 1 m).
 // Portado quase 1:1 do protótipo "Sala de Yoga Tropical" (Claude Design,
-// 28/09/2026) — ver design_handoff_sala_yoga/personagens.js. Geometria e
-// animação processual, sem depender de `.glb`: útil para os NPCs de
-// ambientação (a aula sempre em curso) até virarem modelo esculpido no
-// Blender (ver "próximos passos" da especificação).
+// 28/09/2026) — ver design_handoff_sala_yoga/personagens.js — e depois
+// ampliado com cor/acessório por pessoa (`tinted`/`dressUp`), a partir do
+// handoff "Melhorias 3" (Sala de Espera). Geometria e animação processual,
+// sem depender de `.glb`.
+//
+// Duas formas de usar:
+// - `createCast`: um grupo inteiro em aula sincronizada (o elenco de
+//   ambientação, sempre na mesma pose ao mesmo tempo, defasado por pessoa).
+// - `createAvatar`: um personagem avulso, com a própria postura e respiração
+//   — o que as pessoas de verdade precisam, já que cada uma senta, levanta e
+//   respira no seu próprio tempo, não em ciclo de aula.
 //
 // Tipagem propositalmente frouxa: é geometria procedural que replica um
 // arquivo JS de referência praticamente linha a linha, e o ganho de tipar
@@ -11,25 +18,88 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type * as THREE_NS from "three";
 
-export type Placement = { style: string; x: number; z: number; rot?: number };
+export type Acessorio = {
+  head?: "chapeu" | "laco" | "coque" | "fone" | "faixa" | "coroa";
+  face?: "oculos" | "echarpe" | "colar";
+  color?: number;
+};
+export type Placement = {
+  style: string;
+  x: number;
+  z: number;
+  rot?: number;
+  /** Cor do corpo por pessoa. `null`/`undefined` mantém a cor original do estilo. */
+  tint?: number | null;
+  acc?: Acessorio;
+};
 export type Cast = {
   group: THREE_NS.Group;
+  /** Um item por `Placement`, na mesma ordem — os ossos do rig, para prender
+   *  algo à cabeça ou ao pescoço de uma pessoa específica (ex.: etiqueta). */
+  chars: any[];
   update(classT: number, clock: number, amplitude?: number): string;
 };
 
-export function createCast(THREE: typeof THREE_NS, placements: Placement[]): Cast {
-  const V2 = (x: number, y: number) => new THREE.Vector2(x, y);
-  const C = (c: number) => new THREE.Color(c);
-  const R = 0.15;
+export type PoseNome = "sentado" | "emPe";
 
-  const STYLES: Record<string, any> = {
-    professor: { head: "hood", body: 0xef8fb1, low: 0xe27aa2, arm: 0xef8fb1, leg: 0xb8336a, hand: 0xf3dec6, foot: 0xf3dec6, face: 0xf3dec6, eye: 0x7a3d84, emblem: "rings", tunic: true },
-    gotaAzul: { head: "drop", body: 0xafcbea, low: 0x90b3dc, face: 0xf6f1ea, eye: 0x5c6f96, emblem: "drop", mouth: true },
-    gotaPessego: { head: "drop", body: 0xf3b891, low: 0xe59a6d, face: 0xfbf4ec, eye: 0xa5623e, emblem: "drop", mouth: true },
-    broto: { head: "sprout", body: 0x62bb6e, low: 0x23997f, leg: 0x18866a, arm: 0x1f9a6c, face: 0xb6d651, eye: 0x1f6b4e, emblem: "circle", emblemColor: 0xf3de72 },
-    origami: { head: "origami", body: 0x3d88d4, low: 0x2e6fbf, face: 0xf6cb48, eye: 0x2c3e75, emblem: "diamond", facet: true },
-    roxo: { head: "round", body: 0x5b3aa0, low: 0x4a2e8a, arm: 0x3c2a7e, leg: 0x4a2e8a, face: 0x86d2ee, eye: 0x3b2a7a, emblem: "circle", emblemColor: 0xfbf8f0, mouth: true },
-  };
+/** Um personagem avulso, fora do ciclo de aula do elenco de ambientação — o
+ *  que as pessoas de verdade usam, cada uma com sua própria postura. */
+export type Avatar = {
+  group: THREE_NS.Group;
+  head: THREE_NS.Group;
+  spine: THREE_NS.Group;
+  neck: THREE_NS.Group;
+  /** Aplica uma postura nomeada, com respiração (`breath`, tipicamente entre
+   *  -1 e 1: negativo é exalado, positivo é inspirado) e um balanço leve
+   *  (`sway`) — mesma matemática do elenco de ambientação, ver `ferramentas`. */
+  applyPose(nome: PoseNome, breath?: number, sway?: number): void;
+  /** Uma pose entre duas, para uma troca suave em vez de instantânea — o que
+   *  o professor usa para sentar/levantar em 0,6 s. `mix` 0 é `a`, 1 é `b`. */
+  applyPoseMista(a: PoseNome, b: PoseNome, mix: number, breath?: number, sway?: number): void;
+};
+
+/** Definição visual de cada criatura escolhível, mais a professora (que não
+ *  entra em nenhum seletor — é sempre a mesma, reservada a quem conduz). Fora
+ *  de qualquer função que dependa de `THREE` de propósito: a cor-base de um
+ *  estilo serve para identidade (nome no chat) sem precisar montar geometria. */
+export const STYLES: Record<string, any> = {
+  professor: { head: "hood", body: 0xef8fb1, low: 0xe27aa2, arm: 0xef8fb1, leg: 0xb8336a, hand: 0xf3dec6, foot: 0xf3dec6, face: 0xf3dec6, eye: 0x7a3d84, emblem: "rings", tunic: true },
+  gotaAzul: { head: "drop", body: 0xafcbea, low: 0x90b3dc, face: 0xf6f1ea, eye: 0x5c6f96, emblem: "drop", mouth: true },
+  gotaPessego: { head: "drop", body: 0xf3b891, low: 0xe59a6d, face: 0xfbf4ec, eye: 0xa5623e, emblem: "drop", mouth: true },
+  broto: { head: "sprout", body: 0x62bb6e, low: 0x23997f, leg: 0x18866a, arm: 0x1f9a6c, face: 0xb6d651, eye: 0x1f6b4e, emblem: "circle", emblemColor: 0xf3de72 },
+  origami: { head: "origami", body: 0x3d88d4, low: 0x2e6fbf, face: 0xf6cb48, eye: 0x2c3e75, emblem: "diamond", facet: true },
+  roxo: { head: "round", body: 0x5b3aa0, low: 0x4a2e8a, arm: 0x3c2a7e, leg: 0x4a2e8a, face: 0x86d2ee, eye: 0x3b2a7a, emblem: "circle", emblemColor: 0xfbf8f0, mouth: true },
+  cinza: { head: "round", body: 0xf5821f, low: 0xe45f17, arm: 0x9da1ab, leg: 0x9da1ab, face: 0xaeb2bb, eye: 0x2a2226, emblem: "circle", emblemColor: 0xfbc21c, mouth: true, horn: true, mono: true },
+};
+
+/** As 6 criaturas escolhíveis, na ordem do handoff da Sala de Espera — a
+ *  professora fica de fora por não ser uma escolha de ninguém além de quem
+ *  conduz a aula. */
+export const ESTILOS_ESCOLHIVEIS = Object.keys(STYLES).filter((k) => k !== "professor");
+
+/** A cor efetiva do corpo de alguém: o tint escolhido, ou a cor original do
+ *  estilo quando não há tint. Fonte única para quem precisa da cor da pessoa
+ *  sem montar geometria nenhuma (o nome dela no chat, a prévia da Sala de
+ *  Espera). */
+export function corEfetiva(style: string, tint?: number | null): number {
+  return tint ?? STYLES[style]?.body ?? 0xffffff;
+}
+
+/**
+ * Monta as funções de geometria e material presas a uma instância de `THREE`
+ * — o app injeta o THREE dele por parâmetro em vez deste módulo importar o
+ * seu próprio, para não duplicar a lib no bundle (ver o aviso "Multiple
+ * instances of Three.js" no console quando isso acontece em outro lugar).
+ *
+ * Extraído de `createCast`/`createAvatar` para as duas funções
+ * compartilharem a mesma geometria sem duplicar ~300 linhas entre elas — o
+ * elenco de ambientação e as pessoas de verdade são o mesmo personagem, só
+ * com formas diferentes de decidir a postura de cada instante.
+ */
+function ferramentas(THREE: typeof THREE_NS) {
+  const V2 = (x: number, y: number) => new THREE.Vector2(x, y);
+  const C = (c: number | string) => new THREE.Color(c);
+  const R = 0.15;
 
   const phys = (color: number, o: any = {}) =>
     new THREE.MeshPhysicalMaterial(
@@ -199,6 +269,11 @@ export function createCast(THREE: typeof THREE_NS, placements: Placement[]): Cas
       eyeY = 1.12 * R;
       eyeDX = 0.48 * R;
       mouthY = 0.86 * R;
+      if (s.horn) {
+        const hg = new THREE.ConeGeometry(0.03, 0.1, 20);
+        hg.translate(0, 0.05, 0);
+        extra.push(["horn", hg, [0, 2.0 * R, 0], [0, 0, 0]]);
+      }
     }
     const mat = s.facet ? vphys({ flatShading: true, roughness: 0.75, clearcoat: 0, sheen: 0 }) : vphys();
     return { g, mat, eyeY, eyeDX, mouthY, extra };
@@ -332,74 +407,242 @@ export function createCast(THREE: typeof THREE_NS, placements: Placement[]): Cas
     };
     const [hipL, knL] = leg(1);
     const [hipR, knR] = leg(-1);
-    return { root, spine, head, shL, elL, shR, elR, hipL, knL, hipR, knR };
+    // Superfície contra a qual os acessórios medem a cabeça por raycasting
+    // (`dressUp`, abaixo). Réplica fiel do handoff: só a cabeça em si mais as
+    // peças do capuz — as demais formas não têm face dupla para incluir aqui.
+    const shell: any[] = [hm];
+    head.children.forEach((ch: any) => {
+      if (ch.material?.side === THREE.DoubleSide && s.head === "hood") shell.push(ch);
+    });
+    return { root, spine, neck, head, hm, H, shell, shL, elL, shR, elR, hipL, knL, hipR, knR };
   }
 
-  const K = ["rootY", "spineX", "headX", "headY", "shLx", "shLz", "elLx", "shRx", "shRz", "elRx", "hipLx", "hipLy", "hipLz", "knLx", "knLz", "hipRx", "hipRy", "hipRz", "knRx", "knRz"];
-  const P = (o: any) => {
-    const p = Object.assign({}, o);
-    const m = (r: string, l: string, sg: number) => {
-      if (p[r] === undefined) p[r] = (p[l] ?? 0) * sg;
+  /** Cor por pessoa: substitui as chaves de cor do estilo *antes* de montar os
+   *  materiais — não é troca de `.color` em runtime. `low`/`arm`/`leg`
+   *  escurecem em proporções diferentes para o corpo continuar lendo como um
+   *  volume, não uma silhueta de cor chapada. */
+  function tinted(s: any, t?: number | null) {
+    if (t == null) return s;
+    const d = (k: number) => "#" + C(t).lerp(C(0x000000), k).getHexString();
+    const o = Object.assign({}, s, { body: t, low: C(d(0.16)).getHex() });
+    if (s.arm !== undefined && !s.mono) o.arm = C(d(0.08)).getHex();
+    if (s.leg !== undefined && !s.mono) o.leg = C(d(0.26)).getHex();
+    return o;
+  }
+
+  /** Acessórios na cabeça/rosto. Mede a cabeça de verdade por raycasting
+   *  contra `c.shell` (topo, largura e profundidade nas quatro direções), em
+   *  vez de números fixos — é o que faz o mesmo chapéu servir em cabeças de
+   *  formato bem diferente (gota, broto, origami, redonda). */
+  function dressUp(c: any, acc?: Acessorio) {
+    if (!acc) return;
+    c.root.updateMatrixWorld(true);
+    const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+    const cast1 = (o: THREE_NS.Vector3, d: THREE_NS.Vector3) => {
+      ray.set(c.head.localToWorld(o), d.transformDirection(c.head.matrixWorld));
+      const h = ray.intersectObjects(c.shell, false)[0];
+      return h ? c.head.worldToLocal(h.point.clone()) : null;
     };
-    m("shRx", "shLx", 1);
-    m("shRz", "shLz", -1);
-    m("elRx", "elLx", 1);
-    m("hipRx", "hipLx", 1);
-    m("hipRy", "hipLy", -1);
-    m("hipRz", "hipLz", -1);
-    m("knRx", "knLx", 1);
-    m("knRz", "knLz", -1);
-    K.forEach((k) => (p[k] = p[k] ?? 0));
-    return p;
-  };
-  const POSES: Record<string, any> = {
-    sentado: P({ rootY: 0.1, spineX: 0.04, headX: 0.15, shLx: -0.58, shLz: 0.33, elLx: -0.15, hipLx: -1.4, hipLy: 0.75, knLz: -2.56, hipRx: -1.52 }),
-    sentadoBracos: P({ rootY: 0.1, spineX: -0.02, headX: -0.12, shLz: 2.75, elLx: -0.1, hipLx: -1.4, hipLy: 0.75, knLz: -2.56, hipRx: -1.52 }),
-    montanha: P({ rootY: 0.76, headX: 0.06, shLz: 0.1, elLx: -0.12 }),
-    montanhaBracos: P({ rootY: 0.76, headX: -0.18, shLz: 2.95, elLx: -0.05 }),
-    arvore: P({ rootY: 0.76, shLz: 2.98, elLx: -0.3, hipRz: -0.9, hipRx: -0.2, hipRy: 0, knRz: 2.39, hipLz: 0.02 }),
-    estrela: P({ rootY: 0.68, headY: 0.7, shLz: 1.57, elLx: 0, hipLz: 0.45 }),
-  };
-  const LABELS: Record<string, string> = { sentado: "Respiração sentada", sentadoBracos: "Braços ao alto", montanha: "Montanha", montanhaBracos: "Saudação ao alto", arvore: "Árvore", estrela: "Estrela" };
-  const SEQ: [string, number][] = [["sentado", 8], ["sentadoBracos", 5], ["sentado", 4], ["montanha", 5], ["montanhaBracos", 5], ["arvore", 8], ["montanha", 3], ["estrela", 6], ["montanha", 4]];
-  const TOTAL = SEQ.reduce((a, s) => a + s[1], 0);
-  const TR = 2.4;
-  const tmp: any = {};
-  const poseAt = (t: number) => {
-    t = ((t % TOTAL) + TOTAL) % TOTAL;
-    let s = 0;
-    for (let i = 0; i < SEQ.length; i++) {
-      const d = SEQ[i][1];
-      if (t < s + d) {
-        const a = POSES[SEQ[(i + SEQ.length - 1) % SEQ.length][0]];
-        const b = POSES[SEQ[i][0]];
-        let k = Math.min(1, (t - s) / TR);
-        k = k * k * (3 - 2 * k);
-        K.forEach((n) => (tmp[n] = a[n] + (b[n] - a[n]) * k));
-        return LABELS[SEQ[i][0]];
+    const topY = (cast1(V(0, 2, 0.01), V(0, -1, 0)) || V(0, 0.32, 0)).y;
+    const wR = (y: number) => (cast1(V(1, y, 0), V(-1, 0, 0)) || V(0.15, 0, 0)).x;
+    const wL = (y: number) => -(cast1(V(-1, y, 0), V(1, 0, 0)) || V(-0.15, 0, 0)).x;
+    const fZ = (x: number, y: number) => (cast1(V(x, y, 1), V(0, 0, -1)) || V(0, 0, 0.15)).z;
+    const bZ = (y: number) => -(cast1(V(0, y, -1), V(0, 0, 1)) || V(0, 0, -0.15)).z;
+    const col = acc.color ?? 0xe8604c;
+    const am = phys(col, { roughness: 0.45 });
+    const eyeY = c.H.eyeY;
+    const ringAt = (y: number, pad: number): [number, number] => {
+      const w = Math.max(wR(y), wL(y)) + pad;
+      const dz = Math.max(fZ(0, y), bZ(y)) + pad;
+      return [w, dz];
+    };
+    const H = c.head;
+    const mk = (g: any, m: any, p: [number, number, number], r?: [number, number, number]) => {
+      const x = add(g, m, H, p);
+      if (r) x.rotation.set(r[0], r[1], r[2]);
+      return x;
+    };
+    switch (acc.head) {
+      case "chapeu": {
+        const y = Math.min(topY - 0.06, eyeY + 0.13);
+        const [w, dz] = ringAt(y, 0.012);
+        const cr = Math.max(w, dz);
+        const straw = phys(0xd8b777, { roughness: 0.9, clearcoat: 0, sheen: 0.2 });
+        mk(new THREE.CylinderGeometry(cr * 0.92, cr, 0.1, 40), straw, [0, y + 0.05, 0]);
+        mk(new THREE.CylinderGeometry(cr * 1.95, cr * 2.0, 0.012, 48), straw, [0, y + 0.004, 0]);
+        mk(new THREE.CylinderGeometry(cr * 1.005, cr * 1.01, 0.028, 40), am, [0, y + 0.024, 0]);
+        break;
       }
-      s += d;
+      case "laco": {
+        const y = topY - 0.05;
+        const x = wR(y) * 0.72;
+        const grp = new THREE.Group();
+        grp.position.set(x, y, 0.02);
+        grp.rotation.set(0.1, 0.3, -0.55);
+        grp.scale.setScalar(1.6);
+        H.add(grp);
+        const cg = new THREE.ConeGeometry(0.045, 0.085, 20).scale(1, 1, 0.45);
+        [-1, 1].forEach((sd) => {
+          const m = add(cg, am, grp, [sd * 0.045, 0, 0]);
+          m.rotation.z = (sd * Math.PI) / 2;
+        });
+        add(new THREE.SphereGeometry(0.022, 16, 12), am, grp);
+        break;
+      }
+      case "coque": {
+        const y = topY - 0.035;
+        const z = -bZ(y) * 0.35;
+        mk(new THREE.SphereGeometry(0.068, 28, 18), am, [0, y + 0.03, z]);
+        mk(new THREE.TorusGeometry(0.05, 0.012, 10, 28).rotateX(Math.PI / 2), phys(0xf6efe4), [0, y + 0.0, z]);
+        break;
+      }
+      case "fone": {
+        const y = eyeY - 0.015;
+        const w = Math.max(wR(y), wL(y)) + 0.02;
+        const top = topY + 0.02;
+        const arc = mk(new THREE.TorusGeometry(w, 0.011, 10, 40, Math.PI), phys(0x2e2a28, { roughness: 0.4 }), [0, y, 0]);
+        arc.scale.y = Math.max(1, (top - y) / w);
+        [-1, 1].forEach((sd) => mk(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 28).rotateZ(Math.PI / 2), am, [sd * (w + 0.004), y, 0]));
+        break;
+      }
+      case "faixa": {
+        const y = eyeY + 0.065;
+        const [w, dz] = ringAt(y, 0.006);
+        mk(new THREE.TorusGeometry(1, 0.016, 10, 48).rotateX(Math.PI / 2).scale(w, 1, dz), am, [0, y, 0]);
+        break;
+      }
+      case "coroa": {
+        const y = Math.min(topY - 0.04, eyeY + 0.085);
+        const [w, dz] = ringAt(y, 0.012);
+        const leaf = phys(0x6f9a4a);
+        const wht = phys(0xfbf4ea);
+        const ctr = phys(0xf2c14e);
+        mk(new THREE.TorusGeometry(1, 0.011, 8, 48).rotateX(Math.PI / 2).scale(w, 1, dz), leaf, [0, y, 0]);
+        for (let i = 0; i < 12; i++) {
+          const a = (i / 12) * Math.PI * 2;
+          const p: [number, number, number] = [Math.sin(a) * w, y + 0.008, Math.cos(a) * dz];
+          mk(new THREE.SphereGeometry(0.032, 14, 10).scale(1, 0.6, 1), i % 2 ? wht : am, p);
+          mk(new THREE.SphereGeometry(0.012, 8, 6), ctr, [p[0], p[1] + 0.016, p[2]]);
+        }
+        break;
+      }
     }
-    return "";
+    switch (acc.face) {
+      case "oculos": {
+        const y = eyeY + 0.004;
+        const dx = c.H.eyeDX;
+        const fm = phys(0x2e2a28, { roughness: 0.35 });
+        [-1, 1].forEach((sd) => mk(new THREE.TorusGeometry(0.034, 0.0055, 10, 36), fm, [sd * dx, y, fZ(sd * dx, y) + 0.014]));
+        mk(new THREE.CylinderGeometry(0.004, 0.004, dx * 2 - 0.068, 8).rotateZ(Math.PI / 2), fm, [0, y + 0.006, fZ(0, y) + 0.016]);
+        break;
+      }
+      case "echarpe": {
+        add(new THREE.TorusGeometry(0.075, 0.036, 14, 40).rotateX(Math.PI / 2).scale(1, 1, 0.9), am, c.neck, [0, 0.0, 0]);
+        const t = add(new THREE.CapsuleGeometry(0.03, 0.14, 6, 14).scale(1, 1, 0.5), am, c.spine, [0.05, 0.36, 0.12]);
+        t.rotation.set(0.25, 0, 0.12);
+        break;
+      }
+      case "colar": {
+        const bm = phys(col, { roughness: 0.3, clearcoat: 0.6 });
+        const wd = phys(0x8a5a3b, { roughness: 0.5 });
+        const g = new THREE.SphereGeometry(0.021, 14, 10);
+        for (let i = 0; i < 20; i++) {
+          const a = (i / 20) * Math.PI * 2;
+          const f = Math.max(0, Math.cos(a));
+          add(g, i % 3 ? bm : wd, c.spine, [Math.sin(a) * (0.1 + 0.02 * f), 0.455 - f * 0.1, Math.cos(a) * 0.09 + 0.03 * f]);
+        }
+        break;
+      }
+    }
+  }
+
+  return { buildChar, tinted, dressUp };
+}
+
+// ---------- posturas ----------
+// Puramente numérico, sem depender de `THREE`: por isso vive fora de
+// `ferramentas`, e `createAvatar`/`Professor.tsx` conseguem misturar poses
+// sem montar geometria nenhuma.
+const K = ["rootY", "spineX", "headX", "headY", "shLx", "shLz", "elLx", "shRx", "shRz", "elRx", "hipLx", "hipLy", "hipLz", "knLx", "knLz", "hipRx", "hipRy", "hipRz", "knRx", "knRz"];
+const P = (o: any) => {
+  const p = Object.assign({}, o);
+  const m = (r: string, l: string, sg: number) => {
+    if (p[r] === undefined) p[r] = (p[l] ?? 0) * sg;
   };
-  const apply = (c: any, p: any, breath: number, sway: number) => {
-    c.root.position.y = p.rootY;
-    c.spine.rotation.x = p.spineX;
-    c.spine.scale.set(1 + 0.012 * breath, 1 + 0.016 * breath, 1 + 0.02 * breath);
-    c.head.rotation.set(p.headX - 0.03 * breath, p.headY, 0.03 * sway);
-    c.shL.rotation.set(p.shLx, 0, p.shLz + 0.02 * breath);
-    c.elL.rotation.x = p.elLx;
-    c.shR.rotation.set(p.shRx, 0, p.shRz - 0.02 * breath);
-    c.elR.rotation.x = p.elRx;
-    c.hipL.rotation.set(p.hipLx, p.hipLy, p.hipLz);
-    c.knL.rotation.set(p.knLx, 0, p.knLz);
-    c.hipR.rotation.set(p.hipRx, p.hipRy, p.hipRz);
-    c.knR.rotation.set(p.knRx, 0, p.knRz);
-  };
+  m("shRx", "shLx", 1);
+  m("shRz", "shLz", -1);
+  m("elRx", "elLx", 1);
+  m("hipRx", "hipLx", 1);
+  m("hipRy", "hipLy", -1);
+  m("hipRz", "hipLz", -1);
+  m("knRx", "knLx", 1);
+  m("knRz", "knLz", -1);
+  K.forEach((k) => (p[k] = p[k] ?? 0));
+  return p;
+};
+const POSES: Record<string, any> = {
+  sentado: P({ rootY: 0.1, spineX: 0.04, headX: 0.15, shLx: -0.58, shLz: 0.33, elLx: -0.15, hipLx: -1.4, hipLy: 0.75, knLz: -2.56, hipRx: -1.52 }),
+  sentadoBracos: P({ rootY: 0.1, spineX: -0.02, headX: -0.12, shLz: 2.75, elLx: -0.1, hipLx: -1.4, hipLy: 0.75, knLz: -2.56, hipRx: -1.52 }),
+  montanha: P({ rootY: 0.76, headX: 0.06, shLz: 0.1, elLx: -0.12 }),
+  montanhaBracos: P({ rootY: 0.76, headX: -0.18, shLz: 2.95, elLx: -0.05 }),
+  arvore: P({ rootY: 0.76, shLz: 2.98, elLx: -0.3, hipRz: -0.9, hipRx: -0.2, hipRy: 0, knRz: 2.39, hipLz: 0.02 }),
+  estrela: P({ rootY: 0.68, headY: 0.7, shLz: 1.57, elLx: 0, hipLz: 0.45 }),
+};
+const LABELS: Record<string, string> = { sentado: "Respiração sentada", sentadoBracos: "Braços ao alto", montanha: "Montanha", montanhaBracos: "Saudação ao alto", arvore: "Árvore", estrela: "Estrela" };
+const SEQ: [string, number][] = [["sentado", 8], ["sentadoBracos", 5], ["sentado", 4], ["montanha", 5], ["montanhaBracos", 5], ["arvore", 8], ["montanha", 3], ["estrela", 6], ["montanha", 4]];
+const TOTAL = SEQ.reduce((a, s) => a + s[1], 0);
+const TR = 2.4;
+const tmp: any = {};
+const poseAt = (t: number) => {
+  t = ((t % TOTAL) + TOTAL) % TOTAL;
+  let s = 0;
+  for (let i = 0; i < SEQ.length; i++) {
+    const d = SEQ[i][1];
+    if (t < s + d) {
+      const a = POSES[SEQ[(i + SEQ.length - 1) % SEQ.length][0]];
+      const b = POSES[SEQ[i][0]];
+      let k = Math.min(1, (t - s) / TR);
+      k = k * k * (3 - 2 * k);
+      K.forEach((n) => (tmp[n] = a[n] + (b[n] - a[n]) * k));
+      return LABELS[SEQ[i][0]];
+    }
+    s += d;
+  }
+  return "";
+};
+const apply = (c: any, p: any, breath: number, sway: number) => {
+  c.root.position.y = p.rootY;
+  c.spine.rotation.x = p.spineX;
+  c.spine.scale.set(1 + 0.012 * breath, 1 + 0.016 * breath, 1 + 0.02 * breath);
+  c.head.rotation.set(p.headX - 0.03 * breath, p.headY, 0.03 * sway);
+  c.shL.rotation.set(p.shLx, 0, p.shLz + 0.02 * breath);
+  c.elL.rotation.x = p.elLx;
+  c.shR.rotation.set(p.shRx, 0, p.shRz - 0.02 * breath);
+  c.elR.rotation.x = p.elRx;
+  c.hipL.rotation.set(p.hipLx, p.hipLy, p.hipLz);
+  c.knL.rotation.set(p.knLx, 0, p.knLz);
+  c.hipR.rotation.set(p.hipRx, p.hipRy, p.hipRz);
+  c.knR.rotation.set(p.knRx, 0, p.knRz);
+};
+
+/** Uma pose entre duas, misturando cada campo linearmente — o que o
+ *  professor usa para a troca sentado ⇄ em pé em 0,6 s, em vez do crossfade
+ *  de opacidade entre duas malhas que o modelo esculpido antigo precisava. */
+const misturar = (nomeA: string, nomeB: string, k: number) => {
+  const a = POSES[nomeA];
+  const b = POSES[nomeB];
+  const p: any = {};
+  K.forEach((n) => (p[n] = a[n] + (b[n] - a[n]) * k));
+  return p;
+};
+
+export function createCast(THREE: typeof THREE_NS, placements: Placement[]): Cast {
+  const { buildChar, tinted, dressUp } = ferramentas(THREE);
 
   const group = new THREE.Group();
   const chars = placements.map((pl, i) => {
-    const c: any = buildChar(STYLES[pl.style]);
+    const c: any = buildChar(tinted(STYLES[pl.style], pl.tint));
+    dressUp(c, pl.acc);
     const g = new THREE.Group();
     g.position.set(pl.x, 0.012, pl.z);
     g.rotation.y = pl.rot || 0;
@@ -412,6 +655,7 @@ export function createCast(THREE: typeof THREE_NS, placements: Placement[]): Cas
   let label = "";
   return {
     group,
+    chars,
     /** `amplitude` escala respiração e balanço da cabeça (nunca a troca de
      *  postura em si) — mesmo papel de `Perfil.amplitudeAvatar` nos avatares
      *  de verdade: nunca zero, porque estar vivo é estado, não movimento. */
@@ -422,6 +666,36 @@ export function createCast(THREE: typeof THREE_NS, placements: Placement[]): Cas
         apply(c, tmp, amplitude * Math.sin(clock * 1.2 + c.phase * 0.2), amplitude * Math.sin(clock * 0.35 + c.phase));
       });
       return label;
+    },
+  };
+}
+
+/** Qual pose de `POSES` cada nome de postura usa. "emPe" usa "montanha" (a
+ *  postura neutra de pé do elenco de ambientação, braços quase ao lado do
+ *  corpo) — as pessoas de verdade não fazem a aula em ciclo, só sentam ou
+ *  ficam de pé. */
+const POSE_PADRAO: Record<PoseNome, string> = { sentado: "sentado", emPe: "montanha" };
+
+/** Um personagem avulso — o que as pessoas de verdade usam. Cada uma decide
+ *  sua própria postura (`applyPose`) por quadro, a partir da posição de rede
+ *  e da sessão de respiração, em vez de seguir o ciclo de aula do elenco de
+ *  ambientação. */
+export function createAvatar(THREE: typeof THREE_NS, placement: { style: string; tint?: number | null; acc?: Acessorio }): Avatar {
+  const { buildChar, tinted, dressUp } = ferramentas(THREE);
+  const c: any = buildChar(tinted(STYLES[placement.style] ?? STYLES[ESTILOS_ESCOLHIVEIS[0]], placement.tint));
+  dressUp(c, placement.acc);
+  const group = new THREE.Group();
+  group.add(c.root);
+  return {
+    group,
+    head: c.head,
+    spine: c.spine,
+    neck: c.neck,
+    applyPose(nome: PoseNome, breath = 0, sway = 0) {
+      apply(c, POSES[POSE_PADRAO[nome]], breath, sway);
+    },
+    applyPoseMista(a: PoseNome, b: PoseNome, mix: number, breath = 0, sway = 0) {
+      apply(c, misturar(POSE_PADRAO[a], POSE_PADRAO[b], mix), breath, sway);
     },
   };
 }
