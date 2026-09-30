@@ -6,7 +6,7 @@ import { ExteriorELuz } from "./ExteriorELuz";
 import { RELAMPAGO, raioDaFatia, relampagoEm, type Clima, type Raio } from "@/lib/clima";
 import { PERFIS, type Movimento, type Perfil } from "@/lib/movimento";
 import { vidroComGotas, type UniformesGota } from "@/lib/gotas";
-import { Avatares } from "./Avatares";
+import { Avatares } from "./Avatares";import { TapetesVivos, type Ocupante, type TapeteDaSala } from "./TapetesVivos";
 import { Professor, PROFESSOR } from "./Professor";
 import { Personagens } from "./Personagens";
 import { useModeloNoChao } from "@/hooks/useModeloNoChao";
@@ -102,7 +102,7 @@ function orientacaoParaQuaternio(
 type Sala = {
   raiz: THREE.Object3D;
   obstaculos: THREE.Box3[];
-  tapetes: { malha: THREE.Object3D; centro: THREE.Vector3 }[];
+  tapetes: (TapeteDaSala & { malha: THREE.Object3D })[];
   /** Uniforms do vidro, para a cena avançar as gotas por quadro. */
   gotas: UniformesGota;
   /** Todo material Standard da sala, para a iluminação por atmosfera ajustar
@@ -287,7 +287,10 @@ function useSala(): Sala {
         vidroGotas ??= vidroComGotas(mat);
         malha.material = vidroGotas.material;
       } else if (mat && "envMapIntensity" in mat) {
-        materiais.push(mat as unknown as THREE.MeshStandardMaterial);
+        // Cada tapete com o seu material: a cor dele é a que a pessoa sentada
+        // escolheu (ver TapetesVivos), e um material compartilhado pintaria os seis.
+        if (o.name.startsWith("tapete")) malha.material = mat.clone();
+        materiais.push(malha.material as unknown as THREE.MeshStandardMaterial);
         if (o.name.startsWith("pendente") && !materialRattan) {
           materialRattan = mat as unknown as THREE.MeshStandardMaterial;
         }
@@ -297,7 +300,15 @@ function useSala(): Sala {
       const caixa = malha.geometry.boundingBox!.clone().applyMatrix4(malha.matrixWorld);
 
       if (o.name.startsWith("tapete")) {
-        tapetes.push({ malha, centro: caixa.getCenter(new THREE.Vector3()) });
+        const material = malha.material as THREE.MeshStandardMaterial;
+        tapetes.push({
+          malha,
+          centro: caixa.getCenter(new THREE.Vector3()),
+          largura: caixa.max.x - caixa.min.x,
+          profundidade: caixa.max.z - caixa.min.z,
+          material,
+          corOriginal: material.color.clone(),
+        });
         return; // tapete é para pisar em cima, não para esbarrar
       }
 
@@ -377,6 +388,9 @@ type Props = {
   aoMedirSala: (totalTapetes: number) => void;
   /** Quem mais está na sala, já com o tapete resolvido. */
   outras: OutraPessoa[];
+  /** Quem está sentada em qual tapete, eu incluída, com a cor e a intenção de
+   *  cada uma. Vazio quando ninguém está sentado. */
+  ocupantes: Ocupante[];
   /** Sessão de respiração em curso, para os corpos respirarem em fase. */
   sessao: SessaoCompartilhada | null;
   /** Pose ditada por quem conduz a aula, quando há alguém conduzindo. Vem de
@@ -405,6 +419,7 @@ function Navegacao({
   aoMudarPostura,
   aoMedirSala,
   outras,
+  ocupantes,
   sessao,
   poseProfessor,
   souOProfessor = false,
@@ -428,8 +443,7 @@ function Navegacao({
   const arrasto = useRef<{ x: number; y: number; andou: number } | null>(null);
   const sensor = useRef<{ alfa: number; beta: number; gama: number } | null>(null);
   const desvioTela = useRef(0);
-  const velocidade = useRef(new THREE.Vector3());
-  const viagem = useRef<{
+  const velocidade = useRef(new THREE.Vector3());  const viagem = useRef<{
     de: THREE.Vector3;
     para: THREE.Vector3;
     yawDe: number;
@@ -803,6 +817,7 @@ function Navegacao({
         posturas={posturas}
         amplitude={perfil.amplitudeAvatar}
       />
+      <TapetesVivos tapetes={sala.tapetes} ocupantes={ocupantes} clima={clima} />
     </>
   );
 }

@@ -1164,6 +1164,18 @@ function SalaYogaPage() {
     if (sentado && meuTapete !== null && meuTapete !== tapetePedido) setTapetePedido(meuTapete);
   }, [sentado, meuTapete, tapetePedido]);
 
+  // Quem está sentada e em qual tapete, eu incluída: é o que pinta o tapete e
+  // acende o halo da intenção. Quem conduz a aula não ocupa tapete.
+  const ocupantes = useMemo(() => {
+    const lista = outras
+      .filter((o) => o.papel !== "professor" && o.tapete !== null)
+      .map((o) => ({ tapete: o.tapete!, mat: o.perfil.mat, intent: o.perfil.intent }));
+    if (entrou && sentado && meuTapete !== null && !souOProfessor) {
+      lista.push({ tapete: meuTapete, mat: perfil.mat, intent: perfil.intent });
+    }
+    return lista;
+  }, [outras, entrou, sentado, meuTapete, souOProfessor, perfil.mat, perfil.intent]);
+
   // O nome no chat sai na cor do corpo de quem fala. Quem ja saiu da sala nao
   // tem corpo para consultar, e fica na cor do texto.
   const corDeQuemFala = useCallback(
@@ -1302,7 +1314,9 @@ function SalaYogaPage() {
                 aoRaio={aoRaio}
                 movimento={movimento}
                 aoMedirSala={aoMedirSala}
-                outras={vitrine ?? outras}                sessao={respiracaoDaSala}
+                outras={vitrine ?? outras}
+                ocupantes={ocupantes}
+                sessao={respiracaoDaSala}
                 poseProfessor={instrucao?.pose ?? null}
                 souOProfessor={souOProfessor}
                 posturas={posturas}
