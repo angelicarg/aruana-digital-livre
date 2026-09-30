@@ -1,3 +1,5 @@
+import type { PerfilPublico } from "@/lib/perfilAvatar";
+
 /**
  * Quem mais está na sala.
  *
@@ -33,8 +35,9 @@
 export type Reivindicacao = {
   /** Identificador da pessoa na sala. Anônimo e sorteado por sessão. */
   id: string;
-  /** Qual criatura ela escolheu. Só atravessa; quem desenha é que interpreta. */
-  forma?: string;
+  /** Criatura, cores, acessórios e apelido que ela montou na Sala de Espera. Já
+   *  validado: o que vem da rede passa por `sanearPerfilPublico`. */
+  perfil?: PerfilPublico;
   /** Índice do tapete em que ela quer sentar, ou null se está de pé. */
   tapete: number | null;
   /**
@@ -230,62 +233,3 @@ export function resolverEspera(ids: string[]): Map<string, { x: number; z: numbe
   return lugares;
 }
 
-/**
- * A cor de uma pessoa, em CSS.
- *
- * Mora aqui e não no componente do avatar porque a cor é **identidade**, não
- * decoração: o nome de quem fala aparece na mesma cor do corpo dela na sala, e
- * é isso que liga a frase à pessoa sem precisar de foto nem de crachá. Duas
- * fontes de verdade para essa cor fariam a ligação mentir.
- *
- * Faixa estreita em torno dos tons de madeira e linho: saturação alta aqui
- * roubaria o único ponto de cor saturada da sala, que são os cactos.
- */
-/**
- * A faixa de cor de cada criatura.
- *
- * ⚠️ Antes havia **uma faixa só**, de 18° a 61°, com saturação 30. Eu a apertei
- * para não competir com os cactos — que são o único ponto saturado da sala — e
- * passei do ponto: as três criaturas saíam praticamente do mesmo bege, e o
- * conjunto lia como "o mesmo boneco de chapéu diferente". Ela viu isso na
- * primeira olhada.
- *
- * Agora cada criatura tem **seu próprio território de cor**, e o id da pessoa só
- * move dentro dele. Duas pessoas da mesma criatura são parentes; duas criaturas
- * diferentes não se confundem nunca. O cacto continua sozinho no verde vivo
- * porque nenhuma faixa aqui passa de saturação 42.
- */
-const FAIXA: Record<string, { h: [number, number]; s: number; l: number }> = {
-  // Azul de origami. Saturação mais alta que as outras porque azul está longe
-  // do verde do cacto e não disputa com ele — a regra sempre foi não roubar o
-  // ponto de cor do cacto, não ser pálido por princípio.
-  angular: { h: [205, 222], s: 48, l: 40 },
-  // Vegetal, e **de propósito menos vivo que o cacto**: a criatura não pode
-  // competir com a única cor saturada da sala.
-  broto: { h: [95, 122], s: 34, l: 38 },
-  // Lilás, longe das duas outras em matiz.
-  redonda: { h: [262, 286], s: 34, l: 46 },
-};
-
-export function corDeId(
-  id: string,
-  forma: string = "redonda",
-): { h: number; s: number; l: number } {
-  let n = 0;
-  for (let i = 0; i < id.length; i++) n = (n * 31 + id.charCodeAt(i)) >>> 0;
-  const faixa = FAIXA[forma] ?? FAIXA.redonda;
-  const [de, ate] = faixa.h;
-  return {
-    h: (de + ((n % 100) / 100) * (ate - de)) % 360,
-    // A pessoa tambem move um pouco a luminosidade: sem isso, duas pessoas da
-    // mesma criatura com matiz proxima ficam identicas.
-    s: faixa.s,
-    l: faixa.l + (((n >> 7) % 100) / 100) * 10 - 5,
-  };
-}
-
-/** A mesma cor, clareada para ler como texto sobre fundo escuro. */
-export function corDeIdTexto(id: string, forma?: string): string {
-  const { h, s } = corDeId(id, forma);
-  return `hsl(${h.toFixed(0)} ${s}% 74%)`;
-}

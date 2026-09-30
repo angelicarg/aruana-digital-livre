@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { acrescentar, normalizarFala, type Fala } from "@/lib/conversa";
 import { registrar } from "@/lib/diagnostico";
-import { FORMAS, type Forma } from "@/components/Avatares";
+import { sanearPerfilPublico, type PerfilPublico } from "@/lib/perfilAvatar";
 import {
   ESPERA,
   resolverEspera,
@@ -40,8 +40,8 @@ export type OutraPessoa = {
   id: string;
   /** "professor" some da lista de criaturas, mas continua contando na sala. */
   papel?: "professor";
-  /** Qual criatura essa pessoa escolheu na antessala. */
-  forma: Forma;
+  /** Criatura, cores, acessórios, intenção e apelido escolhidos na antessala. */
+  perfil: PerfilPublico;
   tapete: number | null;
   /** Onde desenhar enquanto não se sabe a posição real. Calculado do conjunto
    *  de ids, então todas as máquinas concordam. */
@@ -119,8 +119,8 @@ export function useSalaCompartilhada(
    *  não entrou precisa saber quantas pessoas há lá dentro sem já aparecer como
    *  um corpo — é a diferença entre olhar pela porta e estar na sala. */
   presente: boolean,
-  /** A criatura que eu escolhi. Viaja na presença, junto com o tapete. */
-  forma: Forma,
+  /** Como eu me montei na antessala. Viaja na presença, junto com o tapete. */
+  perfil: PerfilPublico,
   /** Quem conduz a aula entra como professor: ocupa o lugar dele na frente da
    *  sala em vez de virar mais uma criatura. */
   papel: "participante" | "professor",
@@ -158,8 +158,8 @@ export function useSalaCompartilhada(
     [],
   );
   const publicouRef = useRef(false);
-  const minhaForma = useRef<Forma>(forma);
-  minhaForma.current = forma;
+  const meuPerfil = useRef(perfil);
+  meuPerfil.current = perfil;
   const meuPapel = useRef(papel);
   meuPapel.current = papel;
 
@@ -169,7 +169,7 @@ export function useSalaCompartilhada(
     (tapete: number | null) => ({
       tapete,
       pos: minhaPostura.current,
-      forma: minhaForma.current,
+      perfil: meuPerfil.current,
       ...(meuPapel.current === "professor" ? { papel: "professor" as const } : {}),
     }),
     [],
@@ -302,7 +302,7 @@ export function useSalaCompartilhada(
               // sai do lugar antigo, e o sintoma e mudo — a rede funciona, o
               // track devolve "ok", e o avatar simplesmente nao senta.
               tapete: metas[metas.length - 1]?.tapete ?? null,
-              forma: (metas[metas.length - 1] as { forma?: Forma })?.forma ?? FORMAS[0],
+              perfil: sanearPerfilPublico((metas[metas.length - 1] as { perfil?: unknown })?.perfil),
               papel: (metas[metas.length - 1] as { papel?: "professor" })?.papel,
             })),
           );
@@ -596,7 +596,7 @@ export function useSalaCompartilhada(
       .map((r) => ({
         id: r.id,
         papel: r.papel,
-        forma: (r.forma as Forma) ?? FORMAS[0],
+        perfil: r.perfil ?? sanearPerfilPublico(null),
         tapete: lugares.get(r.id) ?? null,
         // Só vale se o mapa de espera não tiver a pessoa, o que não deve acontecer.
         espera: espera.get(r.id) ?? { x: ESPERA.xs[0], z: ESPERA.z },

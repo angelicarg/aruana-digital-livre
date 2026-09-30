@@ -7,7 +7,16 @@ import { CenaSala, controleSala, pedirGiroscopio, temGiroscopio } from "@/compon
 import { atrasoDoTrovao, type Clima, type Raio } from "@/lib/clima";
 import { movimentoDoSistema, type Movimento } from "@/lib/movimento";
 import { useSalaCompartilhada } from "@/hooks/useSalaCompartilhada";
-import { anuncioDeMudanca, corDeIdTexto } from "@/lib/presenca";
+import { anuncioDeMudanca } from "@/lib/presenca";
+import {
+  PERFIL_PADRAO,
+  TAMANHO_APELIDO,
+  carregarPerfil,
+  corDoNomeNoChat,
+  guardarPerfil,
+  type Perfil,
+} from "@/lib/perfilAvatar";
+import { SalaDeEspera } from "@/components/SalaDeEspera";
 import { normalizarNome, type Fala } from "@/lib/conversa";
 import { comoTexto, historico, ouvir, relogio } from "@/lib/diagnostico";
 import { codigoDaSala, modoQuieto } from "@/hooks/useSalaCompartilhada";
@@ -860,15 +869,16 @@ function Conversa({
   falar,
   conectado,
   nome,
-  setNome,
   meuId,
+  corDe,
 }: {
   falas: Fala[];
   falar: (texto: string, nome: string) => boolean;
   conectado: boolean;
+  /** O apelido escolhido na Sala de Espera — o único lugar onde ele se edita. */
   nome: string;
-  setNome: (n: string) => void;
   meuId: string;
+  corDe: (id: string) => string | undefined;
 }) {
   const [aberto, setAberto] = useState(false);
   const [rascunho, setRascunho] = useState("");
@@ -905,15 +915,9 @@ function Conversa({
       ) : (
         <div className="flex w-[min(20rem,calc(100vw-6rem))] flex-col rounded-2xl bg-black/75 backdrop-blur-md">
           <div className="flex items-center justify-between gap-2 border-b border-white/10 px-3 py-2">
-            <label className="flex-1 text-[10px] uppercase tracking-wide text-white/45">
-              Seu nome
-              <input
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                placeholder="Alguém"
-                className="mt-0.5 block w-full rounded-lg bg-white/5 px-2 py-1 text-xs normal-case tracking-normal text-white outline-none focus:bg-white/10"
-              />
-            </label>
+            <p className="flex-1 truncate text-xs text-white/60">
+              Você fala como <strong className="font-semibold text-white/90">{nome}</strong>
+            </p>
             <button
               onClick={() => setAberto(false)}
               aria-label="Fechar a conversa"
@@ -945,7 +949,7 @@ function Conversa({
                 >
                   <strong
                     className="font-semibold"
-                    style={{ color: f.de === meuId ? undefined : corDeIdTexto(f.de) }}
+                    style={{ color: f.de === meuId ? undefined : corDe(f.de) }}
                   >
                     {f.de === meuId ? "Você" : f.nome}
                   </strong>{" "}
@@ -1025,191 +1029,6 @@ function CodigoDaSala({ codigo }: { codigo: string }) {
   );
 }
 
-/**
- * Antessala.
- *
- * Ideia dela, e ela nomeou o motivo: as pessoas entram sabendo quantas há e se
- * a sala está cheia, como nos ambientes de encontro remoto. O ganho maior nem é
- * de etiqueta — é que **o estado da sala passa a ser visível antes de valer a
- * pena descobri-lo**. Antes, se a conexão tivesse caído, isso só aparecia
- * depois de acender a GPU e carregar a cena inteira; foi assim que um canal
- * derrubado passou duas rodadas parecendo defeito de desenho.
- *
- * Quem está aqui **escuta a sala e não se publica nela**: aparece o que há lá
- * dentro, sem que quem olha já vire um corpo. Entrar é a decisão que publica.
- */
-function Antessala({
-  conectado,
-  motivo,
-  pessoas,
-  sentadas,
-  codigo,
-  setCodigo,
-  forma,
-  setForma,
-  entrar,
-  ehAdmin,
-  papel,
-  setPapel,
-}: {
-  conectado: boolean;
-  motivo: string | null;
-  pessoas: number;
-  sentadas: number;
-  codigo: string;
-  setCodigo: (c: string) => void;
-  forma: Forma;
-  setForma: (f: Forma) => void;
-  /** Só quem está na allowlist da intranet escolhe conduzir. */
-  ehAdmin: boolean;
-  papel: "participante" | "professor";
-  setPapel: (p: "participante" | "professor") => void;
-  entrar: () => void;
-}) {
-  const [rascunho, setRascunho] = useState(codigo);
-  // O codigo da URL so chega depois da montagem (no servidor nao ha `window`),
-  // e sem isto o campo ficava eternamente escrito "publica" enquanto a pessoa
-  // ja estava conectada a outra sala — a tela contradizendo o estado.
-  useEffect(() => setRascunho(codigo), [codigo]);
-
-  return (
-    <div className="absolute inset-0 z-30 grid place-items-center overflow-y-auto bg-[#1a1512] p-6">
-      <div className="w-full max-w-md">
-        <h1 className="text-2xl font-semibold text-white">Sala de Yoga & Relaxamento</h1>
-        <p className="mt-2 text-sm leading-relaxed text-white/70">
-          Um espaço 3D para respirar junto com outras pessoas, cada uma no seu lugar.
-          Protótipo da Aruanã Digital.
-        </p>
-
-        {/* `status` e nao `alert`: muda sozinho conforme gente entra e sai, e
-            interromper a leitura a cada mudanca seria hostil. */}
-        <div
-          role="status"
-          aria-live="polite"
-          className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4"
-        >
-          {!conectado ? (
-            <p className="text-sm text-white/70">
-              <strong className="font-semibold text-white">
-                Sala compartilhada indisponível.
-              </strong>{" "}
-              Você pode entrar assim mesmo — a experiência funciona sozinha, mas ninguém
-              vai aparecer.
-              {motivo && (
-                <>
-                  {" "}
-                  <span className="text-white/45">
-                    Motivo: <code className="font-mono">{motivo}</code>. Tentando
-                    reconectar.
-                  </span>
-                </>
-              )}
-            </p>
-          ) : pessoas === 0 ? (
-            <p className="text-sm text-white/70">
-              <strong className="font-semibold text-white">A sala está vazia.</strong> Você
-              será a primeira pessoa a entrar.
-            </p>
-          ) : (
-            <p className="text-sm text-white/70">
-              <strong className="font-semibold text-white">
-                {pessoas === 1 ? "1 pessoa" : `${pessoas} pessoas`} na sala
-              </strong>
-              {sentadas > 0 && `, ${sentadas} em um tapete`}.
-            </p>
-          )}
-        </div>
-
-        <fieldset className="mt-5">
-          <legend className="text-xs font-medium uppercase tracking-wide text-white/50">
-            Sua criatura
-          </legend>
-          <div className="mt-1.5 flex gap-1.5">
-            {FORMAS.map((f) => (
-              <button
-                key={f}
-                onClick={() => setForma(f)}
-                aria-pressed={f === forma}
-                className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-xl px-3 py-2 text-sm font-medium transition ${
-                  f === forma
-                    ? "bg-white/85 text-[#1a1512]"
-                    : "bg-white/5 text-white/80 hover:bg-white/10"
-                }`}
-              >
-                {NOME_DA_FORMA[f]}
-              </button>
-            ))}
-          </div>
-          {/* Nada de humanos aqui, e é decisão de produto: um conjunto de
-              avatares humanos é uma declaração sobre quem está representado, e
-              com três opções qualquer conjunto exclui. */}
-          <p className="mt-1.5 text-xs leading-relaxed text-white/50">
-            Você entra na sala como ela. Ninguém vê seu rosto nem seu nome real.
-          </p>
-        </fieldset>
-
-        <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-white/50">
-          Código da sala
-          <input
-            value={rascunho}
-            onChange={(e) => setRascunho(e.target.value)}
-            onBlur={() => setCodigo(codigoDaSala(`?sala=${rascunho}`))}
-            className="mt-1.5 block w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none focus:border-[#00CCA7]"
-          />
-        </label>
-        <p className="mt-1.5 text-xs leading-relaxed text-white/50">
-          Quem abrir o link com o mesmo código cai na mesma sala. Sem código, todo mundo
-          entra na sala pública.
-        </p>
-
-        {/* A escolha do papel só existe para quem pode conduzir. Para todo o
-            resto a sala continua tendo uma porta só. */}
-        {ehAdmin && (
-          <fieldset className="mt-5">
-            <legend className="text-xs font-medium uppercase tracking-wide text-white/50">
-              Entrar como
-            </legend>
-            <div className="mt-2 flex gap-2">
-              {(["participante", "professor"] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPapel(p)}
-                  aria-pressed={papel === p}
-                  className={`min-h-11 flex-1 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                    papel === p
-                      ? "bg-[#00CCA7] text-[#041B33]"
-                      : "bg-white/10 text-white/80 hover:bg-white/20"
-                  }`}
-                >
-                  {p === "participante" ? "Participante" : "Professor"}
-                </button>
-              ))}
-            </div>
-            {papel === "professor" && (
-              <p className="mt-2 text-xs leading-relaxed text-white/50">
-                Você entra no lugar do professor, de frente para a turma. Não caminha e não
-                aparece como criatura — quem assiste vê você como o professor.
-              </p>
-            )}
-          </fieldset>
-        )}
-
-        <button
-          onClick={entrar}
-          className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#00CCA7] px-6 py-3 text-sm font-semibold text-[#041B33] transition hover:brightness-105"
-        >
-          {papel === "professor" ? "Entrar como professor" : "Entrar na sala"}
-        </button>
-        <p className="mt-3 text-xs leading-relaxed text-white/45">
-          Os tapetes são por ordem de chegada. Com a sala cheia você entra em pé e
-          continua vendo e ouvindo tudo — ninguém fica de fora.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function SalaYogaPage() {
   const [mounted, setMounted] = useState(false);
   const [xrSupported, setXrSupported] = useState(false);
@@ -1231,26 +1050,27 @@ function SalaYogaPage() {
     if (new URLSearchParams(window.location.search).get("vitrine") !== "1") return null;
     return FORMAS.map((f, i) => ({
       id: `vitrine-${f}`,
-      forma: f,
+      perfil: { ...PERFIL_PADRAO, forma: f, nome: "" },
       tapete: i,
       espera: { x: 0, z: 0 },
     }));
   }, []);
-  // A criatura escolhida sobrevive a recarga, como o nome: numa sala que ja
+  // A criatura montada sobrevive a recarga, como o nome: numa sala que ja
   // exigiu recarregar muitas vezes, escolher de novo a cada vez cansa.
-  const [forma, setForma] = useState<Forma>(FORMAS[0]);
-  useEffect(() => {
-    const guardada = localStorage.getItem("sala-yoga:forma") as Forma | null;
-    if (guardada && (FORMAS as readonly string[]).includes(guardada)) setForma(guardada);
-  }, []);
-  useEffect(() => localStorage.setItem("sala-yoga:forma", forma), [forma]);
-  // O nome sobrevive a recarga: numa sala instavel, quem recarrega tres vezes
-  // nao deveria ter que se apresentar tres vezes.
+  const [perfil, setPerfil] = useState<Perfil>(PERFIL_PADRAO);
+  useEffect(() => setPerfil(carregarPerfil()), []);
+  useEffect(() => guardarPerfil(perfil), [perfil]);
+  // O apelido da antessala e o nome do chat sao o mesmo estado, e sobrevive a
+  // recarga: numa sala instavel, quem recarrega tres vezes nao deveria ter que
+  // se apresentar tres vezes.
   const [nome, setNome] = useState("");
   useEffect(() => setNome(localStorage.getItem("sala-yoga:nome") ?? ""), []);
-  useEffect(() => {
-    if (nome) localStorage.setItem("sala-yoga:nome", nome);
-  }, [nome]);
+  useEffect(() => localStorage.setItem("sala-yoga:nome", nome), [nome]);
+  // Vazio, vale o nome da criatura — e e isso que os outros veem e o chat usa.
+  const apelido =
+    nome.replace(/\s+/g, " ").trim().slice(0, TAMANHO_APELIDO) ||
+    NOME_DA_FORMA[perfil.forma as Forma];
+  const perfilPublico = useMemo(() => ({ ...perfil, nome: apelido }), [perfil, apelido]);
   const [codigo, setCodigo] = useState("publica");
   useEffect(() => setCodigo(codigoDaSala(window.location.search)), []);
 
@@ -1331,7 +1151,7 @@ function SalaYogaPage() {
     totalTapetes,
     mounted,
     entrou,
-    forma,
+    perfilPublico,
     souOProfessor ? "professor" : "participante",
     codigo,
   );
@@ -1343,6 +1163,16 @@ function SalaYogaPage() {
   useEffect(() => {
     if (sentado && meuTapete !== null && meuTapete !== tapetePedido) setTapetePedido(meuTapete);
   }, [sentado, meuTapete, tapetePedido]);
+
+  // O nome no chat sai na cor do corpo de quem fala. Quem ja saiu da sala nao
+  // tem corpo para consultar, e fica na cor do texto.
+  const corDeQuemFala = useCallback(
+    (id: string) => {
+      const p = outras.find((o) => o.id === id);
+      return p ? corDoNomeNoChat(p.perfil.forma, p.perfil.tint) : undefined;
+    },
+    [outras],
+  );
 
   // Leitor de tela nao ve canvas. Numa sala cujo produto e "estamos juntos",
   // saber que alguem chegou nao e detalhe — e a informacao principal.
@@ -1472,8 +1302,7 @@ function SalaYogaPage() {
                 aoRaio={aoRaio}
                 movimento={movimento}
                 aoMedirSala={aoMedirSala}
-                outras={vitrine ?? outras}
-                sessao={respiracaoDaSala}
+                outras={vitrine ?? outras}                sessao={respiracaoDaSala}
                 poseProfessor={instrucao?.pose ?? null}
                 souOProfessor={souOProfessor}
                 posturas={posturas}
@@ -1485,7 +1314,7 @@ function SalaYogaPage() {
       )}
 
       {!entrou && (
-        <Antessala
+        <SalaDeEspera
           conectado={conectado}
           motivo={motivo}
           pessoas={outras.length}
@@ -1495,8 +1324,10 @@ function SalaYogaPage() {
           ehAdmin={ehAdmin}
           papel={papel}
           setPapel={setPapel}
-          forma={forma}
-          setForma={setForma}
+          perfil={perfil}
+          setPerfil={setPerfil}
+          nome={nome}
+          setNome={setNome}
           entrar={() => setEntrou(true)}
         />
       )}
@@ -1604,9 +1435,9 @@ function SalaYogaPage() {
             falas={falas}
             falar={falar}
             conectado={conectado}
-            nome={nome}
-            setNome={setNome}
+            nome={apelido}
             meuId={meuId}
+            corDe={corDeQuemFala}
           />
           {/* Quem conduz não anda nem escolhe tapete, então nem seta de
               caminhada nem botão de levantar. O movimento já estava bloqueado
