@@ -6,7 +6,9 @@ import { ExteriorELuz } from "./ExteriorELuz";
 import { RELAMPAGO, raioDaFatia, relampagoEm, type Clima, type Raio } from "@/lib/clima";
 import { PERFIS, type Movimento, type Perfil } from "@/lib/movimento";
 import { vidroComGotas, type UniformesGota } from "@/lib/gotas";
-import { Avatares } from "./Avatares";import { TapetesVivos, type Ocupante, type TapeteDaSala } from "./TapetesVivos";
+import { Avatares } from "./Avatares";
+import { afastarDePessoas } from "@/lib/colisao";
+import { TapetesVivos, type Ocupante, type TapeteDaSala } from "./TapetesVivos";
 import { Professor, PROFESSOR } from "./Professor";
 import { Personagens } from "./Personagens";
 import { useModeloNoChao } from "@/hooks/useModeloNoChao";
@@ -443,7 +445,11 @@ function Navegacao({
   const arrasto = useRef<{ x: number; y: number; andou: number } | null>(null);
   const sensor = useRef<{ alfa: number; beta: number; gama: number } | null>(null);
   const desvioTela = useRef(0);
-  const velocidade = useRef(new THREE.Vector3());  const viagem = useRef<{
+  const velocidade = useRef(new THREE.Vector3());
+  // Lida por quadro, dentro do useFrame: a lista muda a cada sincronia de rede.
+  const outrasRef = useRef(outras);
+  outrasRef.current = outras;
+  const viagem = useRef<{
     de: THREE.Vector3;
     para: THREE.Vector3;
     yawDe: number;
@@ -781,6 +787,19 @@ function Navegacao({
     camera.position.addScaledVector(velocidade.current, passo);
     camera.position.x = THREE.MathUtils.clamp(camera.position.x, -LIMITE.x, LIMITE.x);
     camera.position.z = THREE.MathUtils.clamp(camera.position.z, -LIMITE.z, LIMITE.z);
+    // Quem está de pé também é obstáculo. Sentada não entra: o lugar dela é o
+    // tapete, sem ambiguidade. Os móveis vêm depois, para que empurrar de
+    // outra pessoa nunca jogue alguém para dentro da parede.
+    const dePe: { x: number; z: number }[] = [];
+    for (const p of outrasRef.current) {
+      if (p.papel === "professor" || p.tapete !== null) continue;
+      dePe.push(posturas.current?.get(p.id) ?? p.espera);
+    }
+    if (dePe.length > 0) {
+      const livre = afastarDePessoas(camera.position, dePe);
+      camera.position.x = livre.x;
+      camera.position.z = livre.z;
+    }
     desencostar(camera.position, sala.obstaculos);
     camera.position.y = ALTURA_OLHOS;
   });
