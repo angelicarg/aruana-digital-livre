@@ -236,7 +236,7 @@ function HomePage() {
       <section
         className="relative flex items-center overflow-hidden border-b border-white/10 text-white"
         style={{
-          minHeight: "min(86vh, 760px)",
+          minHeight: "min(72vh, 620px)",
           background: "radial-gradient(110% 90% at 70% 50%, #0A2E4A 0%, #041B33 55%, #021226 100%)",
         }}
       >
@@ -245,12 +245,12 @@ function HomePage() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 block h-full w-full"
         />
-        <div className="pointer-events-none relative z-[2] mx-auto flex w-full max-w-[1240px] flex-col px-7 pb-16 pt-14">
-          <div ref={textRef} className="flex max-w-[620px] flex-col gap-7">
+        <div className="pointer-events-none relative z-[2] mx-auto flex w-full max-w-[1240px] flex-col px-7 pb-10 pt-10">
+          <div ref={textRef} className="flex max-w-[700px] flex-col gap-5">
             <span className="font-mono text-xs uppercase tracking-[.16em] text-brand-green">
               Uberlândia/MG · para todo o Brasil
             </span>
-            <h1 className="max-w-[13ch] text-balance text-[clamp(38px,5.2vw,70px)] font-semibold leading-[1.03] tracking-[-.035em]">
+            <h1 className="max-w-[17ch] text-balance text-[clamp(36px,4.6vw,62px)] font-semibold leading-[1.03] tracking-[-.035em]">
               Sites que trabalham por você:{" "}
               <span className="text-brand-green">captam, incluem e geram resultado.</span>
             </h1>
@@ -294,7 +294,7 @@ function HomePage() {
       </section>
 
       {/* SOBRE */}
-      <section className="border-y border-border bg-muted py-20 lg:py-28">
+      <section className="border-y border-border bg-muted py-12 lg:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
@@ -355,7 +355,7 @@ function HomePage() {
       </section>
 
       {/* SERVIÇOS */}
-      <section className="py-20 lg:py-28">
+      <section className="py-12 lg:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
@@ -369,7 +369,7 @@ function HomePage() {
             </p>
           </div>
 
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {SERVICES.map((s) => (
               <article
                 key={s.title}
@@ -400,7 +400,7 @@ function HomePage() {
       </section>
 
       {/* DIFERENCIAIS */}
-      <section className="relative overflow-hidden bg-brand-navy-deep py-20 text-white lg:py-28">
+      <section className="relative overflow-hidden bg-brand-navy-deep py-12 text-white lg:py-16">
         <div className="absolute inset-0 grid-pattern opacity-30" aria-hidden="true" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
@@ -409,7 +409,7 @@ function HomePage() {
             </p>
             <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl">Nossos diferenciais</h2>
           </div>
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {DIFFERENTIATORS.map((d) => (
               <div
                 key={d}
@@ -426,7 +426,7 @@ function HomePage() {
       </section>
 
       {/* METODOLOGIA */}
-      <section className="py-20 lg:py-28">
+      <section className="py-12 lg:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
@@ -438,7 +438,7 @@ function HomePage() {
             </p>
           </div>
 
-          <ol className="mt-14 grid gap-6 md:grid-cols-3 lg:grid-cols-5">
+          <ol className="mt-10 grid gap-6 md:grid-cols-3 lg:grid-cols-5">
             {STEPS.map((s, i) => (
               <li
                 key={s.title}
@@ -459,7 +459,7 @@ function HomePage() {
       </section>
 
       {/* TECNOLOGIA PARA TODOS */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-green-deep to-brand-navy-deep py-20 text-white lg:py-28">
+      <section className="relative overflow-hidden bg-gradient-to-br from-brand-green-deep to-brand-navy-deep py-12 text-white lg:py-16">
         <div className="absolute inset-0 grid-pattern opacity-20" aria-hidden="true" />
         <div className="relative mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
           <div>
@@ -494,7 +494,7 @@ function HomePage() {
       </section>
 
       {/* PROVA VERIFICÁVEL */}
-      <section className="bg-muted py-20 lg:py-28">
+      <section className="bg-muted py-12 lg:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
@@ -510,7 +510,7 @@ function HomePage() {
               software real.
             </p>
           </div>
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
             {PROOF_PROJECTS.map((p) => (
               <article
                 key={p.name}
@@ -562,7 +562,7 @@ function HomePage() {
       </section>
 
       {/* LEAD CAPTURE FORM */}
-      <section className="bg-muted py-20 lg:py-28">
+      <section className="bg-muted py-12 lg:py-16">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl bg-card p-8 shadow-card sm:p-10">
             <div className="mb-8 text-center">
@@ -582,7 +582,7 @@ function HomePage() {
       </section>
 
       {/* CTA FINAL */}
-      <section className="relative overflow-hidden bg-hero-gradient py-20 text-white lg:py-28">
+      <section className="relative overflow-hidden bg-hero-gradient py-12 text-white lg:py-16">
         <div className="absolute inset-0 grid-pattern opacity-40" aria-hidden="true" />
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-black leading-tight sm:text-4xl lg:text-6xl">
