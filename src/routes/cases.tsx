@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout, PageHero } from "@/components/PageLayout";
 import { Bot, Check, Copy, ExternalLink, Info, Layers, Sparkles } from "lucide-react";
 import heroFish from "@/assets/hero-fish.jpg";
+import { CasePreview } from "@/components/CasePreview";
 import { PrecoDeEntrada } from "@/components/PrecoDeEntrada";
 import { pacoteDoCase } from "@/lib/pricing";
 
@@ -43,6 +44,7 @@ const CASES = [
     desc: "Agendamento online em tempo real, chatbot de atendimento e painel para a equipe confirmar ou recusar consultas.",
     highlights: ["Agendamento em tempo real", "Painel da equipe", "Chatbot de atendimento"],
     url: "https://dente-vivo.vercel.app/",
+    print: "/cases/dente-vivo.webp",
     painel: "https://dente-vivo.vercel.app/admin/login",
   },
   {
@@ -51,6 +53,7 @@ const CASES = [
     desc: "Livraria online com painel administrativo completo — produtos, promoções e pedidos — e a Nina, uma IA que responde com o catálogo em tempo real.",
     highlights: ["Painel admin completo", "Pedidos salvos no banco", "IA lê o catálogo ao vivo"],
     url: "https://pagina-magica.vercel.app/",
+    print: "/cases/pagina-magica.webp",
     painel: "https://pagina-magica.vercel.app/admin/login",
   },
   {
@@ -59,6 +62,7 @@ const CASES = [
     desc: "Mesmo espírito do Dente Vivo, agora para oftalmologia: agendamento online por especialidade e médico, com painel para a equipe confirmar consultas e bloquear horários.",
     highlights: ["Agendamento por especialidade", "Painel da equipe", "Bloqueio de agenda"],
     url: "https://site-clinica-visao.vercel.app/",
+    print: "/cases/site-clinica-visao.webp",
     painel: "https://site-clinica-visao.vercel.app/admin/login",
   },
   {
@@ -67,6 +71,7 @@ const CASES = [
     desc: "Pet shop completo: agendamento de banho e tosa, loja com carrinho de compras e uma assistente de IA que recomenda produtos com base no perfil do pet — tudo com histórico do cliente unificado.",
     highlights: ["Agendamento + loja juntos", "IA recomenda produtos", "Histórico unificado por cliente"],
     url: "https://patas-nobres.vercel.app/",
+    print: "/cases/patas-nobres.webp",
     painel: "https://patas-nobres.vercel.app/admin/login",
   },
   {
@@ -75,6 +80,7 @@ const CASES = [
     desc: "Landing page com calculadora de orçamento em 3 passos, do cômodo até o valor final, direto para o fechamento via WhatsApp.",
     highlights: ["Orçamento em 3 passos", "Cálculo automático", "Fechamento via WhatsApp"],
     url: "https://carlos-pintor.vercel.app/",
+    print: "/cases/carlos-pintor.webp",
   },
   {
     tag: "Alimentação",
@@ -82,6 +88,7 @@ const CASES = [
     desc: "E-commerce com carrinho de compras, checkout via WhatsApp e o Toninho, um atendente com IA real que conhece todo o cardápio.",
     highlights: ["IA real (Claude)", "Carrinho + WhatsApp", "Atendimento a qualquer hora"],
     url: "https://forno81.vercel.app/",
+    print: "/cases/forno81.webp",
   },
   {
     tag: "Educação Inclusiva",
@@ -179,6 +186,7 @@ function CasesPage() {
                     : "border-border hover:-translate-y-1 hover:shadow-premium"
                 }`}
               >
+                {c.url && c.print && <CasePreview nome={c.title} url={c.url} print={c.print} />}
                 <div className="bg-hero-gradient p-8 text-white">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-brand-green/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green">

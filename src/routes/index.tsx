@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   ArrowRight,
-  Sparkles,
   Code2,
   Network,
   Lightbulb,
@@ -19,59 +18,11 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
+import { CasePreview } from "@/components/CasePreview";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { trackEvent } from "@/lib/analytics";
 import heroFish from "@/assets/hero-fish.jpg";
-import { AquarioPixels } from "@/components/AquarioPixels";
-
-// O three.js inteiro mora atrás deste import. Ele só é resolvido depois do load e
-// em tempo ocioso — nunca no caminho crítico da home, que é a página mais vista.
-const HeroPeixe3D = lazy(() => import("@/components/HeroPeixe3D"));
-
-/** Decide se vale gastar 500+ KB de three.js no aparelho de quem chegou.
- *  Em qualquer dúvida a resposta é não: a imagem estática já entrega o hero. */
-function useVale3D() {
-  const [vale, setVale] = useState(false);
-
-  useEffect(() => {
-    // Escotilha de teste: `?peixe3d=1` força o 3D mesmo onde a heurística barraria,
-    // e `?peixe3d=0` desliga. Serve para avaliar a peça sem depender do palpite
-    // do navegador sobre a rede — que erra, e erra para os dois lados.
-    const forcado = new URLSearchParams(window.location.search).get("peixe3d");
-    if (forcado === "0") return;
-
-    if (forcado !== "1") {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      const rede = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } })
-        .connection;
-      if (rede?.saveData) return;
-      // Só barra em conexão declaradamente ruim. A Network Information API não
-      // existe no Safari nem no Firefox, e no Chrome reporta "3g" em conexão boa
-      // com frequência — exigir "4g" fazia o peixe quase nunca aparecer.
-      if (rede?.effectiveType && ["slow-2g", "2g"].includes(rede.effectiveType)) return;
-
-      const memoria = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-      if (typeof memoria === "number" && memoria < 4) return;
-    }
-
-    const agendar = () => {
-      if ("requestIdleCallback" in window) {
-        (window as Window & typeof globalThis).requestIdleCallback(() => setVale(true), {
-          timeout: 5000,
-        });
-      } else {
-        setTimeout(() => setVale(true), 2500);
-      }
-    };
-
-    if (document.readyState === "complete") agendar();
-    else window.addEventListener("load", agendar);
-    return () => window.removeEventListener("load", agendar);
-  }, []);
-
-  return vale;
-}
+import { mountAruanaFish } from "@/lib/aruana-fish";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -250,115 +201,94 @@ const PROOF_PROJECTS = [
     name: "Clínica Dente Vivo",
     desc: "Agende uma consulta de verdade: escolha a dentista, o dia e o horário, e veja a confirmação chegar.",
     url: "https://dente-vivo.vercel.app/",
+    print: "/cases/dente-vivo.webp",
   },
   {
     name: "Forno 81",
     desc: "Monte um pedido no carrinho e converse com o Toninho, um atendente com IA real que conhece todo o cardápio.",
     url: "https://forno81.vercel.app/",
+    print: "/cases/forno81.webp",
   },
   {
     name: "Patas Nobres",
     desc: "Agende banho e tosa, explore a loja e peça uma recomendação de produto à assistente de IA.",
     url: "https://patas-nobres.vercel.app/",
+    print: "/cases/patas-nobres.webp",
   },
 ];
 
 function HomePage() {
-  const vale3D = useVale3D();
-  const [peixe3D, setPeixe3D] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!canvasRef.current || !textRef.current) return;
+    return mountAruanaFish(canvasRef.current, textRef.current, {
+      colorSrc: "/hero/fish-color.webp",
+      maskSrc: "/hero/fish-mask.png",
+    });
+  }, []);
   return (
     <PageLayout>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-brand-navy-deep text-white">
-        {/* Fish as ambient background */}
-        <div className="absolute inset-0" aria-hidden="true">
-          {/* A imagem continua sendo o que pinta primeiro, o que sobra sem JavaScript
-              e o og:image do compartilhamento. O canvas entra por cima depois de
-              pronto — e nunca entra para quem pede menos movimento. */}
-          {/* O peixe é o arquivo master, intocado. O canvas por cima é só a água
-              passando por ele — nada é redesenhado nem regenerado. */}
-          <img
-            src={heroFish}
-            alt=""
-            className={`absolute inset-y-0 right-0 h-full w-[140%] max-w-none object-cover object-right mix-blend-screen animate-float transition-opacity duration-[2200ms] sm:w-[90%] lg:w-3/5 ${
-              peixe3D ? "opacity-0" : "opacity-25 sm:opacity-35 lg:opacity-40"
-            }`}
-          />
-          {/* Camada de trás: as gotas distantes, que o peixe encobre ao passar. */}
-          <AquarioPixels
-            imagem={heroFish}
-            faixaZ={[0, 0.55]}
-            className="absolute inset-0 h-full w-full mix-blend-screen"
-          />
-
-          {/* Enxerto: se o 3D não carregar, falhar ou não valer a pena no aparelho,
-              nada acima muda. A imagem e o mar de pixels são o estado garantido. */}
-          {vale3D && (
-            <Suspense fallback={null}>
-              <div
-                className={`absolute inset-y-0 right-0 h-full w-[140%] max-w-none transition-opacity duration-[2200ms] sm:w-[90%] lg:w-3/5 ${
-                  peixe3D ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                <HeroPeixe3D onPronto={() => setPeixe3D(true)} />
-              </div>
-            </Suspense>
-          )}
-
-          {/* Camada da frente: as gotas próximas — as maiores e mais rápidas —
-              passam por cima do peixe. É o que o coloca dentro do cardume em vez
-              de deslizando por cima dele. */}
-          <AquarioPixels
-            imagem={heroFish}
-            faixaZ={[0.55, 1]}
-            className="absolute inset-0 h-full w-full mix-blend-screen"
-          />
-          {/* Mobile: vertical fade from top so fish sits behind text softly */}
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-navy-deep via-brand-navy-deep/70 to-brand-navy-deep sm:hidden" />
-          {/* Tablet/Desktop: horizontal fade so left side stays readable */}
-          <div className="absolute inset-0 hidden bg-gradient-to-r from-brand-navy-deep via-brand-navy-deep/85 to-brand-navy-deep/20 sm:block" />
-          <div className="absolute inset-0 hidden bg-gradient-to-b from-brand-navy-deep/30 via-transparent to-brand-navy-deep sm:block" />
-          <div className="absolute inset-0 grid-pattern opacity-20 sm:opacity-30" />
-          <div className="absolute -right-32 top-1/2 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-brand-green/15 blur-3xl animate-pulse-glow lg:h-[700px] lg:w-[700px]" />
-        </div>
-
-        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
-          <div className="max-w-3xl animate-fade-up">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-green/40 bg-brand-green/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-brand-green backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5" /> Tecnologia · Educação · Resultados
-            </p>
-            <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-[4rem]">
-              Transformamos sua presença digital em uma ferramenta ativa de{" "}
-              <span className="text-gradient-brand">captação, inclusão e resultados reais.</span>
+      {/* O peixe é um canvas 2D (lib/aruana-fish.js): a imagem aprovada fatiada em
+          tiras, com perspectiva e ondulação de cauda. Atrás do texto, nunca sobre ele.
+          Sem JS ou com a imagem falhando, o fundo em gradiente e os pixels seguem. */}
+      <section
+        className="relative flex items-center overflow-hidden border-b border-white/10 text-white"
+        style={{
+          minHeight: "min(86vh, 760px)",
+          background: "radial-gradient(110% 90% at 70% 50%, #0A2E4A 0%, #041B33 55%, #021226 100%)",
+        }}
+      >
+        <canvas
+          ref={canvasRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 block h-full w-full"
+        />
+        <div className="pointer-events-none relative z-[2] mx-auto flex w-full max-w-[1240px] flex-col px-7 pb-16 pt-14">
+          <div ref={textRef} className="flex max-w-[620px] flex-col gap-7">
+            <span className="font-mono text-xs uppercase tracking-[.16em] text-brand-green">
+              Uberlândia/MG · para todo o Brasil
+            </span>
+            <h1 className="max-w-[13ch] text-balance text-[clamp(38px,5.2vw,70px)] font-semibold leading-[1.03] tracking-[-.035em]">
+              Sites que trabalham por você:{" "}
+              <span className="text-brand-green">captam, incluem e geram resultado.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/80">
-              Desenvolvemos ecossistemas digitais que unem tecnologia, acessibilidade, educação e
-              inovação para gerar crescimento sustentável.
+            <p className="max-w-[44ch] text-pretty text-[clamp(17px,1.5vw,19px)] leading-[1.55] text-white/75">
+              Ecossistemas digitais que unem tecnologia, acessibilidade, educação e inovação para
+              gerar crescimento sustentável.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="pointer-events-auto mt-1 flex flex-wrap gap-3">
               <a
                 href={WHATSAPP}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackEvent("click_whatsapp", { placement: "home_hero" })}
-                className="group inline-flex items-center gap-2 rounded-full bg-brand-gradient px-7 py-3.5 font-semibold text-white shadow-glow transition hover:scale-105"
+                className="inline-flex items-center gap-2 rounded-full bg-brand-green px-[26px] py-4 font-semibold text-brand-navy-deep shadow-[0_0_0_6px_rgba(47,213,140,.12)] transition hover:scale-105"
               >
                 <MessageCircle className="h-5 w-5" /> Falar com Especialista
               </a>
               <Link
                 to="/cases"
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-3.5 font-semibold text-white backdrop-blur transition hover:bg-white/10"
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-brand-navy-deep/45 px-[26px] py-4 font-medium text-white transition hover:bg-white/10"
               >
                 Ver Nossos Cases <ArrowRight className="h-5 w-5" />
               </Link>
             </div>
-            <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/70">
+            <div className="mt-6 hidden max-w-[540px] flex-wrap min-[1000px]:flex gap-x-6 gap-y-3 border-t border-white/10 pt-5 text-sm text-white/70">
               {["VLibras integrado", "WCAG 2.1", "100% responsivo"].map((b) => (
                 <span key={b} className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-brand-green" /> {b}
                 </span>
               ))}
             </div>
+          </div>
+          {/* Reserva o lugar do peixe embaixo do texto em telas estreitas. */}
+          <div className="h-0 max-[999px]:h-[46vw]" />
+        </div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2]">
+          <div className="mx-auto flex max-w-[1240px] justify-end px-7 pb-4 font-mono text-[11px] uppercase tracking-[.14em] text-[#7E93A5]">
+            Clique para rever a entrada ↻
           </div>
         </div>
       </section>
@@ -582,7 +512,12 @@ function HomePage() {
           </div>
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {PROOF_PROJECTS.map((p) => (
-              <article key={p.name} className="flex flex-col rounded-3xl bg-card p-7 shadow-card">
+              <article
+                key={p.name}
+                className="flex flex-col overflow-hidden rounded-3xl bg-card shadow-card transition hover:-translate-y-1 hover:shadow-premium"
+              >
+                <CasePreview nome={p.name} url={p.url} print={p.print} />
+                <div className="flex flex-1 flex-col p-7">
                 <span className="self-start rounded-full bg-brand-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green-text">
                   Projeto de demonstração
                 </span>
@@ -597,6 +532,7 @@ function HomePage() {
                 >
                   Abrir e testar ao vivo <ExternalLink className="h-4 w-4" />
                 </a>
+                </div>
               </article>
             ))}
           </div>
