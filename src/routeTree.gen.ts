@@ -9,74 +9,39 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WebsitePmeRouteImport } from './routes/website-pme'
-import { Route as SobreRouteImport } from './routes/sobre'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ServicosRouteImport } from './routes/servicos'
-import { Route as PrivacidadeRouteImport } from './routes/privacidade'
-import { Route as DiagnosticoRouteImport } from './routes/diagnostico'
-import { Route as ContatoRouteImport } from './routes/contato'
-import { Route as CasesRouteImport } from './routes/cases'
-import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BlogIndexRouteImport } from './routes/blog.index'
-import { Route as IntranetNovaSenhaRouteImport } from './routes/intranet/nova-senha'
-import { Route as IntranetLoginRouteImport } from './routes/intranet/login'
-import { Route as FecharIdRouteImport } from './routes/fechar.$id'
-import { Route as ExperienciasSalaYogaRouteImport } from './routes/experiencias.sala-yoga'
-import { Route as ExperienciasProduto3dRouteImport } from './routes/experiencias.produto-3d'
-import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
-import { Route as ApiMercadopagoWebhookRouteImport } from './routes/api.mercadopago-webhook'
+import { Route as BlogRouteImport } from './routes/blog'
+import { Route as CasesRouteImport } from './routes/cases'
+import { Route as ContatoRouteImport } from './routes/contato'
+import { Route as DiagnosticoRouteImport } from './routes/diagnostico'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as ServicosRouteImport } from './routes/servicos'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as WebsitePmeRouteImport } from './routes/website-pme'
 import { Route as ApiAutentiqueWebhookRouteImport } from './routes/api.autentique-webhook'
+import { Route as ApiMercadopagoWebhookRouteImport } from './routes/api.mercadopago-webhook'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as ExperienciasProduto3dRouteImport } from './routes/experiencias.produto-3d'
+import { Route as ExperienciasSalaYogaRouteImport } from './routes/experiencias.sala-yoga'
+import { Route as FecharIdRouteImport } from './routes/fechar.$id'
 import { Route as IntranetAuthedRouteRouteImport } from './routes/intranet/_authed/route'
+import { Route as IntranetLoginRouteImport } from './routes/intranet/login'
+import { Route as IntranetNovaSenhaRouteImport } from './routes/intranet/nova-senha'
 import { Route as IntranetAuthedIndexRouteImport } from './routes/intranet/_authed/index'
-import { Route as IntranetAuthedReunioesRouteImport } from './routes/intranet/_authed/reunioes'
-import { Route as IntranetAuthedRelatoriosRouteImport } from './routes/intranet/_authed/relatorios'
-import { Route as IntranetAuthedProjetosRouteImport } from './routes/intranet/_authed/projetos'
-import { Route as IntranetAuthedNegociosRouteImport } from './routes/intranet/_authed/negocios'
-import { Route as IntranetAuthedLeadsRouteImport } from './routes/intranet/_authed/leads'
-import { Route as IntranetAuthedFinanceiroRouteImport } from './routes/intranet/_authed/financeiro'
-import { Route as IntranetAuthedDocumentosRouteImport } from './routes/intranet/_authed/documentos'
 import { Route as IntranetAuthedClientesRouteImport } from './routes/intranet/_authed/clientes'
+import { Route as IntranetAuthedDocumentosRouteImport } from './routes/intranet/_authed/documentos'
+import { Route as IntranetAuthedFinanceiroRouteImport } from './routes/intranet/_authed/financeiro'
+import { Route as IntranetAuthedLeadsRouteImport } from './routes/intranet/_authed/leads'
+import { Route as IntranetAuthedNegociosRouteImport } from './routes/intranet/_authed/negocios'
+import { Route as IntranetAuthedProjetosRouteImport } from './routes/intranet/_authed/projetos'
+import { Route as IntranetAuthedRelatoriosRouteImport } from './routes/intranet/_authed/relatorios'
+import { Route as IntranetAuthedReunioesRouteImport } from './routes/intranet/_authed/reunioes'
 
-const WebsitePmeRoute = WebsitePmeRouteImport.update({
-  id: '/website-pme',
-  path: '/website-pme',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SobreRoute = SobreRouteImport.update({
-  id: '/sobre',
-  path: '/sobre',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ServicosRoute = ServicosRouteImport.update({
-  id: '/servicos',
-  path: '/servicos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacidadeRoute = PrivacidadeRouteImport.update({
-  id: '/privacidade',
-  path: '/privacidade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DiagnosticoRoute = DiagnosticoRouteImport.update({
-  id: '/diagnostico',
-  path: '/diagnostico',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContatoRoute = ContatoRouteImport.update({
-  id: '/contato',
-  path: '/contato',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CasesRoute = CasesRouteImport.update({
-  id: '/cases',
-  path: '/cases',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRoute = BlogRouteImport.update({
@@ -84,49 +49,44 @@ const BlogRoute = BlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CasesRoute = CasesRouteImport.update({
+  id: '/cases',
+  path: '/cases',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogIndexRoute = BlogIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => BlogRoute,
-} as any)
-const IntranetNovaSenhaRoute = IntranetNovaSenhaRouteImport.update({
-  id: '/intranet/nova-senha',
-  path: '/intranet/nova-senha',
+const ContatoRoute = ContatoRouteImport.update({
+  id: '/contato',
+  path: '/contato',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IntranetLoginRoute = IntranetLoginRouteImport.update({
-  id: '/intranet/login',
-  path: '/intranet/login',
+const DiagnosticoRoute = DiagnosticoRouteImport.update({
+  id: '/diagnostico',
+  path: '/diagnostico',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FecharIdRoute = FecharIdRouteImport.update({
-  id: '/fechar/$id',
-  path: '/fechar/$id',
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExperienciasSalaYogaRoute = ExperienciasSalaYogaRouteImport.update({
-  id: '/experiencias/sala-yoga',
-  path: '/experiencias/sala-yoga',
+const ServicosRoute = ServicosRouteImport.update({
+  id: '/servicos',
+  path: '/servicos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExperienciasProduto3dRoute = ExperienciasProduto3dRouteImport.update({
-  id: '/experiencias/produto-3d',
-  path: '/experiencias/produto-3d',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => BlogRoute,
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const ApiMercadopagoWebhookRoute = ApiMercadopagoWebhookRouteImport.update({
-  id: '/api/mercadopago-webhook',
-  path: '/api/mercadopago-webhook',
+const WebsitePmeRoute = WebsitePmeRouteImport.update({
+  id: '/website-pme',
+  path: '/website-pme',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAutentiqueWebhookRoute = ApiAutentiqueWebhookRouteImport.update({
@@ -134,9 +94,49 @@ const ApiAutentiqueWebhookRoute = ApiAutentiqueWebhookRouteImport.update({
   path: '/api/autentique-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMercadopagoWebhookRoute = ApiMercadopagoWebhookRouteImport.update({
+  id: '/api/mercadopago-webhook',
+  path: '/api/mercadopago-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
+} as any)
+const ExperienciasProduto3dRoute = ExperienciasProduto3dRouteImport.update({
+  id: '/experiencias/produto-3d',
+  path: '/experiencias/produto-3d',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperienciasSalaYogaRoute = ExperienciasSalaYogaRouteImport.update({
+  id: '/experiencias/sala-yoga',
+  path: '/experiencias/sala-yoga',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FecharIdRoute = FecharIdRouteImport.update({
+  id: '/fechar/$id',
+  path: '/fechar/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IntranetAuthedRouteRoute = IntranetAuthedRouteRouteImport.update({
   id: '/intranet/_authed',
   path: '/intranet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntranetLoginRoute = IntranetLoginRouteImport.update({
+  id: '/intranet/login',
+  path: '/intranet/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntranetNovaSenhaRoute = IntranetNovaSenhaRouteImport.update({
+  id: '/intranet/nova-senha',
+  path: '/intranet/nova-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntranetAuthedIndexRoute = IntranetAuthedIndexRouteImport.update({
@@ -144,9 +144,36 @@ const IntranetAuthedIndexRoute = IntranetAuthedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => IntranetAuthedRouteRoute,
 } as any)
-const IntranetAuthedReunioesRoute = IntranetAuthedReunioesRouteImport.update({
-  id: '/reunioes',
-  path: '/reunioes',
+const IntranetAuthedClientesRoute = IntranetAuthedClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => IntranetAuthedRouteRoute,
+} as any)
+const IntranetAuthedDocumentosRoute =
+  IntranetAuthedDocumentosRouteImport.update({
+    id: '/documentos',
+    path: '/documentos',
+    getParentRoute: () => IntranetAuthedRouteRoute,
+  } as any)
+const IntranetAuthedFinanceiroRoute =
+  IntranetAuthedFinanceiroRouteImport.update({
+    id: '/financeiro',
+    path: '/financeiro',
+    getParentRoute: () => IntranetAuthedRouteRoute,
+  } as any)
+const IntranetAuthedLeadsRoute = IntranetAuthedLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => IntranetAuthedRouteRoute,
+} as any)
+const IntranetAuthedNegociosRoute = IntranetAuthedNegociosRouteImport.update({
+  id: '/negocios',
+  path: '/negocios',
+  getParentRoute: () => IntranetAuthedRouteRoute,
+} as any)
+const IntranetAuthedProjetosRoute = IntranetAuthedProjetosRouteImport.update({
+  id: '/projetos',
+  path: '/projetos',
   getParentRoute: () => IntranetAuthedRouteRoute,
 } as any)
 const IntranetAuthedRelatoriosRoute =
@@ -155,36 +182,9 @@ const IntranetAuthedRelatoriosRoute =
     path: '/relatorios',
     getParentRoute: () => IntranetAuthedRouteRoute,
   } as any)
-const IntranetAuthedProjetosRoute = IntranetAuthedProjetosRouteImport.update({
-  id: '/projetos',
-  path: '/projetos',
-  getParentRoute: () => IntranetAuthedRouteRoute,
-} as any)
-const IntranetAuthedNegociosRoute = IntranetAuthedNegociosRouteImport.update({
-  id: '/negocios',
-  path: '/negocios',
-  getParentRoute: () => IntranetAuthedRouteRoute,
-} as any)
-const IntranetAuthedLeadsRoute = IntranetAuthedLeadsRouteImport.update({
-  id: '/leads',
-  path: '/leads',
-  getParentRoute: () => IntranetAuthedRouteRoute,
-} as any)
-const IntranetAuthedFinanceiroRoute =
-  IntranetAuthedFinanceiroRouteImport.update({
-    id: '/financeiro',
-    path: '/financeiro',
-    getParentRoute: () => IntranetAuthedRouteRoute,
-  } as any)
-const IntranetAuthedDocumentosRoute =
-  IntranetAuthedDocumentosRouteImport.update({
-    id: '/documentos',
-    path: '/documentos',
-    getParentRoute: () => IntranetAuthedRouteRoute,
-  } as any)
-const IntranetAuthedClientesRoute = IntranetAuthedClientesRouteImport.update({
-  id: '/clientes',
-  path: '/clientes',
+const IntranetAuthedReunioesRoute = IntranetAuthedReunioesRouteImport.update({
+  id: '/reunioes',
+  path: '/reunioes',
   getParentRoute: () => IntranetAuthedRouteRoute,
 } as any)
 
@@ -397,60 +397,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/website-pme': {
-      id: '/website-pme'
-      path: '/website-pme'
-      fullPath: '/website-pme'
-      preLoaderRoute: typeof WebsitePmeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sobre': {
-      id: '/sobre'
-      path: '/sobre'
-      fullPath: '/sobre'
-      preLoaderRoute: typeof SobreRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/servicos': {
-      id: '/servicos'
-      path: '/servicos'
-      fullPath: '/servicos'
-      preLoaderRoute: typeof ServicosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacidade': {
-      id: '/privacidade'
-      path: '/privacidade'
-      fullPath: '/privacidade'
-      preLoaderRoute: typeof PrivacidadeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/diagnostico': {
-      id: '/diagnostico'
-      path: '/diagnostico'
-      fullPath: '/diagnostico'
-      preLoaderRoute: typeof DiagnosticoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contato': {
-      id: '/contato'
-      path: '/contato'
-      fullPath: '/contato'
-      preLoaderRoute: typeof ContatoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cases': {
-      id: '/cases'
-      path: '/cases'
-      fullPath: '/cases'
-      preLoaderRoute: typeof CasesRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog': {
@@ -460,67 +411,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/cases': {
+      id: '/cases'
+      path: '/cases'
+      fullPath: '/cases'
+      preLoaderRoute: typeof CasesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/': {
-      id: '/blog/'
-      path: '/'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof BlogIndexRouteImport
-      parentRoute: typeof BlogRoute
-    }
-    '/intranet/nova-senha': {
-      id: '/intranet/nova-senha'
-      path: '/intranet/nova-senha'
-      fullPath: '/intranet/nova-senha'
-      preLoaderRoute: typeof IntranetNovaSenhaRouteImport
+    '/contato': {
+      id: '/contato'
+      path: '/contato'
+      fullPath: '/contato'
+      preLoaderRoute: typeof ContatoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/intranet/login': {
-      id: '/intranet/login'
-      path: '/intranet/login'
-      fullPath: '/intranet/login'
-      preLoaderRoute: typeof IntranetLoginRouteImport
+    '/diagnostico': {
+      id: '/diagnostico'
+      path: '/diagnostico'
+      fullPath: '/diagnostico'
+      preLoaderRoute: typeof DiagnosticoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/fechar/$id': {
-      id: '/fechar/$id'
-      path: '/fechar/$id'
-      fullPath: '/fechar/$id'
-      preLoaderRoute: typeof FecharIdRouteImport
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/experiencias/sala-yoga': {
-      id: '/experiencias/sala-yoga'
-      path: '/experiencias/sala-yoga'
-      fullPath: '/experiencias/sala-yoga'
-      preLoaderRoute: typeof ExperienciasSalaYogaRouteImport
+    '/servicos': {
+      id: '/servicos'
+      path: '/servicos'
+      fullPath: '/servicos'
+      preLoaderRoute: typeof ServicosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/experiencias/produto-3d': {
-      id: '/experiencias/produto-3d'
-      path: '/experiencias/produto-3d'
-      fullPath: '/experiencias/produto-3d'
-      preLoaderRoute: typeof ExperienciasProduto3dRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof BlogSlugRouteImport
-      parentRoute: typeof BlogRoute
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/api/mercadopago-webhook': {
-      id: '/api/mercadopago-webhook'
-      path: '/api/mercadopago-webhook'
-      fullPath: '/api/mercadopago-webhook'
-      preLoaderRoute: typeof ApiMercadopagoWebhookRouteImport
+    '/website-pme': {
+      id: '/website-pme'
+      path: '/website-pme'
+      fullPath: '/website-pme'
+      preLoaderRoute: typeof WebsitePmeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/autentique-webhook': {
@@ -530,11 +474,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAutentiqueWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/mercadopago-webhook': {
+      id: '/api/mercadopago-webhook'
+      path: '/api/mercadopago-webhook'
+      fullPath: '/api/mercadopago-webhook'
+      preLoaderRoute: typeof ApiMercadopagoWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/experiencias/produto-3d': {
+      id: '/experiencias/produto-3d'
+      path: '/experiencias/produto-3d'
+      fullPath: '/experiencias/produto-3d'
+      preLoaderRoute: typeof ExperienciasProduto3dRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiencias/sala-yoga': {
+      id: '/experiencias/sala-yoga'
+      path: '/experiencias/sala-yoga'
+      fullPath: '/experiencias/sala-yoga'
+      preLoaderRoute: typeof ExperienciasSalaYogaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fechar/$id': {
+      id: '/fechar/$id'
+      path: '/fechar/$id'
+      fullPath: '/fechar/$id'
+      preLoaderRoute: typeof FecharIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/intranet/_authed': {
       id: '/intranet/_authed'
       path: '/intranet'
       fullPath: '/intranet'
       preLoaderRoute: typeof IntranetAuthedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intranet/login': {
+      id: '/intranet/login'
+      path: '/intranet/login'
+      fullPath: '/intranet/login'
+      preLoaderRoute: typeof IntranetLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intranet/nova-senha': {
+      id: '/intranet/nova-senha'
+      path: '/intranet/nova-senha'
+      fullPath: '/intranet/nova-senha'
+      preLoaderRoute: typeof IntranetNovaSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/intranet/_authed/': {
@@ -544,46 +544,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntranetAuthedIndexRouteImport
       parentRoute: typeof IntranetAuthedRouteRoute
     }
-    '/intranet/_authed/reunioes': {
-      id: '/intranet/_authed/reunioes'
-      path: '/reunioes'
-      fullPath: '/intranet/reunioes'
-      preLoaderRoute: typeof IntranetAuthedReunioesRouteImport
-      parentRoute: typeof IntranetAuthedRouteRoute
-    }
-    '/intranet/_authed/relatorios': {
-      id: '/intranet/_authed/relatorios'
-      path: '/relatorios'
-      fullPath: '/intranet/relatorios'
-      preLoaderRoute: typeof IntranetAuthedRelatoriosRouteImport
-      parentRoute: typeof IntranetAuthedRouteRoute
-    }
-    '/intranet/_authed/projetos': {
-      id: '/intranet/_authed/projetos'
-      path: '/projetos'
-      fullPath: '/intranet/projetos'
-      preLoaderRoute: typeof IntranetAuthedProjetosRouteImport
-      parentRoute: typeof IntranetAuthedRouteRoute
-    }
-    '/intranet/_authed/negocios': {
-      id: '/intranet/_authed/negocios'
-      path: '/negocios'
-      fullPath: '/intranet/negocios'
-      preLoaderRoute: typeof IntranetAuthedNegociosRouteImport
-      parentRoute: typeof IntranetAuthedRouteRoute
-    }
-    '/intranet/_authed/leads': {
-      id: '/intranet/_authed/leads'
-      path: '/leads'
-      fullPath: '/intranet/leads'
-      preLoaderRoute: typeof IntranetAuthedLeadsRouteImport
-      parentRoute: typeof IntranetAuthedRouteRoute
-    }
-    '/intranet/_authed/financeiro': {
-      id: '/intranet/_authed/financeiro'
-      path: '/financeiro'
-      fullPath: '/intranet/financeiro'
-      preLoaderRoute: typeof IntranetAuthedFinanceiroRouteImport
+    '/intranet/_authed/clientes': {
+      id: '/intranet/_authed/clientes'
+      path: '/clientes'
+      fullPath: '/intranet/clientes'
+      preLoaderRoute: typeof IntranetAuthedClientesRouteImport
       parentRoute: typeof IntranetAuthedRouteRoute
     }
     '/intranet/_authed/documentos': {
@@ -593,11 +558,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntranetAuthedDocumentosRouteImport
       parentRoute: typeof IntranetAuthedRouteRoute
     }
-    '/intranet/_authed/clientes': {
-      id: '/intranet/_authed/clientes'
-      path: '/clientes'
-      fullPath: '/intranet/clientes'
-      preLoaderRoute: typeof IntranetAuthedClientesRouteImport
+    '/intranet/_authed/financeiro': {
+      id: '/intranet/_authed/financeiro'
+      path: '/financeiro'
+      fullPath: '/intranet/financeiro'
+      preLoaderRoute: typeof IntranetAuthedFinanceiroRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/leads': {
+      id: '/intranet/_authed/leads'
+      path: '/leads'
+      fullPath: '/intranet/leads'
+      preLoaderRoute: typeof IntranetAuthedLeadsRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/negocios': {
+      id: '/intranet/_authed/negocios'
+      path: '/negocios'
+      fullPath: '/intranet/negocios'
+      preLoaderRoute: typeof IntranetAuthedNegociosRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/projetos': {
+      id: '/intranet/_authed/projetos'
+      path: '/projetos'
+      fullPath: '/intranet/projetos'
+      preLoaderRoute: typeof IntranetAuthedProjetosRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/relatorios': {
+      id: '/intranet/_authed/relatorios'
+      path: '/relatorios'
+      fullPath: '/intranet/relatorios'
+      preLoaderRoute: typeof IntranetAuthedRelatoriosRouteImport
+      parentRoute: typeof IntranetAuthedRouteRoute
+    }
+    '/intranet/_authed/reunioes': {
+      id: '/intranet/_authed/reunioes'
+      path: '/reunioes'
+      fullPath: '/intranet/reunioes'
+      preLoaderRoute: typeof IntranetAuthedReunioesRouteImport
       parentRoute: typeof IntranetAuthedRouteRoute
     }
   }
