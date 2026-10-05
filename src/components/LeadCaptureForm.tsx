@@ -97,7 +97,6 @@ export function LeadCaptureForm() {
               name="nome"
               autoComplete="name"
               className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
-              autoFocus
             />
           </div>
         </div>
