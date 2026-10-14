@@ -3,7 +3,17 @@ import { ExternalLink } from "lucide-react";
 /** Janela de navegador com a captura real do demo. O link é só para quem usa
  *  mouse: o card já tem o seu link de texto, e repeti-lo aqui para leitor de
  *  tela e teclado seria uma entrada duplicada na lista de links. */
-export function CasePreview({ nome, url, print }: { nome: string; url: string; print: string }) {
+export function CasePreview({
+  nome,
+  url,
+  print,
+  aspecto = "aspect-[16/10]",
+}: {
+  nome: string;
+  url: string;
+  print: string;
+  aspecto?: string;
+}) {
   const host = new URL(url).host;
   return (
     <a
@@ -24,7 +34,7 @@ export function CasePreview({ nome, url, print }: { nome: string; url: string; p
           {host}
         </span>
       </div>
-      <div className="relative aspect-[16/10] overflow-hidden">
+      <div className={`relative ${aspecto} overflow-hidden`}>
         <img
           src={print}
           alt={`Prévia do site de demonstração ${nome}`}

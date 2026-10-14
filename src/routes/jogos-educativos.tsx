@@ -90,27 +90,25 @@ function JogosEducativosPage() {
       </section>
 
       {/* BLOCO NAVY */}
-      <section id="toca" className="bg-brand-navy-deep py-16 text-white lg:py-24">
-        <div className="mx-auto max-w-6xl space-y-10 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl space-y-4">
-              <span className={PILL_ESCURA}>{ROTULO_PRODUTO}</span>
-              <h2 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-                Toca da Madalena
-              </h2>
-              <p className="text-lg leading-relaxed text-white/80">
-                Um jogo de estudos para o ENEM: uma toca com seis ambientes, cada um com uma função
-                na rotina do aluno. Não é maquete, é software com conta de aluno.
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <img src={ARU_JOIA} alt="" className="h-36 w-auto" />
+      <section id="toca" className="flex bg-brand-navy-deep py-12 text-white lg:min-h-[calc(100svh-5rem)] lg:items-center lg:py-8">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_1.5fr] lg:gap-12 lg:px-8">
+          <div className="space-y-4">
+            <span className={PILL_ESCURA}>{ROTULO_PRODUTO}</span>
+            <h2 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Toca da Madalena
+            </h2>
+            <p className="text-base leading-relaxed text-white/80">
+              Um jogo de estudos para o ENEM: uma toca com seis ambientes, cada um com uma função
+              na rotina do aluno. Não é maquete, é software com conta de aluno.
+            </p>
+            <div className="flex items-center gap-4 pt-1">
+              <img src={ARU_JOIA} alt="" className="h-28 w-auto" />
               <p className="max-w-[220px] text-sm font-medium text-white/90">
                 “Abre em breve. Enquanto isso, dá para espiar alguns ambientes.”
               </p>
             </div>
           </div>
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {TOCAS.map((_, i) => (
               <PortaMiniatura key={i} i={i} />
             ))}

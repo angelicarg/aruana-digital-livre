@@ -296,7 +296,7 @@ function HomePage() {
       </section>
 
       {/* SOBRE */}
-      <section className="border-y border-border bg-muted py-12 lg:py-16">
+      <section className="border-y border-border bg-muted py-12 lg:py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
@@ -357,31 +357,33 @@ function HomePage() {
       </section>
 
       {/* SERVIÇOS */}
-      <section className="py-12 lg:py-16">
+      <section className="py-12 lg:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-brand-green-text">
               O que entregamos
             </p>
-            <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl">
+            <h2 className="text-3xl font-black sm:text-4xl lg:text-4xl">
               Soluções que unem <span className="text-gradient-brand">estratégia e tecnologia</span>
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-2 text-base text-muted-foreground">
               Do diagnóstico à operação, construímos ecossistemas digitais sob medida.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {SERVICES.map((s) => (
               <article
                 key={s.title}
-                className="group relative overflow-hidden rounded-3xl border border-border bg-card p-7 shadow-card transition hover:-translate-y-1 hover:border-brand-green hover:shadow-premium"
+                className="group relative overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-card transition hover:-translate-y-1 hover:border-brand-green hover:shadow-premium"
               >
-                <div className="grid h-14 w-14 place-items-center rounded-2xl bg-brand-gradient text-white shadow-glow">
-                  <s.icon className="h-7 w-7" />
+                <div className="flex items-center gap-3">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-gradient text-white shadow-glow">
+                    <s.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-lg font-bold leading-tight">{s.title}</h3>
                 </div>
-                <h3 className="mt-5 text-xl font-bold">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
                 {/* Os seis cards repetiam "Saiba mais" como único texto do link.
                     Quem usa leitor de tela navega puxando a lista de links da
                     página, e ali isso vira seis entradas idênticas que não dizem
@@ -391,7 +393,7 @@ function HomePage() {
                 <Link
                   to="/servicos"
                   aria-label={`Saiba mais sobre ${s.title}`}
-                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-green-text transition group-hover:gap-2.5"
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-green-text transition group-hover:gap-2.5"
                 >
                   Saiba mais <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -496,41 +498,41 @@ function HomePage() {
       </section>
 
       {/* PROVA VERIFICÁVEL */}
-      <section className="bg-muted py-12 lg:py-16">
+      <section className="bg-muted py-12 lg:py-6">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green-text">
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-brand-green-text">
               Prova real
             </p>
-            <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl">
+            <h2 className="text-3xl font-black sm:text-4xl lg:text-[32px]">
               Não vamos te mostrar depoimento.{" "}
               <span className="text-gradient-brand">Vamos te mostrar software funcionando.</span>
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-2 text-base text-muted-foreground">
               Todos os projetos abaixo estão no ar — abra, clique, teste o agendamento, converse com
               o chatbot. Construímos cada um para demonstrar o que é possível: empresa fictícia,
               software real.
             </p>
           </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
             {PROOF_PROJECTS.map((p) => (
               <article
                 key={p.name}
                 className="flex flex-col overflow-hidden rounded-3xl bg-card shadow-card transition hover:-translate-y-1 hover:shadow-premium"
               >
-                <CasePreview nome={p.name} url={p.url} print={p.print} />
-                <div className="flex flex-1 flex-col p-7">
+                <CasePreview nome={p.name} url={p.url} print={p.print} aspecto="aspect-[16/5]" />
+                <div className="flex flex-1 flex-col p-4">
                 <span className="self-start rounded-full bg-brand-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green-text">
                   Projeto de demonstração
                 </span>
-                <h3 className="mt-4 font-display text-xl font-bold">{p.name}</h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
+                <h3 className="mt-3 font-display text-lg font-bold">{p.name}</h3>
+                <p className="mt-1 line-clamp-2 flex-1 text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
                 <a
                   href={p.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Abrir e testar ao vivo: ${p.name}`}
-                  className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-green-text transition hover:gap-3"
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand-green-text transition hover:gap-3"
                 >
                   Abrir e testar ao vivo <ExternalLink className="h-4 w-4" />
                 </a>
@@ -545,17 +547,19 @@ function HomePage() {
               ⚠️ O texto do link precisa dizer o destino sozinho (WCAG 2.4.4):
               quem usa leitor de tela navega puxando a lista de links da página,
               e "clique aqui" não informa nada nessa lista. */}
-          <div className="mx-auto mt-12 max-w-2xl rounded-3xl border border-border bg-card p-8 text-center shadow-card">
-            <h3 className="font-display text-2xl font-black text-brand-navy-deep">
-              Quer saber quanto custa?
-            </h3>
-            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-              Os preços estão junto dos sites que a gente já construiu — dá para ver cada um
-              funcionando, testar por dentro e conferir a faixa de investimento.
-            </p>
+          <div className="mx-auto mt-4 flex max-w-5xl flex-col items-center gap-4 rounded-3xl border border-border bg-card p-4 text-center shadow-card md:flex-row md:text-left">
+            <div className="flex-1">
+              <h3 className="font-display text-xl font-black text-brand-navy-deep">
+                Quer saber quanto custa?
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Os preços estão junto dos sites que a gente já construiu — dá para ver cada um
+                funcionando, testar por dentro e conferir a faixa de investimento.
+              </p>
+            </div>
             <Link
               to="/cases"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand-green px-7 py-3.5 font-semibold text-brand-navy-deep shadow-card transition hover:-translate-y-0.5 hover:gap-3"
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-green px-7 py-3.5 font-semibold text-brand-navy-deep shadow-card transition hover:-translate-y-0.5 hover:gap-3"
             >
               Ver projetos e preços <ArrowRight className="h-5 w-5" />
             </Link>
