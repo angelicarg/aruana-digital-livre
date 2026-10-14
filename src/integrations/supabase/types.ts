@@ -376,7 +376,7 @@ export type Database = {
           interesse_avancado: "nenhum" | "loja" | "loja_ia" | "sob_medida" | null
           tem_site: boolean | null
           pacote_sugerido: "essencial" | "profissional" | "avancado" | "sob_medida" | null
-          origem: "banner" | "simulador" | "home_lead_form" | "diagnostico" | "contato"
+          origem: "banner" | "simulador" | "home_lead_form" | "diagnostico" | "contato" | "toca_lista_espera"
           status: "novo" | "contatado" | "convertido" | "descartado"
           site_url: string | null
           mensagem: string | null
@@ -395,7 +395,7 @@ export type Database = {
           interesse_avancado?: "nenhum" | "loja" | "loja_ia" | "sob_medida" | null
           tem_site?: boolean | null
           pacote_sugerido?: "essencial" | "profissional" | "avancado" | "sob_medida" | null
-          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico" | "contato"
+          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico" | "contato" | "toca_lista_espera"
           status?: "novo" | "contatado" | "convertido" | "descartado"
           site_url?: string | null
           mensagem?: string | null
@@ -414,7 +414,7 @@ export type Database = {
           interesse_avancado?: "nenhum" | "loja" | "loja_ia" | "sob_medida" | null
           tem_site?: boolean | null
           pacote_sugerido?: "essencial" | "profissional" | "avancado" | "sob_medida" | null
-          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico" | "contato"
+          origem?: "banner" | "simulador" | "home_lead_form" | "diagnostico" | "contato" | "toca_lista_espera"
           status?: "novo" | "contatado" | "convertido" | "descartado"
           site_url?: string | null
           mensagem?: string | null

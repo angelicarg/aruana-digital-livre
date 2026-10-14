@@ -14,10 +14,12 @@ import { Route as BlogRouteImport } from './routes/blog'
 import { Route as CasesRouteImport } from './routes/cases'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as DiagnosticoRouteImport } from './routes/diagnostico'
+import { Route as JogosEducativosRouteImport } from './routes/jogos-educativos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as TocaRouteImport } from './routes/toca'
 import { Route as WebsitePmeRouteImport } from './routes/website-pme'
 import { Route as ApiAutentiqueWebhookRouteImport } from './routes/api.autentique-webhook'
 import { Route as ApiMercadopagoWebhookRouteImport } from './routes/api.mercadopago-webhook'
@@ -64,6 +66,11 @@ const DiagnosticoRoute = DiagnosticoRouteImport.update({
   path: '/diagnostico',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JogosEducativosRoute = JogosEducativosRouteImport.update({
+  id: '/jogos-educativos',
+  path: '/jogos-educativos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
@@ -82,6 +89,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TocaRoute = TocaRouteImport.update({
+  id: '/toca',
+  path: '/toca',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WebsitePmeRoute = WebsitePmeRouteImport.update({
@@ -194,10 +206,12 @@ export interface FileRoutesByFullPath {
   '/cases': typeof CasesRoute
   '/contato': typeof ContatoRoute
   '/diagnostico': typeof DiagnosticoRoute
+  '/jogos-educativos': typeof JogosEducativosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/toca': typeof TocaRoute
   '/website-pme': typeof WebsitePmeRoute
   '/intranet': typeof IntranetAuthedRouteRouteWithChildren
   '/api/autentique-webhook': typeof ApiAutentiqueWebhookRoute
@@ -224,10 +238,12 @@ export interface FileRoutesByTo {
   '/cases': typeof CasesRoute
   '/contato': typeof ContatoRoute
   '/diagnostico': typeof DiagnosticoRoute
+  '/jogos-educativos': typeof JogosEducativosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/toca': typeof TocaRoute
   '/website-pme': typeof WebsitePmeRoute
   '/api/autentique-webhook': typeof ApiAutentiqueWebhookRoute
   '/api/mercadopago-webhook': typeof ApiMercadopagoWebhookRoute
@@ -255,10 +271,12 @@ export interface FileRoutesById {
   '/cases': typeof CasesRoute
   '/contato': typeof ContatoRoute
   '/diagnostico': typeof DiagnosticoRoute
+  '/jogos-educativos': typeof JogosEducativosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/servicos': typeof ServicosRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
+  '/toca': typeof TocaRoute
   '/website-pme': typeof WebsitePmeRoute
   '/intranet/_authed': typeof IntranetAuthedRouteRouteWithChildren
   '/api/autentique-webhook': typeof ApiAutentiqueWebhookRoute
@@ -288,10 +306,12 @@ export interface FileRouteTypes {
     | '/cases'
     | '/contato'
     | '/diagnostico'
+    | '/jogos-educativos'
     | '/privacidade'
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/toca'
     | '/website-pme'
     | '/intranet'
     | '/api/autentique-webhook'
@@ -318,10 +338,12 @@ export interface FileRouteTypes {
     | '/cases'
     | '/contato'
     | '/diagnostico'
+    | '/jogos-educativos'
     | '/privacidade'
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/toca'
     | '/website-pme'
     | '/api/autentique-webhook'
     | '/api/mercadopago-webhook'
@@ -348,10 +370,12 @@ export interface FileRouteTypes {
     | '/cases'
     | '/contato'
     | '/diagnostico'
+    | '/jogos-educativos'
     | '/privacidade'
     | '/servicos'
     | '/sitemap.xml'
     | '/sobre'
+    | '/toca'
     | '/website-pme'
     | '/intranet/_authed'
     | '/api/autentique-webhook'
@@ -380,10 +404,12 @@ export interface RootRouteChildren {
   CasesRoute: typeof CasesRoute
   ContatoRoute: typeof ContatoRoute
   DiagnosticoRoute: typeof DiagnosticoRoute
+  JogosEducativosRoute: typeof JogosEducativosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ServicosRoute: typeof ServicosRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
+  TocaRoute: typeof TocaRoute
   WebsitePmeRoute: typeof WebsitePmeRoute
   IntranetAuthedRouteRoute: typeof IntranetAuthedRouteRouteWithChildren
   ApiAutentiqueWebhookRoute: typeof ApiAutentiqueWebhookRoute
@@ -432,6 +458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiagnosticoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jogos-educativos': {
+      id: '/jogos-educativos'
+      path: '/jogos-educativos'
+      fullPath: '/jogos-educativos'
+      preLoaderRoute: typeof JogosEducativosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacidade': {
       id: '/privacidade'
       path: '/privacidade'
@@ -458,6 +491,13 @@ declare module '@tanstack/react-router' {
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/toca': {
+      id: '/toca'
+      path: '/toca'
+      fullPath: '/toca'
+      preLoaderRoute: typeof TocaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/website-pme': {
@@ -648,10 +688,12 @@ const rootRouteChildren: RootRouteChildren = {
   CasesRoute: CasesRoute,
   ContatoRoute: ContatoRoute,
   DiagnosticoRoute: DiagnosticoRoute,
+  JogosEducativosRoute: JogosEducativosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ServicosRoute: ServicosRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
+  TocaRoute: TocaRoute,
   WebsitePmeRoute: WebsitePmeRoute,
   IntranetAuthedRouteRoute: IntranetAuthedRouteRouteWithChildren,
   ApiAutentiqueWebhookRoute: ApiAutentiqueWebhookRoute,
@@ -665,12 +707,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

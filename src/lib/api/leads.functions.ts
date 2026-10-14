@@ -17,7 +17,7 @@ const leadSchema = z.object({
   interesseAvancado: z.enum(["nenhum", "loja", "loja_ia", "sob_medida"]).nullable(),
   temSite: z.boolean().nullable(),
   pacoteSugerido: z.enum(["essencial", "profissional", "avancado", "sob_medida"]).nullable(),
-  origem: z.enum(["banner", "simulador", "home_lead_form", "diagnostico", "contato"]),
+  origem: z.enum(["banner", "simulador", "home_lead_form", "diagnostico", "contato", "toca_lista_espera"]),
   siteUrl: z.string().trim().max(300).nullable().optional(),
   mensagem: z.string().trim().max(1000).nullable().optional(),
   // Pedir orçamento autoriza responder; e-mail de divulgação só com esta caixa marcada (LGPD).

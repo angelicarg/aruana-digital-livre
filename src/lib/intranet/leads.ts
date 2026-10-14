@@ -65,6 +65,7 @@ export const LEAD_ORIGEM_LABELS: Record<Lead["origem"], string> = {
   home_lead_form: "Formulário da home",
   diagnostico: "Diagnóstico gratuito",
   contato: "Página de contato",
+  toca_lista_espera: "Lista de espera da Toca",
 };
 
 // CSV com ";" e BOM: é o formato que o Excel em português abre sem embaralhar acentos e colunas.
