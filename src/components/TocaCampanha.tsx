@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
 import { ListaEsperaToca } from "@/components/ListaEsperaToca";
 import {
   TOCAS,
@@ -72,8 +71,9 @@ export function TocaSecaoEscura() {
             Tem alguém se mudando para debaixo da árvore.
           </h2>
           <p className="text-lg leading-relaxed text-white/80">
-            Seis tocas, uma tartaruga e um jeito novo de estudar para o ENEM. Ainda não dá para
-            contar tudo. Quem estiver na lista fica sabendo primeiro, pelo Aru.
+            Estamos preparando um espaço de estudos para quem vai fazer o ENEM, organizado para
+            estudar no seu ritmo, sem perder de vista a continuidade dos estudos. Seis tocas e uma
+            tartaruga. Deixe seus dados e o Aru avisa quando houver novidade.
           </p>
           <div className="rounded-[20px] bg-white p-5 shadow-premium">
             <ListaEsperaToca layout="duas" rotuloBotao="Quero saber quando a porta abrir" />
@@ -85,83 +85,6 @@ export function TocaSecaoEscura() {
             {ROTULO_PRODUTO}.{" "}
             <Link to="/jogos-educativos" className="font-semibold text-[#4FE0A6] underline-offset-4 hover:underline">
               Sua escola quer um jogo assim? →
-            </Link>
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// 1b: clara, faixa de arte com as seis portas e formulário em linha
-export function TocaSecaoClara() {
-  return (
-    <section id="toca" className="bg-white py-14 lg:py-20">
-      <div className="mx-auto max-w-6xl space-y-9 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl space-y-3">
-            <span className={PILL_CLARA}>Novidades chegando</span>
-            <h2 className="font-display text-4xl font-extrabold tracking-tight text-brand-navy-deep">
-              Toca da Madalena
-            </h2>
-            <p className="text-lg text-[#4B5768]">
-              Um jogo de estudos para o ENEM está tomando forma debaixo de uma árvore. As portas
-              vão se abrindo uma de cada vez.
-            </p>
-          </div>
-          <div className="flex items-end gap-3">
-            <img src={ARU_APONTANDO} alt="" className="h-28 w-auto" />
-            <div className="pb-2 text-sm">
-              <p className="font-medium text-brand-navy-deep">
-                “Ainda não posso contar quem mora aí. Mas aviso você primeiro.”
-              </p>
-              <p className="text-[#5B6675]">Aru, da Aruanã</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden rounded-3xl bg-brand-navy-deep md:h-[340px]">
-          <img
-            src="/toca/jardim.webp"
-            alt="Uma árvore grande com portas redondas nas raízes, iluminada por lanternas"
-            className="h-56 w-full object-cover md:absolute md:inset-0 md:h-full"
-            style={{ objectPosition: "50% 62%" }}
-          />
-          <div
-            className="absolute inset-0 hidden md:block"
-            style={{
-              background:
-                "radial-gradient(ellipse 34% 52% at 50% 62%, rgba(4,27,51,0) 0%, rgba(4,27,51,.5) 55%, rgba(4,27,51,.88) 100%)",
-            }}
-            aria-hidden="true"
-          />
-          <ol className="grid grid-cols-2 gap-2.5 p-3 md:absolute md:inset-x-0 md:bottom-0 md:grid-cols-6 md:p-[18px]">
-            {TOCAS.map((t, i) => {
-              const aberta = portaAberta(i);
-              return (
-                <li
-                  key={t.slug}
-                  aria-label={aberta ? undefined : `Porta ${i + 1}, ainda fechada`}
-                  className="rounded-[14px] bg-brand-navy-deep/80 px-3.5 py-3 backdrop-blur-sm"
-                >
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#4FE0A6]">
-                    Porta {i + 1}
-                  </p>
-                  <p className={`mt-0.5 font-display text-[15px] ${aberta ? "font-bold text-white" : "font-semibold text-white/70"}`}>
-                    {aberta ? t.nome : "Ainda fechada"}
-                  </p>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-
-        <div className="space-y-3">
-          <ListaEsperaToca layout="linha" rotuloBotao="Entrar na lista" />
-          <p className="text-sm text-[#5B6675]">
-            {ROTULO_PRODUTO}.{" "}
-            <Link to="/jogos-educativos" className="font-semibold text-brand-green-text underline underline-offset-4">
-              Para escolas →
             </Link>
           </p>
         </div>
@@ -189,4 +112,4 @@ export function PortaMiniatura({ i }: { i: number }) {
   );
 }
 
-export { ARU_JOIA, ARU_APONTANDO, PILL_ESCURA, PILL_CLARA, Madalena, ArrowRight };
+export { ARU_JOIA, PILL_ESCURA, PILL_CLARA, Madalena };

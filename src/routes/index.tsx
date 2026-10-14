@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   ArrowRight,
   Code2,
@@ -20,8 +20,7 @@ import {
 import { PageLayout } from "@/components/PageLayout";
 import { CasePreview } from "@/components/CasePreview";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
-import { ListaEsperaToca } from "@/components/ListaEsperaToca";
-import { TocaSecaoClara, TocaSecaoEscura } from "@/components/TocaCampanha";
+import { TocaSecaoEscura } from "@/components/TocaCampanha";
 import { trackEvent } from "@/lib/analytics";
 import heroFish from "@/assets/hero-fish.jpg";
 import { mountAruanaFish } from "@/lib/aruana-fish";
@@ -220,10 +219,6 @@ const PROOF_PROJECTS = [
 ];
 
 function HomePage() {
-  const [variante, setVariante] = useState<string | null>(null);
-  useEffect(() => {
-    setVariante(new URLSearchParams(window.location.search).get("toca"));
-  }, []);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -567,33 +562,8 @@ function HomePage() {
         </div>
       </section>
 
-      {/* PRODUTO PRÓPRIO: TOCA DA MADALENA. ?toca=1a|1b mostra as prévias do design. */}
-      {variante === "1a" ? (
-        <TocaSecaoEscura />
-      ) : variante === "1b" ? (
-        <TocaSecaoClara />
-      ) : (
-        <section id="toca" className="py-12 lg:py-16">
-          <div className="mx-auto grid max-w-5xl gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
-            <div>
-              <span className="inline-block rounded-full bg-brand-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-green-text">
-                Novidades chegando
-              </span>
-              <h2 className="mt-4 text-3xl font-black sm:text-4xl">Toca da Madalena</h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Estamos preparando um espaço de estudos para quem vai fazer o ENEM, organizado e
-                preparado para estudar no seu ritmo, sem perder de vista a continuidade dos estudos.
-              </p>
-              <p className="mt-3 text-muted-foreground">
-                Deixe seus dados e o Aru avisa quando houver novidade.
-              </p>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-8 shadow-card">
-              <ListaEsperaToca />
-            </div>
-          </div>
-        </section>
-      )}
+      {/* PRODUTO PRÓPRIO: TOCA DA MADALENA */}
+      <TocaSecaoEscura />
 
       {/* LEAD CAPTURE FORM */}
       <section className="bg-muted py-12 lg:py-16">
