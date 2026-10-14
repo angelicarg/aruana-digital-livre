@@ -75,10 +75,10 @@ function JogosEducativosPage() {
               </a>
             </div>
           </div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-premium">
+          <div className="relative aspect-video overflow-hidden rounded-3xl shadow-premium">
             <img
-              src="/toca/tempo.webp"
-              alt="Interior de uma toca com lanterna e ampulheta, a Sala do Tempo do jogo"
+              src="/toca/jogo/tempo.webp"
+              alt="Captura de tela do jogo: a Sala do Tempo, com mesa de escrita, relógio e ampulheta"
               className="h-full w-full object-cover"
             />
             <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-white/95 px-5 py-3 text-sm">

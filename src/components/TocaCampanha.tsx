@@ -101,7 +101,7 @@ export function PortaMiniatura({ i }: { i: number }) {
     <li aria-label={aberta ? undefined : `Porta ${i + 1}, em breve`}>
       <div className="relative aspect-square overflow-hidden rounded-[18px] bg-white/10">
         <img
-          src={aberta ? `/toca/${t.slug}.webp` : "/toca/jardim.webp"}
+          src={aberta ? `/toca/jogo/${t.slug}.webp` : "/toca/jardim.webp"}
           alt=""
           className={`h-full w-full object-cover ${aberta ? "" : "scale-110 blur-[14px]"}`}
         />
