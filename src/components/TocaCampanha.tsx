@@ -93,13 +93,13 @@ export function TocaSecaoEscura() {
   );
 }
 
-// Miniatura quadrada (1d)
+// Miniatura 16:9 (1d), na proporção das capturas do jogo
 export function PortaMiniatura({ i }: { i: number }) {
   const t = TOCAS[i];
   const aberta = portaAberta(i);
   return (
     <li aria-label={aberta ? undefined : `Porta ${i + 1}, em breve`}>
-      <div className="relative aspect-square overflow-hidden rounded-[18px] bg-white/10">
+      <div className="relative aspect-video overflow-hidden rounded-[18px] bg-white/10">
         <img
           src={aberta ? `/toca/jogo/${t.slug}.webp` : "/toca/jardim.webp"}
           alt=""

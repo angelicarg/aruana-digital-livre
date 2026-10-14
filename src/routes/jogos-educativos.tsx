@@ -110,7 +110,7 @@ function JogosEducativosPage() {
               </p>
             </div>
           </div>
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {TOCAS.map((_, i) => (
               <PortaMiniatura key={i} i={i} />
             ))}
