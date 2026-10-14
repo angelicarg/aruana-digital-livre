@@ -19,7 +19,7 @@ export const Route = createFileRoute("/jogos-educativos")({
       {
         name: "description",
         content:
-          "Jogos educativos sob medida para escolas, cursinhos e empresas, com gamificação personalizada e acessibilidade desde o começo. Para provar, construímos o nosso: a Toca da Madalena, jogo de estudos para o ENEM, com lista de espera aberta.",
+          "Jogos educativos sob medida para escolas, cursinhos e empresas, com gamificação personalizada e acessibilidade como critério de projeto. Para provar, construímos o nosso: a Toca da Madalena, jogo de estudos para o ENEM, com lista de espera aberta.",
       },
       { property: "og:title", content: "Jogos educativos sob medida | Aruanã Digital" },
       { property: "og:url", content: "https://aruanadigital.com/jogos-educativos" },
@@ -163,7 +163,7 @@ function JogosEducativosPage() {
           </h2>
           <p className="text-white/80">
             Arte, mundo navegável, conta de aluno e plano de estudos, tudo feito pela Aruanã, com
-            acessibilidade desde o começo.
+            acessibilidade como critério de projeto.
           </p>
           <a
             href={WHATSAPP}
