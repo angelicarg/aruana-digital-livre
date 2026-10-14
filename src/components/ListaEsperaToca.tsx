@@ -5,12 +5,13 @@ import { submitLead } from "@/lib/api/leads.functions";
 
 // Lista de espera da Toca da Madalena. Reaproveita `leads` com origem própria; o aceite é
 // obrigatório porque o único uso da inscrição é avisar sobre a Toca (LGPD).
-// `layout` só muda a disposição: coluna (padrão), duas (nome e WhatsApp lado a lado) ou linha.
+// `layout` só muda a disposição: coluna (padrão), duas (nome e WhatsApp lado a lado), linha ou
+// compacta (dois campos por linha e o botão ao lado do e-mail, para caber numa tela só).
 export function ListaEsperaToca({
   layout = "coluna",
   rotuloBotao = "Entrar na lista de espera",
 }: {
-  layout?: "coluna" | "duas" | "linha";
+  layout?: "coluna" | "duas" | "linha" | "compacta";
   rotuloBotao?: string;
 }) {
   const [nome, setNome] = useState("");
@@ -64,7 +65,7 @@ export function ListaEsperaToca({
   }
 
   const campo =
-    "w-full rounded-xl border border-[#E1E6EC] bg-white px-4 py-3 text-brand-navy-deep outline-none placeholder:text-[#6B7684] focus-visible:ring-2 focus-visible:ring-brand-green";
+    "w-full rounded-xl border border-[#E1E6EC] bg-white px-4 py-2.5 text-brand-navy-deep outline-none placeholder:text-[#6B7684] focus-visible:ring-2 focus-visible:ring-brand-green";
   const rotulo = "text-sm font-semibold text-brand-navy-deep";
 
   const fNome = (
@@ -132,6 +133,19 @@ export function ListaEsperaToca({
           <div className="max-w-xl space-y-1">{aceite}{menores}</div>
         </div>
         {erro}
+      </form>
+    );
+  }
+
+  if (layout === "compacta") {
+    return (
+      <form onSubmit={enviar} className="space-y-2.5">
+        <div className="grid gap-2.5 sm:grid-cols-2 sm:items-end">
+          {fNome}{fWhats}{fEmail}<div>{botao}</div>
+        </div>
+        {aceite}
+        {erro}
+        {menores}
       </form>
     );
   }

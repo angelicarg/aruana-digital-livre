@@ -45,7 +45,7 @@ export function ArteDaArvore({ comAru = true }: { comAru?: boolean }) {
         />
         <div className="absolute inset-0" style={{ background: HOLOFOTE }} aria-hidden="true" />
         <Madalena className="absolute bottom-[6%] left-1/2 h-[42%] -translate-x-1/2" />
-        <p className="absolute bottom-3 left-3 rounded-full bg-brand-navy-deep/75 px-3 py-1.5 text-[13px] font-semibold text-white">
+        <p className="absolute bottom-3 right-3 rounded-full bg-brand-navy-deep/75 px-3 py-1.5 text-[13px] font-semibold text-white">
           {contagemPortas()}
         </p>
       </div>
@@ -63,20 +63,20 @@ export function ArteDaArvore({ comAru = true }: { comAru?: boolean }) {
 // 1a: escura, mistério com o formulário ao lado
 export function TocaSecaoEscura() {
   return (
-    <section id="toca" className="bg-brand-navy-deep py-16 text-white lg:py-24">
-      <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.15fr] lg:gap-16 lg:px-8">
-        <div className="order-2 space-y-5 lg:order-1">
+    <section id="toca" className="flex bg-brand-navy-deep py-12 text-white lg:min-h-[calc(100svh-5rem)] lg:items-center lg:py-5">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-[1.3fr_1fr] lg:gap-12 lg:px-8">
+        <div className="order-2 space-y-3 lg:order-1">
           <span className={PILL_ESCURA}>Produto próprio · em breve</span>
-          <h2 className="font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-balance lg:text-[46px]">
+          <h2 className="font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-balance lg:text-[34px]">
             Tem alguém se mudando para debaixo da árvore.
           </h2>
-          <p className="text-lg leading-relaxed text-white/80">
+          <p className="text-[15px] leading-normal text-white/80">
             Estamos preparando um espaço de estudos para quem vai fazer o ENEM, organizado para
             estudar no seu ritmo, sem perder de vista a continuidade dos estudos. Uma toca, seis
             ambientes e uma tartaruga. Deixe seus dados e o Aru avisa quando houver novidade.
           </p>
-          <div className="rounded-[20px] bg-white p-5 shadow-premium">
-            <ListaEsperaToca layout="duas" rotuloBotao="Quero saber quando abrir" />
+          <div className="rounded-[20px] bg-white p-4 shadow-premium">
+            <ListaEsperaToca layout="compacta" rotuloBotao="Quero saber quando abrir" />
           </div>
         </div>
         <div className="order-1 space-y-4 lg:order-2">
