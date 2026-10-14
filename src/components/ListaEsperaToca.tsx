@@ -57,7 +57,7 @@ export function ListaEsperaToca({
         <CheckCircle2 className="mx-auto h-10 w-10 text-brand-green-text" aria-hidden="true" />
         <h3 className="mt-3 font-display text-xl font-bold">Anotado, {nome.trim()}.</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Pronto. Quando a próxima porta abrir, o Aru te avisa.
+          Pronto. Quando houver novidade, o Aru te avisa.
         </p>
       </div>
     );

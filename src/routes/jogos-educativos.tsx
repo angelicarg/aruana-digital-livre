@@ -99,14 +99,14 @@ function JogosEducativosPage() {
                 Toca da Madalena
               </h2>
               <p className="text-lg leading-relaxed text-white/80">
-                Um jogo de estudos para o ENEM: uma árvore com seis tocas, cada uma com uma função
+                Um jogo de estudos para o ENEM: uma toca com seis ambientes, cada um com uma função
                 na rotina do aluno. Não é maquete, é software com conta de aluno.
               </p>
             </div>
             <div className="flex items-center gap-4">
               <img src={ARU_JOIA} alt="" className="h-36 w-auto" />
               <p className="max-w-[220px] text-sm font-medium text-white/90">
-                “Abre em breve. Enquanto isso, dá para espiar algumas portas.”
+                “Abre em breve. Enquanto isso, dá para espiar alguns ambientes.”
               </p>
             </div>
           </div>
@@ -144,7 +144,7 @@ function JogosEducativosPage() {
               Seja o primeiro a entrar na Toca.
             </h2>
             <p className="text-lg text-[#4B5768]">
-              Sem data marcada ainda. Quando a primeira porta abrir de verdade, o Aru avisa. Uma
+              Sem data marcada ainda. Quando o primeiro ambiente abrir de verdade, o Aru avisa. Uma
               mensagem, sem enxurrada.
             </p>
             <p className="text-sm font-semibold text-brand-navy-deep">{contagemPortas()}</p>

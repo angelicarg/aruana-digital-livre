@@ -72,11 +72,11 @@ export function TocaSecaoEscura() {
           </h2>
           <p className="text-lg leading-relaxed text-white/80">
             Estamos preparando um espaço de estudos para quem vai fazer o ENEM, organizado para
-            estudar no seu ritmo, sem perder de vista a continuidade dos estudos. Seis tocas e uma
-            tartaruga. Deixe seus dados e o Aru avisa quando houver novidade.
+            estudar no seu ritmo, sem perder de vista a continuidade dos estudos. Uma toca, seis
+            ambientes e uma tartaruga. Deixe seus dados e o Aru avisa quando houver novidade.
           </p>
           <div className="rounded-[20px] bg-white p-5 shadow-premium">
-            <ListaEsperaToca layout="duas" rotuloBotao="Quero saber quando a porta abrir" />
+            <ListaEsperaToca layout="duas" rotuloBotao="Quero saber quando abrir" />
           </div>
         </div>
         <div className="order-1 space-y-4 lg:order-2">
@@ -98,7 +98,7 @@ export function PortaMiniatura({ i }: { i: number }) {
   const t = TOCAS[i];
   const aberta = portaAberta(i);
   return (
-    <li aria-label={aberta ? undefined : `Porta ${i + 1}, em breve`}>
+    <li aria-label={aberta ? undefined : `Ambiente ${i + 1}, em breve`}>
       <div className="relative aspect-video overflow-hidden rounded-[18px] bg-white/10">
         <img
           src={aberta ? `/toca/jogo/${t.slug}.webp` : "/toca/jardim.webp"}
@@ -107,7 +107,7 @@ export function PortaMiniatura({ i }: { i: number }) {
         />
         {!aberta && <div className="absolute inset-0 bg-brand-navy-deep/50" aria-hidden="true" />}
       </div>
-      <p className="mt-2 text-sm font-semibold text-white/85">{aberta ? t.nome : `Porta ${i + 1} · em breve`}</p>
+      <p className="mt-2 text-sm font-semibold text-white/85">{aberta ? t.nome : `Ambiente ${i + 1} · em breve`}</p>
     </li>
   );
 }

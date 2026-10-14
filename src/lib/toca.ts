@@ -1,5 +1,5 @@
 // Ponto único da campanha da Toca da Madalena: subir TOCA_PORTAS_ABERTAS a cada revelação.
-// Uma porta fechada não leva nome nem imagem no HTML (ver TocaPortas), para não estragar o mistério.
+// Um ambiente fechado não leva nome nem imagem no HTML (ver TocaPortas), para não estragar o mistério.
 export const TOCA_PORTAS_ABERTAS: number = 1; // 0 a 6
 export const TOCA_MADALENA_REVELADA: boolean = false;
 
@@ -15,7 +15,7 @@ export const TOCAS = [
 export const portaAberta = (i: number) => i < TOCA_PORTAS_ABERTAS;
 
 export function contagemPortas() {
-  if (TOCA_PORTAS_ABERTAS === 0) return "Todas as portas fechadas";
-  if (TOCA_PORTAS_ABERTAS >= 6) return "Seis portas abertas";
-  return `${TOCA_PORTAS_ABERTAS} de 6 portas abertas`;
+  if (TOCA_PORTAS_ABERTAS === 0) return "Todos os ambientes fechados";
+  if (TOCA_PORTAS_ABERTAS >= 6) return "Seis ambientes abertos";
+  return `${TOCA_PORTAS_ABERTAS} de 6 ambientes abertos`;
 }
