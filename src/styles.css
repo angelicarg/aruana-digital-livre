@@ -175,8 +175,9 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--brand-green);
+    outline: 3px solid var(--brand-navy-deep);
     outline-offset: 2px;
+    box-shadow: 0 0 0 2px #fff;
     border-radius: 4px;
   }
 }

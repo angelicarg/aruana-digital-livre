@@ -446,7 +446,7 @@ function HomePage() {
                 key={s.title}
                 className="relative rounded-3xl border border-border bg-card p-6 shadow-card"
               >
-                <span className="absolute -top-3 left-6 rounded-full bg-brand-gradient px-3 py-1 text-xs font-bold text-white">
+                <span className="absolute -top-3 left-6 rounded-full bg-brand-green-text px-3 py-1 text-xs font-bold text-white">
                   Etapa {i + 1}
                 </span>
                 <div className="mt-3 grid h-12 w-12 place-items-center rounded-xl bg-muted text-brand-green-deep">
@@ -461,11 +461,11 @@ function HomePage() {
       </section>
 
       {/* TECNOLOGIA PARA TODOS */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-green-deep to-brand-navy-deep py-12 text-white lg:py-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[oklch(0.42_0.1_154)] to-brand-navy-deep py-12 text-white lg:py-16">
         <div className="absolute inset-0 grid-pattern opacity-20" aria-hidden="true" />
         <div className="relative mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-green">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-white">
               Acessibilidade
             </p>
             <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl">Tecnologia para Todos</h2>

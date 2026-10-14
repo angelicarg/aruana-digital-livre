@@ -64,7 +64,7 @@ export function SiteFooter() {
 
         <div>
           <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">Navegação</h3>
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-0.5 text-sm">
             {[
               ["/", "Início"],
               ["/servicos", "Serviços"],
@@ -74,7 +74,7 @@ export function SiteFooter() {
               ["/contato", "Contato"],
             ].map(([to, label]) => (
               <li key={to}>
-                <Link to={to} className="transition hover:text-brand-green">
+                <Link to={to} className="inline-block py-1 transition hover:text-brand-green">
                   {label}
                 </Link>
               </li>
@@ -102,9 +102,9 @@ export function SiteFooter() {
 
         <div>
           <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">Legal</h3>
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-0.5 text-sm">
             <li>
-              <Link to="/privacidade" className="transition hover:text-brand-green">
+              <Link to="/privacidade" className="inline-block py-1 transition hover:text-brand-green">
                 Política de Privacidade
               </Link>
             </li>
@@ -121,7 +121,7 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} Aruanã Digital. Todos os direitos reservados.</p>
           <p>CNPJ 67.876.737/0001-43</p>
           <p>Tecnologia • Educação • Resultados</p>
-          <Link to="/intranet" className="flex items-center gap-1.5 transition hover:text-brand-green">
+          <Link to="/intranet" className="flex items-center gap-1.5 py-1 transition hover:text-brand-green">
             <Lock className="h-3.5 w-3.5" />
             Acesso da equipe
           </Link>

@@ -101,7 +101,7 @@ export function ListaEsperaToca({
   const aceite = (
     <label htmlFor="toca-aceite" className="flex cursor-pointer items-start gap-3 text-sm leading-snug text-[#4B5768]">
       <input id="toca-aceite" type="checkbox" checked={aceita} onChange={(e) => setAceita(e.target.checked)}
-        className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-brand-green" />
+        className="mt-0.5 h-6 w-6 shrink-0 cursor-pointer accent-brand-green" />
       <span>
         Quero receber avisos sobre a Toca da Madalena por e-mail e WhatsApp. Posso sair da lista
         quando quiser.
