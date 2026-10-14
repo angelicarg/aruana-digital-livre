@@ -8,8 +8,8 @@ import {
 } from "@/lib/toca";
 
 // Peças da campanha de pré-inauguração. Aru sempre dos arquivos oficiais, nunca espelhado.
-const ARU_APONTANDO = "/marca/aru-apontando-v1.png";
-const ARU_JOIA = "/marca/aru-joia-v1.png";
+const ARU_APONTANDO = "/marca/aru-apontando-v1.webp";
+const ARU_JOIA = "/marca/aru-joia-v1.webp";
 
 export const ROTULO_PRODUTO = "Produto próprio · nosso demonstrativo em jogos educativos";
 
@@ -101,7 +101,7 @@ export function PortaMiniatura({ i }: { i: number }) {
     <li aria-label={aberta ? undefined : `Ambiente ${i + 1}, em breve`}>
       <div className="relative aspect-video overflow-hidden rounded-[18px] bg-white/10">
         <img
-          src={aberta ? `/toca/jogo/${t.slug}.webp` : "/toca/jardim.webp"}
+          src={aberta ? `/toca/jogo/${t.slug}.webp` : "/toca/jardim-borrado.webp"}
           alt=""
           className={`h-full w-full object-cover ${aberta ? "" : "scale-110 blur-[14px]"}`}
         />
