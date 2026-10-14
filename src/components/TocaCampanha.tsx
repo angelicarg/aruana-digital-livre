@@ -10,7 +10,6 @@ import {
 
 // Peças da campanha de pré-inauguração. Aru sempre dos arquivos oficiais, nunca espelhado.
 const ARU_APONTANDO = "/marca/aru-apontando-v1.png";
-const ARU_FRENTE = "/marca/aru-frente-v1.png";
 const ARU_JOIA = "/marca/aru-joia-v1.png";
 
 export const ROTULO_PRODUTO = "Produto próprio · nosso demonstrativo em jogos educativos";
@@ -171,42 +170,6 @@ export function TocaSecaoClara() {
   );
 }
 
-// Cartão de porta (1c): aberta mostra nome, fechada mostra só a pista e a imagem borrada
-export function PortaCartao({ i }: { i: number }) {
-  const t = TOCAS[i];
-  const aberta = portaAberta(i);
-  return (
-    <li
-      aria-label={aberta ? undefined : `Porta ${i + 1}, ainda fechada`}
-      className="overflow-hidden rounded-3xl bg-white shadow-card"
-    >
-      <div className="relative aspect-video overflow-hidden bg-brand-navy-deep">
-        <img
-          src={aberta ? `/toca/${t.slug}.webp` : "/toca/jardim.webp"}
-          alt=""
-          className={`h-full w-full object-cover ${aberta ? "" : "scale-110 blur-xl"}`}
-        />
-        {!aberta && (
-          <div className="absolute inset-0 grid place-items-center bg-brand-navy-deep/55">
-            <span className="rounded-full bg-brand-navy-deep/80 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white">
-              Porta {i + 1} · ainda fechada
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="space-y-1 p-5">
-        <p className={`text-xs font-bold uppercase tracking-wider ${aberta ? "text-brand-green-text" : "text-[#6B7684]"}`}>
-          Porta {i + 1}{aberta ? " · aberta" : ""}
-        </p>
-        <h3 className="font-display text-xl font-bold text-brand-navy-deep">{aberta ? t.nome : "???"}</h3>
-        <p className={`text-[15px] ${aberta ? "text-[#4B5768]" : "text-[#6B7684]"}`}>
-          {aberta ? t.linha : t.pista}
-        </p>
-      </div>
-    </li>
-  );
-}
-
 // Miniatura quadrada (1d)
 export function PortaMiniatura({ i }: { i: number }) {
   const t = TOCAS[i];
@@ -226,4 +189,4 @@ export function PortaMiniatura({ i }: { i: number }) {
   );
 }
 
-export { ARU_FRENTE, ARU_JOIA, ARU_APONTANDO, PILL_ESCURA, PILL_CLARA, Madalena, ArrowRight };
+export { ARU_JOIA, ARU_APONTANDO, PILL_ESCURA, PILL_CLARA, Madalena, ArrowRight };
