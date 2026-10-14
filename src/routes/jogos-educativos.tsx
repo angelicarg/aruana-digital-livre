@@ -92,7 +92,7 @@ function JogosEducativosPage() {
       {/* BLOCO NAVY */}
       <section id="toca" className="bg-brand-navy-deep py-16 text-white lg:py-24">
         <div className="mx-auto max-w-6xl space-y-10 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl space-y-4">
               <span className={PILL_ESCURA}>{ROTULO_PRODUTO}</span>
               <h2 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
