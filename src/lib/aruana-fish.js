@@ -92,7 +92,7 @@ export function mountAruanaFish(cv, textEl, options = {}) {
       } else if (ti >= 1 + gap / TI) {
         mode = 'idle';
         const ts = clock - introAt - TI - gap, e = eOut(clamp(ts / TE, 0, 1)), tt = clock;
-        const Ls = narrow ? W * 1.05 : clamp((W - TR - 16) * 1.75, W * .5, 1600), fx = narrow ? 24 + Ls * .5 : TR + 16 + Ls * .5, fy = narrow ? TB + 24 + Ls * .24 : H * .55;
+        const Ls = narrow ? W - 56 : clamp((W - TR - 16) * 1.75, W * .5, 1600), fx = narrow ? W * .5 : TR + 16 + Ls * .5, fy = narrow ? TB + 24 + Ls * .24 : H * .55;
         const sT = clamp(Ls / Lw, .6, 3.2), zT = Fc * (1 - 1 / sT);
         const sxx = (W + Ls * .55 - VX) / sT, ixx = (fx - VX) / sT, iyy = (fy - VY) / sT;
         Cx = sxx + (ixx - sxx) * e + .02 * S * Math.sin(tt * .11) * e; Cy = iyy + .03 * S * Math.sin(tt * .15); Cz = zT + .02 * S * Math.sin(tt * .08);

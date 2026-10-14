@@ -247,15 +247,15 @@ function HomePage() {
           className="pointer-events-none absolute inset-0 block h-full w-full"
         />
         <div className="pointer-events-none relative z-[2] mx-auto flex w-full max-w-[1240px] flex-col px-7 pb-10 pt-10">
-          <div ref={textRef} className="flex max-w-[700px] flex-col gap-5">
+          <div ref={textRef} className="flex max-w-[700px] flex-col gap-5 max-[999px]:max-w-none">
             <span className="font-mono text-xs uppercase tracking-[.16em] text-brand-green">
               Uberlândia/MG · para todo o Brasil
             </span>
-            <h1 className="max-w-[17ch] text-balance text-[clamp(36px,4.6vw,62px)] font-semibold leading-[1.03] tracking-[-.035em]">
+            <h1 className="max-w-[17ch] max-[999px]:max-w-none text-balance text-[clamp(36px,4.6vw,62px)] font-semibold leading-[1.03] tracking-[-.035em]">
               Sites que trabalham por você:{" "}
               <span className="text-brand-green">captam, incluem e geram resultado.</span>
             </h1>
-            <p className="max-w-[44ch] text-pretty text-[clamp(17px,1.5vw,19px)] leading-[1.55] text-white/75">
+            <p className="max-w-[44ch] max-[999px]:max-w-none text-pretty text-[clamp(17px,1.5vw,19px)] leading-[1.55] text-white/75">
               Ecossistemas digitais que unem tecnologia, acessibilidade, educação e inovação para
               gerar crescimento sustentável.
             </p>
@@ -284,8 +284,9 @@ function HomePage() {
               ))}
             </div>
           </div>
-          {/* Reserva o lugar do peixe embaixo do texto em telas estreitas. */}
-          <div className="h-0 max-[999px]:h-[46vw]" />
+          {/* Reserva o lugar do peixe embaixo do texto em telas estreitas: mesma largura do
+              texto (o peixe usa W - 56 em aruana-fish.js), proporção 2:1. */}
+          <div className="h-0 max-[999px]:aspect-[2/1] max-[999px]:h-auto" />
         </div>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2]">
           <div className="mx-auto flex max-w-[1240px] justify-end px-7 pb-4 font-mono text-[11px] uppercase tracking-[.14em] text-[#7E93A5]">
