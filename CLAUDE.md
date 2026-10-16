@@ -55,14 +55,14 @@ do Instagram para conteúdo "cru") e a tabela do que o BRAND.md veta com o subst
 cada tática. Os números de lá são para decisão interna: publicar qualquer estatística
 exige fonte própria verificável, por causa da regra 3.
 
-### Geração de imagem/vídeo (`KLING.md`)
+### Geração de imagem/vídeo
 
-`KLING.md` documenta o conector Kling AI (MCP): catálogo de modelos, custo em créditos,
-fluxo de produção e regras de precisão de prompt. Dois pontos que custam dinheiro se
-ignorados: os modelos `kling-video-v3_0*` têm `resolution` **default `4k`** (~150
-créditos por clipe de 5 s), e o campo `creditsConsumed` da resposta de submissão é a
-fonte de verdade do custo. Ler antes de gerar qualquer peça — e ler o `BRAND.md` junto,
-porque o logo nunca pode ser gerado por IA e o Aru precisa de imagem de referência.
+Desde 16/10/2026 o vídeo principal sai do **Flow** (Google, uso manual com os créditos do
+plano Google AI Pro). O Kling foi descontinuado e o `KLING.md` ficou como histórico. As
+regras de produção continuam: duração e resolução sempre explícitas, movimento aprovado em
+720p antes de subir qualidade, áudio gerado descartado (voz do Aru só pelo Runable). Ler o
+`BRAND.md` antes de gerar qualquer peça, porque o logo nunca pode ser gerado por IA e o Aru
+precisa de imagem de referência.
 
 ### Intranet (`src/routes/intranet/`)
 

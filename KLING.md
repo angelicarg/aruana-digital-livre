@@ -1,5 +1,12 @@
 # KLING.md — Guia de uso do conector Kling AI
 
+> **Descontinuado em 16/10/2026.** A Aruanã deixou de assinar o Kling. O vídeo principal
+> passou a sair do **Flow** (Google, uso manual com os créditos do plano Google AI Pro).
+> Este arquivo fica como histórico. Continuam valendo para qualquer gerador: duração e
+> resolução sempre explícitas, aprovar o movimento em 720p antes de subir qualidade,
+> áudio gerado descartado (a voz do Aru é só o clone do Runable), Aru sempre a partir de
+> uma pose oficial e logo nunca por IA (`BRAND.md`).
+
 Referência para gerar imagens e vídeos com o conector Kling AI (MCP). Levantado e
 verificado em 28/07/2026. Complementa o `BRAND.md`: **as regras de marca valem para
 tudo que sair daqui** — ver a seção "Restrições de marca" no final.
