@@ -58,11 +58,11 @@ exige fonte própria verificável, por causa da regra 3.
 ### Geração de imagem/vídeo
 
 Desde 16/10/2026 o vídeo principal sai do **Flow** (Google, uso manual com os créditos do
-plano Google AI Pro). O Kling foi descontinuado e o `KLING.md` ficou como histórico. As
-regras de produção continuam: duração e resolução sempre explícitas, movimento aprovado em
-720p antes de subir qualidade, áudio gerado descartado (voz do Aru só pelo Runable). Ler o
-`BRAND.md` antes de gerar qualquer peça, porque o logo nunca pode ser gerado por IA e o Aru
-precisa de imagem de referência.
+plano Google AI Pro). O Kling foi descontinuado e o guia do conector ficou como histórico em
+`docs/historico/KLING.md`. As regras de produção continuam: duração e resolução sempre
+explícitas, movimento aprovado em 720p antes de subir qualidade, áudio gerado descartado
+(voz do Aru só pelo Runable). Ler o `BRAND.md` antes de gerar qualquer peça, porque o logo
+nunca pode ser gerado por IA e o Aru precisa de imagem de referência.
 
 ### Intranet (`src/routes/intranet/`)
 
@@ -229,9 +229,11 @@ O `Permissions-Policy` **precisa liberar** `accelerometer`, `gyroscope`,
 `DeviceOrientationEvent`, `navigator.xr` e `requestFullscreen`, e uma política
 restritiva padrão quebraria a experiência inteira.
 
-Não há `Content-Security-Policy`, e isso é escolha, não esquecimento: a página
-carrega VLibras do gov.br, gtag do Google e Contentsquare, e um CSP incompleto
-quebra o site sem avisar. Se um dia for adicionado, começar em `report-only`.
+A `Content-Security-Policy` está **ativa** (commit `95a0341`, 14/10/2026; entrou antes em
+modo só relatar). Ela libera VLibras (que redireciona para o jsDelivr), gtag do Google e
+Contentsquare, e o `script-src` ainda tem `'unsafe-inline'`, então não barra injeção de
+script: trocar por nonce é a etapa seguinte. Antes de mexer nela, testar com uma cópia
+local e um proxy que injete o cabeçalho; uma CSP incompleta quebra o site sem avisar.
 
 ### Supabase project sharing
 

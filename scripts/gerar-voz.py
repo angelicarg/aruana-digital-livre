@@ -6,7 +6,7 @@ gerar-voz.py — gera a locução do Aru na voz oficial da marca.
 A voz é um ativo de marca: nenhum gerador de vídeo produz voz controlável (o Kling
 sorteia a cada geração, o Veo também e recusa áudio de entrada), então a locução
 nasce aqui e entra no vídeo depois — via Avatar do Kling, para lip-sync, ou via
---audio-mestre do montar-video.sh, para narração em off. Ver KLING.md.
+--audio-mestre do montar-video.sh, para narração em off. Ver docs/historico/KLING.md.
 
 Uso:
     python scripts/gerar-voz.py "Tire a mão do mouse." reel-tab

@@ -6,7 +6,7 @@ gerar-pecas.py — compõe peças de carrossel da Aruanã Digital.
 Nada aqui é gerado por IA: o Aru vem dos assets oficiais e o texto é
 desenhado em fonte real (Sora + Inter). Isso garante o que a geração por
 imagem não garante — tipografia correta com acento, personagem idêntico
-entre cards e custo zero por revisão. Ver KLING.md e BRAND.md.
+entre cards e custo zero por revisão. Ver docs/historico/KLING.md e BRAND.md.
 
 Uso:
     python scripts/gerar-pecas.py midia/carrosseis/acessibilidade.json
